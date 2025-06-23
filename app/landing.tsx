@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import React from 'react';
 import { Button, StyleSheet, Text, View } from 'react-native';
 
-export default function HomeScreen() {
+export default function LandingScreen() {
   const router = useRouter();
   return (
     <View style={styles.container}>
@@ -27,4 +27,4 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 32,
   },
-});
+}); 

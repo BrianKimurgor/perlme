@@ -1,0 +1,5 @@
+[
+  { "id": "1", "text": "Hello from AI!", "sender": "AI", "isOwnMessage": false },
+  { "id": "2", "text": "Hi AI!", "sender": "You", "isOwnMessage": true },
+  { "id": "3", "text": "How can I help you today?", "sender": "AI", "isOwnMessage": false }
+] 

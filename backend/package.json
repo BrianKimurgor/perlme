@@ -1,33 +1,36 @@
 {
-  "name": "perlme-backend",
+  "name": "backend",
   "version": "1.0.0",
-  "description": "Backend server for Perlme chat app",
-  "main": "server.js",
+  "description": "Real-time chat backend server for the Perlme React Native app.",
+  "main": "dist/app.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js",
+    "start": "node dist/server.js",
+    "dev": "nodemon --watch 'src/**/*.ts' --exec \"node --trace-warnings --loader ts-node/esm\" src/server.ts",
+    "build": "tsc",
+    "build:watch": "tsc -w",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "db:generate": "prisma generate",
-    "db:push": "prisma db push",
-    "db:migrate": "prisma migrate dev",
-    "db:studio": "prisma studio"
+    "seed:init": "ts-node ./src/seeds/init.ts"
   },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
   "dependencies": {
-    "express": "^4.18.2",
-    "socket.io": "^4.7.4",
+    "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
-    "bcryptjs": "^2.4.3",
-    "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.0.3",
-    "uuid": "^9.0.1",
-    "@prisma/client": "^5.7.1"
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.0.1",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2"
   },
   "devDependencies": {
-    "nodemon": "^3.0.2",
-    "prisma": "^5.7.1"
-  },
-  "keywords": ["chat", "socket.io", "express", "react-native"],
-  "author": "",
-  "license": "MIT"
-} 
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^24.2.1",
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
+  }
+}

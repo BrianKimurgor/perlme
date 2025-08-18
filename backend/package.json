@@ -2,14 +2,12 @@
   "name": "backend",
   "version": "1.0.0",
   "description": "Real-time chat backend server for the Perlme React Native app.",
-  "main": "dist/app.js",
+  "main": "src/server.js",
   "scripts": {
-    "start": "node dist/server.js",
-    "dev": "nodemon --watch 'src/**/*.ts' --exec \"node --trace-warnings --loader ts-node/esm\" src/server.ts",
-    "build": "tsc",
-    "build:watch": "tsc -w",
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "seed:init": "ts-node ./src/seeds/init.ts"
+    "seed:init": "node ./src/seeds/init.js"
   },
   "keywords": [],
   "author": "",
@@ -21,16 +19,12 @@
     "express": "^5.1.0",
     "express-rate-limit": "^8.0.1",
     "helmet": "^8.1.0",
-    "jsonwebtoken": "^9.0.2"
+    "jsonwebtoken": "^9.0.2",
+    "yup": "^1.7.0"
   },
   "devDependencies": {
-    "@types/bcryptjs": "^2.4.6",
-    "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.3",
-    "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^24.2.1",
+    "@prisma/client": "^6.14.0",
     "nodemon": "^3.1.10",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.9.2"
+    "prisma": "^6.14.0"
   }
 }

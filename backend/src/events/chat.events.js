@@ -1,4 +1,4 @@
-export default function registerChatEvents(io) {
+const registerChatEvents = (io) => {
     io.on("connection", (socket) => {
         console.log("✅ User connected:", socket.id);
 
@@ -57,3 +57,5 @@ export default function registerChatEvents(io) {
         });
     });
 }
+
+export default registerChatEvents;

@@ -1,2 +1,0 @@
- from '@prisma/client'
-}

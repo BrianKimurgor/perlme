@@ -1,7 +1,7 @@
-@AdminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImRlYTk5MzBlLTEzNDItNDYwNC05ZDFhLTE1ZTliMjA0ZTk0MiIsImVtYWlsIjoiYnJheW9nYWtlbnllMDRAZ21haWwuY29tIiwicm9sZSI6IkFETUlOIiwidXNlcm5hbWUiOiJBZG1pbkdha2VueWUiLCJpYXQiOjE3NjE0MDMzMjIsImV4cCI6MTc2MTQwNjkyMn0.RxCCbC8px5KV40Wk6RjJwEl5lAHUXPE3UNFWSr27fbM
-@UserToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImMzYzY4OWQyLWNhN2YtNDU1ZC1hOWI0LTIxNmIyYTM1NDQ4YSIsImVtYWlsIjoiZ2FrZW55ZWRlc2lnbnNAZ21haWwuY29tIiwicm9sZSI6IlJFR1VMQVIiLCJ1c2VybmFtZSI6IlVzZXJHYWtlbnllIiwiaWF0IjoxNzYxMzk4MjYzLCJleHAiOjE3NjE0MDE4NjN9.wuTH6bBLGYHKYdrIGcU_v7Wr_vbzeXUfNkY4wNDmMck
+@AdminToken = .......
+@UserToken = .......
 
-@userId = c3c689d2-ca7f-455d-a9b4-216b2a35448a
+@userId = ........
 ### 🟢 Register Admin User
 POST http://localhost:5000/api/auth/register
 Content-Type: application/json
@@ -9,7 +9,7 @@ Content-Type: application/json
 {
   "username": "AdminGakenye",
   "email": "brayogakenye04@gmail.com",
-  "passwordHash": "adminPassword123",
+  "passwordHash": "........",
   "dateOfBirth": "1998-03-12T00:00:00Z",
   "gender": "MALE",
   "orientation": "STRAIGHT",
@@ -23,7 +23,7 @@ Content-Type: application/json
 
 {
   "email": "brayogakenye04@gmail.com",
-  "passwordHash": "adminPassword123"
+  "passwordHash": "........"
 }
 
 ### 💌 Verify Email (Admin)
@@ -52,7 +52,7 @@ Content-Type: application/json
 }
 
 ### 🧱 Reset Password (Admin)
-PUT http://localhost:5000/api/auth/reset/YOUR_RESET_TOKEN_HERE
+PUT http://localhost:5000/api/auth/reset/{{AdminToken}}
 Content-Type: application/json
 
 {
@@ -67,8 +67,8 @@ Content-Type: application/json
 
 {
   "username": "UserGakenye",
-  "email": "gakenyedesigns@gmail.com",
-  "passwordHash": "regularPassword123",
+  "email": ".........",
+  "passwordHash": "............",
   "dateOfBirth": "1999-06-15T00:00:00Z",
   "gender": "MALE",
   "orientation": "STRAIGHT",
@@ -80,8 +80,8 @@ POST http://localhost:5000/api/auth/login
 Content-Type: application/json
 
 {
-  "email": "gakenyedesigns@gmail.com",
-  "passwordHash": "regularPassword123"
+  "email": ".........",
+  "passwordHash": "............"
 }
 
 ### 💌 Verify Email (Regular)
@@ -89,7 +89,7 @@ PUT http://localhost:5000/api/auth/verify-email
 Content-Type: application/json
 
 {
-  "email": "gakenyedesigns@gmail.com",
+  "email": ".........",
   "confirmationCode": "372891"
 }
 
@@ -98,7 +98,7 @@ POST http://localhost:5000/api/auth/resend-verification
 Content-Type: application/json
 
 {
-  "email": "gakenyedesigns@gmail.com"
+  "email": "........."
 }
 
 ### 🔐 Request Password Reset (Regular)
@@ -106,7 +106,7 @@ POST http://localhost:5000/api/auth/password-reset
 Content-Type: application/json
 
 {
-  "email": "gakenyedesigns@gmail.com"
+  "email": "........."
 }
 
 ### 🧱 Reset Password (Regular)
@@ -130,7 +130,7 @@ GET http://localhost:5000/api/users/{{userId}}
 Authorization: Bearer {{AdminToken}}
 
 ### 🟣 Get User by Email (Admin or Moderator Only)
-GET http://localhost:5000/api/users?email=gakenyedesigns@gmail.com
+GET http://localhost:5000/api/users?email=.........
 Authorization: Bearer {{AdminToken}}
 
 ### 🟡 Update User (Self or Admin)

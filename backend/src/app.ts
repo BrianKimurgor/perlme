@@ -23,6 +23,9 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(logger);
+// ✅ Protected routes (require login + active account)
+app.use("/api", anyAuth, checkUserActive); // 🔥 GLOBAL MIDDLEWARES
+
 
 // ---------------------------- Public / Auth-Free Routes ----------------------------
 app.use('/api', authRouter);

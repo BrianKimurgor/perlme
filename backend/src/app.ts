@@ -15,6 +15,7 @@ import exploreRouter from './Services/Explore and Recommendations/exploreAndReco
 dotenv.config();
 console.log("🟢 Scheduler file loaded");
 
+
 const app: Application = express();
 
 // Basic Middleware
@@ -23,6 +24,9 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(logger);
+// ✅ Protected routes (require login + active account)
+app.use("/api", anyAuth, checkUserActive); // 🔥 GLOBAL MIDDLEWARES
+
 
 //import route
 const PORT = process.env.PORT || 5000;

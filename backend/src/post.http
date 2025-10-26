@@ -1,0 +1,59 @@
+@baseUrl = http://localhost:5000/api
+@AdminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImRkZjU2MmJiLTgyZDUtNDk2OS1iN2M3LWVhMzg5NmNkM2RiNiIsImVtYWlsIjoiYnJheW9nYWtlbnllMDRAZ21haWwuY29tIiwicm9sZSI6IkFETUlOIiwidXNlcm5hbWUiOiJBZG1pbkdha2VueWUiLCJpYXQiOjE3NjE1MDQwODcsImV4cCI6MTc2MTUwNzY4N30.-PVe_K8LyZl6SCGiF7_gto3vu6YDRB_NhxY_U_PMM8s
+@UserToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImMzYzY4OWQyLWNhN2YtNDU1ZC1hOWI0LTIxNmIyYTM1NDQ4YSIsImVtYWlsIjoiZ2FrZW55ZWRlc2lnbnNAZ21haWwuY29tIiwicm9sZSI6Ik1PREVSQVRPUiIsInVzZXJuYW1lIjoiVXNlckdha2VueWUiLCJpYXQiOjE3NjE1MDY3MDksImV4cCI6MTc2MTUxMDMwOX0.RFBudnSxar82QlmQIusXbe_4C_SncP60-e45Q1MK27s
+@PostId = f399dbe2-f1a0-489a-a00d-13f28f114676
+###################################################
+### 🟢 CREATE POST (Requires Auth + Active Account)
+###################################################
+POST {{baseUrl}}/posts
+Authorization: Bearer {{UserToken}}
+Content-Type: application/json
+
+{
+  "content": "🚀 Hello world! This is my first post on PerlMe!"
+}
+
+###################################################
+### 🟣 GET ALL PUBLIC POSTS
+###################################################
+GET {{baseUrl}}/posts
+Authorization:Bearer {{UserToken}}
+
+
+###################################################
+### 🟡 GET SINGLE POST BY ID
+###################################################
+GET {{baseUrl}}/posts/{{PostId}}
+Authorization: Bearer {{UserToken}}
+
+###################################################
+### 💬 COMMENT ON A POST
+###################################################
+POST {{baseUrl}}/posts/{{PostId}}/comments
+Authorization: Bearer {{UserToken}}
+Content-Type: application/json
+
+{
+  "content": "🔥 This post is amazing!"
+}
+
+
+###################################################
+### ❤️ LIKE POST
+###################################################
+POST {{baseUrl}}/posts/{{PostId}}/like
+Authorization: Bearer {{UserToken}}
+
+
+###################################################
+### 💔 UNLIKE POST
+###################################################
+DELETE {{baseUrl}}/posts/{{PostId}}/like
+Authorization: Bearer {{UserToken}}
+
+
+###################################################
+### ❌ DELETE POST (Author or Admin)
+###################################################
+DELETE {{baseUrl}}/posts/{{PostId}}
+Authorization: Bearer {{UserToken}}

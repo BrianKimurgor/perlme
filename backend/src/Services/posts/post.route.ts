@@ -12,9 +12,6 @@ postRouter.get("/user/:userId", authMiddleware(), getPostsByUserController);
 postRouter.patch("/:postId", authMiddleware(), updatePostController);
 postRouter.delete("/:postId", authMiddleware(), deletePostController);
 
-postRouter.post("/:postId/like", authMiddleware(), likePostController);
-postRouter.delete("/:postId/like", authMiddleware(), unlikePostController);
-
-postRouter.post("/:postId/comments", authMiddleware(), commentOnPostController);
+postRouter.post("/posts/:postId/comments", authMiddleware(), commentOnPostController);
 
 export default postRouter;

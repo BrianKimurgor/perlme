@@ -4,17 +4,14 @@ import { authMiddleware } from "../../Middlewares/BearAuth";
 
 const postRouter = Router();
 
-postRouter.get("/", authMiddleware(),getAllPublicPostsController);
-postRouter.get("/:postId",authMiddleware(), getPostByIdController);
+postRouter.get("/posts", getAllPublicPostsController);
+postRouter.get("/posts/:postId", getPostByIdController);
+postRouter.post("/posts", authMiddleware(), createPostController);
+postRouter.delete("/posts/:postId", authMiddleware(), deletePostController);
 
-postRouter.post("/", authMiddleware(), createPostController);
-postRouter.get("/user/:userId", authMiddleware(), getPostsByUserController);
-postRouter.patch("/:postId", authMiddleware(), updatePostController);
-postRouter.delete("/:postId", authMiddleware(), deletePostController);
+postRouter.post("/posts/:postId/like", authMiddleware(), likePostController);
+postRouter.delete("/posts/:postId/like", authMiddleware(), unlikePostController);
 
-postRouter.post("/:postId/like", authMiddleware(), likePostController);
-postRouter.delete("/:postId/like", authMiddleware(), unlikePostController);
-
-postRouter.post("/:postId/comments", authMiddleware(), commentOnPostController);
+postRouter.post("/posts/:postId/comments", authMiddleware(), commentOnPostController);
 
 export default postRouter;

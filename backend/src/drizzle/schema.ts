@@ -21,6 +21,8 @@ export const locationVisibilityEnum = pgEnum("location_visibility", ["VISIBLE", 
 
 export const preferenceTypeEnum = pgEnum("preference_type", ["AGE", "DISTANCE", "GENDER", "INTEREST",]);
 
+export const groupRoleEnum = pgEnum("group_role", ["GROUP_ADMIN","GROUP_MODERATOR","GROUP_MEMBER","GROUP_REMOVED"]);
+
 // ========================== USERS ==========================
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -207,6 +209,48 @@ export const userPreferences = pgTable("user_preferences", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// ========================== GROUP CHATS ==========================
+export const groupChats = pgTable("group_chats", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  creatorId: uuid("creator_id")
+    .references(() => users.id, { onDelete: "cascade" })
+    .notNull(),
+  avatarUrl: text("avatar_url"),
+  isPrivate: boolean("is_private").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// ========================== GROUP MEMBERS ==========================
+export const groupMembers = pgTable("group_members", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  groupId: uuid("group_id")
+    .references(() => groupChats.id, { onDelete: "cascade" })
+    .notNull(),
+  userId: uuid("user_id")
+    .references(() => users.id, { onDelete: "cascade" })
+    .notNull(),
+  role: groupRoleEnum("role").default("GROUP_MEMBER").notNull(),
+  joinedAt: timestamp("joined_at").defaultNow(),
+});
+
+// ========================== GROUP MESSAGES ==========================
+export const groupMessages = pgTable("group_messages", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  groupId: uuid("group_id")
+    .references(() => groupChats.id, { onDelete: "cascade" })
+    .notNull(),
+  senderId: uuid("sender_id")
+    .references(() => users.id, { onDelete: "cascade" })
+    .notNull(),
+  content: text("content").notNull(),
+  mediaUrl: text("media_url"),
+  mediaType: varchar("media_type", { length: 50 }),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // ========================== RELATIONSHIPS ==========================
 export const usersRelations = relations(users, ({ many }) => ({
   posts: many(posts),
@@ -255,6 +299,21 @@ export const reportsRelations = relations(reports, ({ one }) => ({
   }),
 }));
 
+export const groupChatsRelations = relations(groupChats, ({ one, many }) => ({
+  creator: one(users, { fields: [groupChats.creatorId], references: [users.id] }),
+  members: many(groupMembers),
+  messages: many(groupMessages),
+}));
+
+export const groupMembersRelations = relations(groupMembers, ({ one }) => ({
+  group: one(groupChats, { fields: [groupMembers.groupId], references: [groupChats.id] }),
+  user: one(users, { fields: [groupMembers.userId], references: [users.id] }),
+}));
+
+export const groupMessagesRelations = relations(groupMessages, ({ one }) => ({
+  group: one(groupChats, { fields: [groupMessages.groupId], references: [groupChats.id] }),
+  sender: one(users, { fields: [groupMessages.senderId], references: [users.id] }),
+}));
 // ========================== TYPES ==========================
 export type TSelectUser = typeof users.$inferSelect;
 export type TInsertUser = typeof users.$inferInsert;
@@ -297,3 +356,12 @@ export type TInsertMedia = typeof media.$inferInsert;
 
 export type TSelectReport = typeof reports.$inferSelect;
 export type TInsertReport = typeof reports.$inferInsert;
+
+export type TSelectGroupChat = typeof groupChats.$inferSelect;
+export type TInsertGroupChat = typeof groupChats.$inferInsert;
+
+export type TSelectGroupMember = typeof groupMembers.$inferSelect;
+export type TInsertGroupMember = typeof groupMembers.$inferInsert;
+
+export type TSelectGroupMessage = typeof groupMessages.$inferSelect;
+export type TInsertGroupMessage = typeof groupMessages.$inferInsert;

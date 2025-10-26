@@ -1,7 +1,7 @@
-@AdminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImRlYTk5MzBlLTEzNDItNDYwNC05ZDFhLTE1ZTliMjA0ZTk0MiIsImVtYWlsIjoiYnJheW9nYWtlbnllMDRAZ21haWwuY29tIiwicm9sZSI6IkFETUlOIiwidXNlcm5hbWUiOiJBZG1pbkdha2VueWUiLCJpYXQiOjE3NjE0MDMzMjIsImV4cCI6MTc2MTQwNjkyMn0.RxCCbC8px5KV40Wk6RjJwEl5lAHUXPE3UNFWSr27fbM
-@UserToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImMzYzY4OWQyLWNhN2YtNDU1ZC1hOWI0LTIxNmIyYTM1NDQ4YSIsImVtYWlsIjoiZ2FrZW55ZWRlc2lnbnNAZ21haWwuY29tIiwicm9sZSI6IlJFR1VMQVIiLCJ1c2VybmFtZSI6IlVzZXJHYWtlbnllIiwiaWF0IjoxNzYxMzk4MjYzLCJleHAiOjE3NjE0MDE4NjN9.wuTH6bBLGYHKYdrIGcU_v7Wr_vbzeXUfNkY4wNDmMck
+@AdminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImRkZjU2MmJiLTgyZDUtNDk2OS1iN2M3LWVhMzg5NmNkM2RiNiIsImVtYWlsIjoiYnJheW9nYWtlbnllMDRAZ21haWwuY29tIiwicm9sZSI6IkFETUlOIiwidXNlcm5hbWUiOiJBZG1pbkdha2VueWUiLCJpYXQiOjE3NjE1MDQwODcsImV4cCI6MTc2MTUwNzY4N30.-PVe_K8LyZl6SCGiF7_gto3vu6YDRB_NhxY_U_PMM8s
+@UserToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImY0YjdiNzMwLWU1YjktNDEyNC1iMzBlLWIwNDJmY2M3MzUwMiIsImVtYWlsIjoiZ2FrZW55ZWRlc2lnbnNAZ21haWwuY29tIiwicm9sZSI6IlJFR1VMQVIiLCJ1c2VybmFtZSI6IlVzZXJHYWtlbnllIiwiaWF0IjoxNzYxNTA0MDU3LCJleHAiOjE3NjE1MDc2NTd9.fSHCyRxnkjvX3JU2eAxqjMq9ZwXnqWX6t_ABzwywJhw
 
-@userId = c3c689d2-ca7f-455d-a9b4-216b2a35448a
+@userId = f4b7b730-e5b9-4124-b30e-b042fcc73502
 ### 🟢 Register Admin User
 POST http://localhost:5000/api/auth/register
 Content-Type: application/json
@@ -40,13 +40,15 @@ Content-Type: application/json
   "passwordHash": "12345678"
 }
 
+
+
 ### 💌 Verify Email (Admin)
 PUT http://localhost:5000/api/auth/verify-email
 Content-Type: application/json
 
 {
-  "email": "josephmwangaza1@gmail.com",
-  "confirmationCode": "691352"
+  "email": "brayogakenye04@gmail.com",
+  "confirmationCode": "900473"
 }
 
 ### 🔁 Resend Verification Code (Admin)
@@ -95,7 +97,7 @@ Content-Type: application/json
 
 {
   "email": "gakenyedesigns@gmail.com",
-  "passwordHash": "regularPassword123"
+  "passwordHash": "pass123"
 }
 
 ### 💌 Verify Email (Regular)
@@ -104,7 +106,7 @@ Content-Type: application/json
 
 {
   "email": "gakenyedesigns@gmail.com",
-  "confirmationCode": "372891"
+  "confirmationCode": "207975"
 }
 
 ### 🔁 Resend Verification Code (Regular)
@@ -168,7 +170,7 @@ Authorization: Bearer {{AdminToken}}
 Content-Type: application/json
 
 {
-  "until": "2025-10-25T14:44:42Z"
+  "until": "2025-10-27T18:54:39Z"
 }
 
 ### 🟢 Unsuspend User (Admin or Moderator)

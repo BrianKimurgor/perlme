@@ -16,6 +16,20 @@ Content-Type: application/json
   "bio": "I manage PerlMe operations 👑",
   "role": "ADMIN"
 }
+### Registering under Age
+POST http://localhost:5000/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "YoungUser",
+  "email": "teenuser@example.com",
+  "passwordHash": "test1234",
+  "dateOfBirth": "2012-09-20T00:00:00Z",
+  "gender": "FEMALE",
+  "orientation": "STRAIGHT",
+  "bio": "I manage PerlMe operations 👑"
+}
+
 
 ### 🟣 Login Admin User
 POST http://localhost:5000/api/auth/login

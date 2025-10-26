@@ -8,8 +8,8 @@ Content-Type: application/json
 
 {
   "username": "AdminGakenye",
-  "email": "brayogakenye04@gmail.com",
-  "passwordHash": "adminPassword123",
+  "email": "josephmwangaza1@gmail.com",
+  "passwordHash": "12345678",
   "dateOfBirth": "1998-03-12T00:00:00Z",
   "gender": "MALE",
   "orientation": "STRAIGHT",
@@ -36,8 +36,8 @@ POST http://localhost:5000/api/auth/login
 Content-Type: application/json
 
 {
-  "email": "brayogakenye04@gmail.com",
-  "passwordHash": "adminPassword123"
+  "email": "josephmwangaza1@gmail.com",
+  "passwordHash": "12345678"
 }
 
 ### 💌 Verify Email (Admin)

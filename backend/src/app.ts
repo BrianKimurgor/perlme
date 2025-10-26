@@ -24,9 +24,6 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(logger);
-// ✅ Protected routes (require login + active account)
-app.use("/api", anyAuth, checkUserActive); // 🔥 GLOBAL MIDDLEWARES
-
 
 //default route
 app.get('/', (req, res:Response) => {
@@ -36,9 +33,11 @@ app.get('/', (req, res:Response) => {
 //import route
 const PORT = process.env.PORT || 5000;
 
+// ✅ Protected routes (require login + active account)
 app.use('/api', authRouter);
-app.use('/api', userRouters);
-app.use('/api', groupRouters)
+app.use('/api', anyAuth, checkUserActive,  userRouters);
+app.use('/api', anyAuth, checkUserActive,  groupRouters)
+app.use('/api', anyAuth, checkUserActive,  postRouter)
 
 // ---------------------------- Scheduler ----------------------------
 

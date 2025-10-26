@@ -11,6 +11,10 @@ console.log("🟢 Scheduler file loaded");
 
 import "./Middlewares/schedule";
 import { authRouter } from './Auth/Auth.route';
+import groupRouters from './Services/Groups/group.route';
+import { anyAuth } from './Middlewares/BearAuth';
+import { checkUserActive } from './Middlewares/checkUserActivity';
+
 
 const app: Application = express();
 
@@ -20,6 +24,9 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(logger);
+// ✅ Protected routes (require login + active account)
+app.use("/api", anyAuth, checkUserActive); // 🔥 GLOBAL MIDDLEWARES
+
 
 //default route
 app.get('/', (req, res:Response) => {
@@ -31,6 +38,7 @@ const PORT = process.env.PORT || 5000;
 
 app.use('/api', authRouter);
 app.use('/api', userRouters);
+app.use('/api', groupRouters)
 
 // ---------------------------- Scheduler ----------------------------
 

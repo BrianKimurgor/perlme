@@ -11,6 +11,7 @@ console.log("🟢 Scheduler file loaded");
 
 import "./Middlewares/schedule";
 import { authRouter } from './Auth/Auth.route';
+import postRouter from './Services/posts/post.route';
 
 const app: Application = express();
 
@@ -31,6 +32,7 @@ const PORT = process.env.PORT || 5000;
 
 app.use('/api', authRouter);
 app.use('/api', userRouters);
+app.use('/api/posts', postRouter)
 
 // ---------------------------- Scheduler ----------------------------
 

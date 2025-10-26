@@ -1,15 +1,39 @@
 import { z } from "zod";
 
+// Helper: validate 18+ age
+const isAtLeast18 = (date: Date) => {
+  const today = new Date();
+  const age = today.getFullYear() - date.getFullYear();
+  const hasBirthdayPassed =
+    today.getMonth() > date.getMonth() ||
+    (today.getMonth() === date.getMonth() && today.getDate() >= date.getDate());
+  return hasBirthdayPassed ? age >= 18 : age - 1 >= 18;
+};
+
 // ========================== USER REGISTRATION ==========================
 export const registerUserValidator = z.object({
-  username: z.string().min(3, "Username must be at least 3 characters"),
+  username: z
+    .string()
+    .min(3, "Username must be at least 3 characters")
+    .max(50, "Username cannot exceed 50 characters"),
   email: z.string().email("Invalid email address"),
   passwordHash: z.string().min(6, "Password must be at least 6 characters"),
-  dateOfBirth: z
-    .string()
-    .transform((val) => new Date(val))
-    .refine((date) => !isNaN(date.getTime()), "Invalid date of birth"),
-  gender: z.enum(["MALE", "FEMALE", "NON_BINARY", "OTHER"]).optional(),
+
+  // 👇 Use coercion to ensure it's always a Date object
+  dateOfBirth: z.coerce
+    .date({
+      required_error: "Date of birth is required",
+      invalid_type_error: "Invalid date of birth format",
+    })
+    .refine((date) => isAtLeast18(date), {
+      message: "You must be at least 18 years old to register.",
+    }),
+
+  gender: z
+    .enum(["MALE", "FEMALE", "NON_BINARY", "OTHER"])
+    .optional()
+    .default("OTHER"),
+
   orientation: z
     .enum([
       "STRAIGHT",
@@ -20,12 +44,24 @@ export const registerUserValidator = z.object({
       "PANSEXUAL",
       "OTHER",
     ])
-    .optional(),
-  bio: z.string().optional().default(""),
-  avatarUrl: z.string().optional().default(""),
-  coverPhotoUrl: z.string().optional().default(""),
-  visibility: z.enum(["PUBLIC", "PRIVATE", "FRIENDS_ONLY"]).optional().default("PUBLIC"),
-  role: z.enum(["REGULAR", "CREATOR", "MODERATOR", "ADMIN"]).optional().default("REGULAR"),
+    .optional()
+    .default("OTHER"),
+
+  bio: z.string().max(1000).optional().default(""),
+  
+  // ✅ Optional with no URL validation required
+  avatarUrl: z.string().optional().nullable(),
+  coverPhotoUrl: z.string().optional().nullable(),
+
+  visibility: z
+    .enum(["PUBLIC", "PRIVATE", "FRIENDS_ONLY"])
+    .optional()
+    .default("PUBLIC"),
+
+  role: z
+    .enum(["REGULAR", "CREATOR", "MODERATOR", "ADMIN"])
+    .optional()
+    .default("REGULAR"),
 });
 
 // ========================== USER LOGIN ==========================
@@ -45,7 +81,7 @@ export const verifyEmailValidator = z.object({
   email: z.string().email("Invalid email address"),
   confirmationCode: z
     .string()
-    .length(6, "Confirmation code must be 6 characters"),
+    .length(6, "Confirmation code must be 6 digits"),
 });
 
 // ========================== PROFILE UPDATE ==========================

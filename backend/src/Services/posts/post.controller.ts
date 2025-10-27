@@ -1,16 +1,19 @@
 import { Request, Response } from "express";
-import { commentOnPostService, createPostService, deletePostService, getAllPublicPostsService, getPostByIdService, likePostService, unlikePostService } from "./post.service";
+import {commentOnPostService,createPostService,deletePostService,getAllPublicPostsService,getPostByIdService,likePostService,unlikePostService} from "./post.service";
 
 // CREATE POST
 export const createPostController = async (req: Request, res: Response) => {
     try {
         const userId = req.user?.id;
+
+        if (!userId) return res.status(401).json({ error: "Unauthorized" });
+
         const { content } = req.body;
 
         if (!content?.trim()) return res.status(400).json({ error: "Post content is required" });
 
         const newPost = await createPostService({
-            authorId: userId!,
+            authorId: userId,
             content: content.trim(),
         });
 
@@ -36,7 +39,13 @@ export const getAllPublicPostsController = async (req: Request, res: Response) =
 export const getPostByIdController = async (req: Request, res: Response) => {
     try {
         const { postId } = req.params;
+        
+        if (!postId) {
+            return res.status(400).json({ error: "Post ID is required" });
+        }
+
         const post = await getPostByIdService(postId);
+        
         if (!post) return res.status(404).json({ error: "Post not found" });
 
         return res.status(200).json(post);
@@ -52,7 +61,12 @@ export const deletePostController = async (req: Request, res: Response) => {
         const { postId } = req.params;
         const userId = req.user?.id;
 
-        const deleted = await deletePostService(postId, userId!);
+        if (!userId) return res.status(401).json({ error: "Unauthorized" });
+
+        if (!postId) return res.status(400).json({ error: "Post ID is required" });
+
+        const deleted = await deletePostService(postId, userId);
+        
         if (!deleted) return res.status(404).json({ error: "Post not found or unauthorized" });
 
         return res.status(200).json({ message: "Post deleted" });
@@ -67,7 +81,12 @@ export const likePostController = async (req: Request, res: Response) => {
     try {
         const userId = req.user?.id;
         const { postId } = req.params;
-        await likePostService(userId!, postId);
+
+        if (!userId) return res.status(401).json({ error: "Unauthorized" });
+
+        if (!postId) return res.status(400).json({ error: "Post ID is required" });
+
+        await likePostService(userId, postId);
         return res.status(200).json({ message: "Post liked" });
     } catch (error) {
         console.error("Error liking post:", error);
@@ -80,7 +99,12 @@ export const unlikePostController = async (req: Request, res: Response) => {
     try {
         const userId = req.user?.id;
         const { postId } = req.params;
-        await unlikePostService(userId!, postId);
+
+        if (!userId) return res.status(401).json({ error: "Unauthorized" });
+
+        if (!postId) return res.status(400).json({ error: "Post ID is required" });
+
+        await unlikePostService(userId, postId);
         return res.status(200).json({ message: "Post unliked" });
     } catch (error) {
         console.error("Error unliking post:", error);
@@ -95,9 +119,13 @@ export const commentOnPostController = async (req: Request, res: Response) => {
         const { postId } = req.params;
         const { content } = req.body;
 
+        if (!userId) return res.status(401).json({ error: "Unauthorized" });
+
+        if (!postId) return res.status(400).json({ error: "Post ID is required" });
+
         if (!content?.trim()) return res.status(400).json({ error: "Comment content required" });
 
-        const comment = await commentOnPostService(userId!, postId, content.trim());
+        const comment = await commentOnPostService(userId, postId, content.trim());
         return res.status(201).json({ message: "Comment added", comment });
     } catch (error) {
         console.error("Error adding comment:", error);

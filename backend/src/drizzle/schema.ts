@@ -46,6 +46,7 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+
 // ========================== INTERESTS ==========================
 export const interests = pgTable("interests", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -198,6 +199,7 @@ export const locations = pgTable("locations", {
   visibility: locationVisibilityEnum("visibility").default("VISIBLE"),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
+
 // ========================== USER PREFERENCES ==========================
 export const userPreferences = pgTable("user_preferences", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -301,7 +303,6 @@ export const interactions = pgTable("interactions", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// ========================== RELATIONSHIPS ==========================
 export const usersRelations = relations(users, ({ one, many }) => ({
   posts: many(posts),
   messagesSent: many(messages, { relationName: "sender" }),
@@ -315,9 +316,12 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   blockedBy: many(blocks, { relationName: "blocked" }),
   reportsMade: many(reports, { relationName: "reporter" }),
   reportsReceived: many(reports, { relationName: "reportedUser" }),
+  // ✅ FIXED: user has one location
   location: one(locations, { fields: [users.id], references: [locations.userId] }),
   preferences: many(userPreferences),
 }));
+
+
 
 export const postsRelations = relations(posts, ({ one, many }) => ({
   author: one(users, { fields: [posts.authorId], references: [users.id] }),

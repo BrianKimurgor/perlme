@@ -11,6 +11,8 @@ import { checkUserActive } from './Middlewares/checkUserActivity';
 import postRouter from './Services/posts/post.route';
 import messageRouter from './Services/Messages/message.route';
 import exploreRouter from './Services/Explore and Recommendations/exploreAndRecommend.routes';
+import { rateLimiterMiddleware } from './Middlewares/rateLimiter';
+
 
 dotenv.config();
 console.log("🟢 Scheduler file loaded");
@@ -22,6 +24,7 @@ app.use(helmet());
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(rateLimiterMiddleware);
 app.use(logger);
 // ✅ Protected routes (require login + active account)
 app.use("/api", anyAuth, checkUserActive); // 🔥 GLOBAL MIDDLEWARES

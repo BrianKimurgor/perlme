@@ -9,8 +9,10 @@ import { authRouter } from './Auth/Auth.route';
 
 import postRouter from './Services/posts/post.route';
 import { anyAuth } from './Middlewares/BearAuth';
-import { checkUserActive } from './Middlewares/checkUserActivity';
+
 import exploreRouter from './Services/Explore and Recommendations/exploreAndRecommend.routes';
+import { rateLimiterMiddleware } from './Middlewares/rateLimiter';
+import { checkUserActive } from './Middlewares/checkUserActivity';
 
 const app: Application = express();
 
@@ -19,6 +21,7 @@ app.use(helmet());
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(rateLimiterMiddleware);
 app.use(logger);
 
 

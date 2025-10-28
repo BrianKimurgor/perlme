@@ -6,13 +6,11 @@ import { logger } from './Middlewares/Logger';
 import userRouters from './Services/Users/user.route';
 import "./Middlewares/schedule";
 import { authRouter } from './Auth/Auth.route';
+
+import postRouter from './Services/posts/post.route';
 import { anyAuth } from './Middlewares/BearAuth';
 import { checkUserActive } from './Middlewares/checkUserActivity';
-import postRouter from './Services/posts/post.route';
 import exploreRouter from './Services/Explore and Recommendations/exploreAndRecommend.routes';
-
-dotenv.config();
-console.log("🟢 Scheduler file loaded");
 
 const app: Application = express();
 
@@ -23,9 +21,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(logger);
 
+
 // ---------------------------- Public / Auth-Free Routes ----------------------------
 app.use('/api', authRouter);
-app.use('/api/discover', exploreRouter); // ✅ public + optional auth handled internally
+app.use('/api/discover', exploreRouter )
 
 // ---------------------------- Protected Routes ----------------------------
 app.use('/api', anyAuth, checkUserActive, userRouters);

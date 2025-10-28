@@ -1,0 +1,80 @@
+### ============================
+### 1️⃣ 🧭 EXPLORE (Guest or Authenticated)
+### ============================
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImY5OTU0NTI0LTBkOTgtNDQwMS1hYjE5LWI3MTUyNzMwYTdlOCIsImVtYWlsIjoiZ2FrZW55ZTEyM0BnbWFpbC5jb20iLCJyb2xlIjoiQURNSU4iLCJ1c2VybmFtZSI6IkFkbWluMUdha2VueWUiLCJpYXQiOjE3NjE2MDY4NTAsImV4cCI6MTc2MTYxMDQ1MH0.Fgk1isVuhcilybOxQxErCK36uPDMYtLo3Uai6wSySn4
+
+# 👇 Guest access — no Authorization header required
+GET http://localhost:5000/api/discover/explore?includeCreators=true&includeGroups=true&limit=10&offset=0
+Accept: application/json
+
+
+### 🧭 EXPLORE (Authenticated user)
+# 👇 Replace <YOUR_JWT_TOKEN> with a valid Bearer token
+GET http://localhost:5000/api/discover/explore?includeCreators=true&includeGroups=true&limit=10&offset=0
+Authorization: Bearer {{token}}
+Accept: application/json
+
+
+### ============================
+### 2️⃣ ❤️ RECOMMENDATIONS (Authe### ============================
+### 1️⃣ LOGIN AS TEST USER (Get Token)
+### ============================
+
+
+
+
+
+### ============================
+### 2️⃣ 🧭 EXPLORE (Guest or Authenticated)
+### ============================
+GET http://localhost:5000/api/discover/explore?includeCreators=true&includeGroups=true&limit=10&offset=0
+Accept: application/json
+
+
+### ============================
+### 3️⃣ 🧭 EXPLORE (Authenticated User)
+### ============================
+GET http://localhost:5000/api/discover/explore?includeCreators=true&includeGroups=false&limit=5
+Authorization: Bearer {{token}}
+Accept: application/json
+
+
+### ============================
+### 4️⃣ ❤️ RECOMMENDATIONS (Authenticated + Active User)
+### ============================
+GET http://localhost:5000/api/discover/recommendations?minAge=20&maxAge=35&distanceKm=50&interests=Music,Travel
+Authorization: Bearer {{token}}
+Accept: application/json
+
+
+### ============================
+### 5️⃣ ❌ INVALID TOKEN TEST
+### ============================
+GET http://localhost:5000/api/discover/recommendations?minAge=18&maxAge=30
+Authorization: Bearer invalid.token.123
+Accept: application/json
+
+
+### ============================
+### 6️⃣ 🚫 NO TOKEN TEST
+### ============================
+GET http://localhost:5000/api/discover/recommendations
+
+Accept: application/json
+
+
+nticated + Active)
+### ============================
+# 👇 Requires a valid, active user's token
+GET http://localhost:5000/api/discover/recommendations?limit=10&offset=0
+Authorization: Bearer {{token}}
+Accept: application/json
+
+
+### ============================
+### 3️⃣ 🔒 INVALID / EXPIRED TOKEN TEST
+### ============================
+# 👇 Should return 401 Unauthorized
+GET http://localhost:5000/api/discover/recommendations
+Authorization: Bearer invalid.token.value
+Accept: application/json

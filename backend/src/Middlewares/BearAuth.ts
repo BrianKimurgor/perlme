@@ -80,3 +80,43 @@ export const adminAuth = authMiddleware(["ADMIN"]);
 
 export const adminOrModeratorAuth = authMiddleware(["ADMIN", "MODERATOR"]);
 export const anyAuth = authMiddleware(["REGULAR", "CREATOR", "MODERATOR", "ADMIN"]);
+
+// ========================== OPTIONAL AUTH (Guest Allowed) ==========================
+// 👇 NEW — for routes like /explore that allow guests OR logged-in users
+export const optionalAuth =
+  (allowedRoles: UserRole[] = []) =>
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const authHeader = req.header("Authorization");
+
+      // ✅ No token → treat as guest
+      if (!authHeader) {
+        req.user = undefined;
+        return next();
+      }
+
+      const token = authHeader.split(" ")[1];
+      if (!token) {
+        req.user = undefined;
+        return next();
+      }
+
+      const decodedToken = verifyToken(token, process.env.JWT_SECRET as string);
+      if (!decodedToken) {
+        req.user = undefined;
+        return next();
+      }
+
+      // Check allowed roles if provided
+      if (allowedRoles.length && !allowedRoles.includes(decodedToken.role)) {
+        req.user = undefined; // not allowed → continue as guest
+        return next();
+      }
+
+      req.user = decodedToken;
+      next();
+    } catch {
+      req.user = undefined;
+      next();
+    }
+  };

@@ -1,0 +1,105 @@
+@AdminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImY5OTU0NTI0LTBkOTgtNDQwMS1hYjE5LWI3MTUyNzMwYTdlOCIsImVtYWlsIjoiZ2FrZW55ZTEyM0BnbWFpbC5jb20iLCJyb2xlIjoiQURNSU4iLCJ1c2VybmFtZSI6IkFkbWluMUdha2VueWUiLCJpYXQiOjE3NjE1NzI5MTAsImV4cCI6MTc2MTU3NjUxMH0.juMLsbFtv8PKs_eMPHHUt50ibNvXyBIqFjBxolM_Ums
+@UserToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImY0YjdiNzMwLWU1YjktNDEyNC1iMzBlLWIwNDJmY2M3MzUwMiIsImVtYWlsIjoiZ2FrZW55ZWRlc2lnbnNAZ21haWwuY29tIiwicm9sZSI6IlJFR1VMQVIiLCJ1c2VybmFtZSI6IlVzZXJHYWtlbnllIiwiaWF0IjoxNzYxNjAyNzc3LCJleHAiOjE3NjE2MDYzNzd9.mqzdLlEWhDFL423Gv3URocaHh8AstIjjXS6Z00WZkJg"
+
+@BaseURL = http://localhost:5000/api
+@UserId = f4b7b730-e5b9-4124-b30e-b042fcc73502
+@AdminId = ddf562bb-82d5-4969-b7c7-ea3896cd3db6
+@GroupId = 2193c25b-5f1b-4bb9-8815-42704b657b59
+@MessageId = REPLACE_WITH_CREATED_MESSAGE_ID
+
+
+#######################################################
+### 🟢 GROUP CREATION & RETRIEVAL TESTS
+#######################################################
+
+### 🟢 Create a new group (User creates and becomes GROUP_ADMIN)
+POST {{BaseURL}}/groups
+Authorization: Bearer {{UserToken}}
+Content-Type: application/json
+
+{
+  "name": "Tech 23 Innovators",
+  "description": "Discussing AI, Web3, and future tech ideas.",
+  "avatarUrl": "https://example.com/group-avatar.png",
+  "topic": "Technology",
+  "creatorId": "{{UserId}}",
+  "isPrivate": false
+}
+
+### 🟣 Get all groups (any authenticated user)
+GET {{BaseURL}}/groups
+Authorization: Bearer {{UserToken}}
+
+### 🟡 Get single group by ID (member or admin)
+GET {{BaseURL}}/groups/{{GroupId}}
+Authorization: Bearer {{UserToken}}
+
+#######################################################
+### 🛠️ GROUP MANAGEMENT (ADMIN & MODERATOR)
+#######################################################
+
+### ✏️ Update group (only GROUP_ADMIN or SYSTEM ADMIN)
+PATCH {{BaseURL}}/groups/{{GroupId}}
+Authorization: Bearer {{UserToken}}
+Content-Type: application/json
+
+{
+  "description": "Updated group description — now focusing on emerging AI startups."
+}
+
+### ❌ Delete group (only GROUP_ADMIN or SYSTEM ADMIN)
+DELETE {{BaseURL}}/groups/{{GroupId}}
+Authorization: Bearer {{AdminToken}}
+
+
+#######################################################
+### 👥 MEMBER MANAGEMENT
+#######################################################
+
+### ➕ Add member to group (ADMIN or MODERATOR only)
+POST {{BaseURL}}/groups/{{GroupId}}/members
+Authorization: Bearer {{AdminToken}}
+Content-Type: application/json
+
+{
+  "groupId": "{{GroupId}}",
+  "userId": "{{UserId}}",
+  "role": "GROUP_MEMBER"
+}
+
+### 📋 Get all members of a group
+GET {{BaseURL}}/groups/{{GroupId}}/members
+Authorization: Bearer {{AdminToken}}
+
+### 🧩 Update member role (only GROUP_ADMIN)
+PATCH {{BaseURL}}/groups/{{GroupId}}/members/{{UserId}}/role
+Authorization: Bearer {{UserToken}}
+Content-Type: application/json
+
+{
+  "role": "GROUP_MODERATOR"
+}
+
+### 🗑️ Remove a member from a group (ADMIN or MODERATOR)
+DELETE {{BaseURL}}/groups/{{GroupId}}/members/{{UserId}}
+Authorization: Bearer {{AdminToken}}
+
+
+#######################################################
+### 💬 GROUP MESSAGING
+#######################################################
+
+### 🟢 Send a message in the group (any member)
+POST {{BaseURL}}/groups/{{GroupId}}/messages
+Authorization: Bearer {{UserToken}}
+Content-Type: application/json
+
+{
+  "groupId": "{{GroupId}}",
+  "senderId": "{{UserId}}",
+  "content": "Hey everyone 👋 let's share our thoughts on the latest AI tools!"
+}
+
+### 🟣 Get all messages in a group
+GET {{BaseURL}}/groups/{{GroupId}}/messages
+Authorization: Bearer {{UserToken}}

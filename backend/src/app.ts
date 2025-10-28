@@ -1,22 +1,19 @@
-import express, { Application,Response } from 'express';
+import express, { Application } from 'express';
 import dotenv from 'dotenv';
 import cors from "cors"
-
 import helmet from 'helmet';
 import { logger } from './Middlewares/Logger';
 import userRouters from './Services/Users/user.route';
-
-dotenv.config();
-console.log("🟢 Scheduler file loaded");
-
 import "./Middlewares/schedule";
 import { authRouter } from './Auth/Auth.route';
 import { anyAuth } from './Middlewares/BearAuth';
 import { checkUserActive } from './Middlewares/checkUserActivity';
 import postRouter from './Services/posts/post.route';
 import messageRouter from './Services/Messages/message.route';
+import exploreRouter from './Services/Explore and Recommendations/exploreAndRecommend.routes';
 
-
+dotenv.config();
+console.log("🟢 Scheduler file loaded");
 
 const app: Application = express();
 
@@ -37,10 +34,13 @@ app.use('/api', messageRouter);
 
 // ---------------------------- Scheduler ----------------------------
 
+// ---------------------------- Protected Routes ----------------------------
+app.use('/api', anyAuth, checkUserActive, userRouters);
+app.use('/api', anyAuth, checkUserActive, postRouter);
 
 // 404 handler
 app.use((req, res) => {
     res.status(404).json({ error: "Route not found" });
 });
+
 export default app;
-  

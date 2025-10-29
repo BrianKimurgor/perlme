@@ -13,6 +13,7 @@ import { anyAuth } from './Middlewares/BearAuth';
 import exploreRouter from './Services/Explore and Recommendations/exploreAndRecommend.routes';
 import { rateLimiterMiddleware } from './Middlewares/rateLimiter';
 import { checkUserActive } from './Middlewares/checkUserActivity';
+import blockRouters from './Services/Block/block.routes';
 
 const app: Application = express();
 
@@ -32,6 +33,7 @@ app.use('/api/discover', exploreRouter )
 // ---------------------------- Protected Routes ----------------------------
 app.use('/api', anyAuth, checkUserActive, userRouters);
 app.use('/api', anyAuth, checkUserActive, postRouter);
+app.use('/api', anyAuth, checkUserActive, blockRouters);
 
 // 404 handler
 app.use((req, res) => {

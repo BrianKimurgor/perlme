@@ -2,6 +2,7 @@
 # 🌱 ENVIRONMENT & SECRETS
 # ==============================
 .env
+**/.env
 client.http
 # ==============================
 # 🧱 BUILD & DIST OUTPUT

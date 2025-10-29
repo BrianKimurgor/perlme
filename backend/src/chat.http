@@ -1,12 +1,12 @@
 ### ============================================
 ### VARIABLES
 ### ============================================
-@baseUrl = http://localhost:5000/api
-@AdminToken =eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYyMzQ1ODMwLTRjNmYtNGIzMC1iMjYzLWE5ZTUxNjlhYWIzMSIsImVtYWlsIjoia2ltdXJnb3JicmlhbjIwQGdtYWlsLmNvbSIsInJvbGUiOiJBRE1JTiIsInVzZXJuYW1lIjoiQWRtaW5CcmlhbiIsImlhdCI6MTc2MTcyODQ1MCwiZXhwIjoxNzYxNzMyMDUwfQ.YwS9NJLgwAeCoZvg0q39MVBxYAzNEwCrTshZjFK_ZJA
-@UserToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImMzYzY4OWQyLWNhN2YtNDU1ZC1hOWI0LTIxNmIyYTM1NDQ4YSIsImVtYWlsIjoiZ2FrZW55ZWRlc2lnbnNAZ21haWwuY29tIiwicm9sZSI6IlJFR1VMQVIiLCJ1c2VybmFtZSI6IlVzZXJHYWtlbnllIiwiaWF0IjoxNzYxMzk4MjYzLCJleHAiOjE3NjE0MDE4NjN9.wuTH6bBLGYHKYdrIGcU_v7Wr_vbzeXUfNkY4wNDmMck
+@baseUrl = {{$processEnv baseUrl}}
+@AdminToken = {{$processEnv AdminToken}}
+@UserToken = {{$processEnv UserToken}}
 
-@AdminId = dea9930e-1342-4604-9d1a-15e9b204e942
-@UserId = 4510b8f8-1797-4601-b5da-55d75e72f651
+@AdminId = {{$processEnv AdminId}}
+@UserId = {{$processEnv UserId}}
 
 # Will be set after creating a message
 @messageId = MESSAGE_ID_HERE

@@ -1,0 +1,473 @@
+### ============================================
+### VARIABLES
+### ============================================
+@baseUrl = {{$processEnv baseUrl}}
+@AdminToken = {{$processEnv AdminToken}}
+@UserToken = {{$processEnv UserToken}}
+
+@AdminId = {{$processEnv AdminId}}
+@UserId = {{$processEnv UserId}}
+
+# Will be set after creating a message
+@messageId = MESSAGE_ID_HERE
+
+### ============================================
+### 🔐 AUTHENTICATION TESTS
+### ============================================
+
+### 🟢 Register Admin User
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "AdminBrian",
+  "email": "kimurgorbrian20@gmail.com",
+  "passwordHash": "12345678",
+  "dateOfBirth": "1998-03-12T00:00:00Z",
+  "gender": "MALE",
+  "orientation": "STRAIGHT",
+  "bio": "I manage PerlMe operations 👑",
+  "role": "ADMIN"
+}
+
+### 🔵 Register Regular User
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "userBrian",
+  "email": "kimurgorbrian20@gmail.com",
+  "passwordHash": "12345678",
+  "dateOfBirth": "1995-06-15T00:00:00Z",
+  "gender": "MALE",
+  "orientation": "STRAIGHT",
+  "bio": "Regular user on PerlMe"
+}
+
+### ❌ Register Underage User (Should Fail)
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "YoungUser",
+  "email": "teenuser@example.com",
+  "passwordHash": "test1234",
+  "dateOfBirth": "2012-09-20T00:00:00Z",
+  "gender": "FEMALE",
+  "orientation": "STRAIGHT",
+  "bio": "Too young!"
+}
+
+### 🟣 Login Admin User
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "kimurgorbrian20@gmail.com",
+  "passwordHash": "12345678"
+}
+
+### 🔷 Login Regular User
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "kimurgorbrian20@gmail.com",
+  "passwordHash": "12345678"
+}
+
+### 💌 Verify Email (Admin)
+PUT {{baseUrl}}/auth/verify-email
+Content-Type: application/json
+
+{
+  "email": "kimurgorbrian20@gmail.com",
+  "confirmationCode": "357567"
+}
+
+### ============================================
+### 💬 MESSAGING TESTS - SEND MESSAGES
+### ============================================
+
+### 📤 1. Admin sends message to User
+POST {{baseUrl}}/messages
+Content-Type: application/json
+Authorization: Bearer {{AdminToken}}
+
+{
+  "receiverId": "{{UserId}}",
+  "content": "Hello User! This is Admin reaching out.",
+  "tempId": "temp_admin_001"
+}
+
+### 📤 2. User sends message to Admin
+POST {{baseUrl}}/messages
+Content-Type: application/json
+Authorization: Bearer {{UserToken}}
+
+{
+  "receiverId": "{{AdminId}}",
+  "content": "Hi Admin! Thanks for the message!",
+  "tempId": "temp_user_001"
+}
+
+### 📤 3. Send message with media (Admin)
+POST {{baseUrl}}/messages
+Content-Type: application/json
+Authorization: Bearer {{AdminToken}}
+
+{
+  "receiverId": "{{UserId}}",
+  "content": "Check out this image!",
+  "mediaUrl": "https://example.com/images/profile.jpg",
+  "mediaType": "image",
+  "tempId": "temp_admin_002"
+}
+
+### 📤 4. Send message with video (User)
+POST {{baseUrl}}/messages
+Content-Type: application/json
+Authorization: Bearer {{UserToken}}
+
+{
+  "receiverId": "{{AdminId}}",
+  "content": "Here's a cool video",
+  "mediaUrl": "https://example.com/videos/intro.mp4",
+  "mediaType": "video",
+  "tempId": "temp_user_002"
+}
+
+### 📤 5. Send longer message (User)
+POST {{baseUrl}}/messages
+Content-Type: application/json
+Authorization: Bearer {{UserToken}}
+
+{
+  "receiverId": "{{AdminId}}",
+  "content": "Hey! I wanted to discuss something important about the platform. I've been using it for a while now and I think there are some features that could be improved. Let me know when you're available to chat about this!",
+  "tempId": "temp_user_003"
+}
+
+### ❌ 6. Send message without receiverId (Should Fail)
+POST {{baseUrl}}/messages
+Content-Type: application/json
+Authorization: Bearer {{AdminToken}}
+
+{
+  "content": "This should fail - no receiver"
+}
+
+### ❌ 7. Send message without authentication (Should Fail)
+POST {{baseUrl}}/messages
+Content-Type: application/json
+
+{
+  "receiverId": "{{UserId}}",
+  "content": "This should fail - no auth"
+}
+
+### ❌ 8. Send message with invalid token (Should Fail)
+POST {{baseUrl}}/messages
+Content-Type: application/json
+Authorization: Bearer invalid_token_here
+
+{
+  "receiverId": "{{UserId}}",
+  "content": "This should fail - invalid token"
+}
+
+### ============================================
+### 📥 MESSAGING TESTS - GET CONVERSATIONS
+### ============================================
+
+### 📋 9. Get conversation between Admin and User (Admin's view)
+GET {{baseUrl}}/messages/conversation/{{UserId}}?limit=50&offset=0
+Authorization: Bearer {{AdminToken}}
+
+### 📋 10. Get conversation between User and Admin (User's view)
+GET {{baseUrl}}/messages/conversation/{{AdminId}}?limit=50&offset=0
+Authorization: Bearer {{UserToken}}
+
+### 📋 11. Get conversation with pagination (first 10 messages)
+GET {{baseUrl}}/messages/conversation/{{UserId}}?limit=10&offset=0
+Authorization: Bearer {{AdminToken}}
+
+### 📋 12. Get conversation with pagination (next 10 messages)
+GET {{baseUrl}}/messages/conversation/{{UserId}}?limit=10&offset=10
+Authorization: Bearer {{AdminToken}}
+
+### 📋 13. Get conversation with small limit (last 5 messages)
+GET {{baseUrl}}/messages/conversation/{{AdminId}}?limit=5&offset=0
+Authorization: Bearer {{UserToken}}
+
+### 📋 14. Get all conversations list (Admin)
+GET {{baseUrl}}/messages/conversations
+Authorization: Bearer {{AdminToken}}
+
+### 📋 15. Get all conversations list (User)
+GET {{baseUrl}}/messages/conversations
+Authorization: Bearer {{UserToken}}
+
+### ============================================
+### 🔔 MESSAGING TESTS - MESSAGE STATUS
+### ============================================
+
+### ✅ 16. Update message status to DELIVERED (User marks message as delivered)
+# First, copy a message ID from the conversation response above and replace MESSAGE_ID_HERE
+PATCH {{baseUrl}}/messages/{{messageId}}/status
+Content-Type: application/json
+Authorization: Bearer {{UserToken}}
+
+{
+  "status": "DELIVERED"
+}
+
+### ✅ 17. Update message status to READ (User marks message as read)
+PATCH {{baseUrl}}/messages/{{messageId}}/status
+Content-Type: application/json
+Authorization: Bearer {{UserToken}}
+
+{
+  "status": "READ"
+}
+
+### ✅ 18. Mark entire conversation as read (User reads all Admin's messages)
+PATCH {{baseUrl}}/messages/conversation/{{AdminId}}/read
+Authorization: Bearer {{UserToken}}
+
+### ✅ 19. Mark entire conversation as read (Admin reads all User's messages)
+PATCH {{baseUrl}}/messages/conversation/{{UserId}}/read
+Authorization: Bearer {{AdminToken}}
+
+### ❌ 20. Try to update message status with wrong user (Should Fail)
+# Admin trying to update status of message sent TO admin (only receiver can update)
+PATCH {{baseUrl}}/messages/{{messageId}}/status
+Content-Type: application/json
+Authorization: Bearer {{AdminToken}}
+
+{
+  "status": "READ"
+}
+
+### ❌ 21. Try to update with invalid status (Should Fail)
+PATCH {{baseUrl}}/messages/{{messageId}}/status
+Content-Type: application/json
+Authorization: Bearer {{UserToken}}
+
+{
+  "status": "INVALID_STATUS"
+}
+
+### ============================================
+### 📊 MESSAGING TESTS - UNREAD COUNTS
+### ============================================
+
+### 📈 22. Get total unread count (Admin)
+GET {{baseUrl}}/messages/unread-count
+Authorization: Bearer {{AdminToken}}
+
+### 📈 23. Get total unread count (User)
+GET {{baseUrl}}/messages/unread-count
+Authorization: Bearer {{UserToken}}
+
+### 📈 24. Get unread count for specific conversation (Admin checking User's messages)
+GET {{baseUrl}}/messages/unread-count?otherUserId={{UserId}}
+Authorization: Bearer {{AdminToken}}
+
+### 📈 25. Get unread count for specific conversation (User checking Admin's messages)
+GET {{baseUrl}}/messages/unread-count?otherUserId={{AdminId}}
+Authorization: Bearer {{UserToken}}
+
+### ============================================
+### 🗑️ MESSAGING TESTS - DELETE MESSAGES
+### ============================================
+
+### 🗑️ 26. Delete a message (Admin deletes own message)
+# Use a message ID where Admin is the sender
+DELETE {{baseUrl}}/messages/{{messageId}}
+Authorization: Bearer {{AdminToken}}
+
+### 🗑️ 27. Delete a message (User deletes own message)
+# Use a message ID where User is the sender
+DELETE {{baseUrl}}/messages/{{messageId}}
+Authorization: Bearer {{UserToken}}
+
+### ❌ 28. Try to delete someone else's message (Should Fail)
+# User trying to delete Admin's message
+DELETE {{baseUrl}}/messages/{{messageId}}
+Authorization: Bearer {{UserToken}}
+
+### ============================================
+### 🧪 ADVANCED MESSAGING TESTS
+### ============================================
+
+### 🔄 29. Send multiple messages in sequence (Admin)
+POST {{baseUrl}}/messages
+Content-Type: application/json
+Authorization: Bearer {{AdminToken}}
+
+{
+  "receiverId": "{{UserId}}",
+  "content": "Message 1 of 3",
+  "tempId": "temp_batch_001"
+}
+
+###
+POST {{baseUrl}}/messages
+Content-Type: application/json
+Authorization: Bearer {{AdminToken}}
+
+{
+  "receiverId": "{{UserId}}",
+  "content": "Message 2 of 3",
+  "tempId": "temp_batch_002"
+}
+
+###
+POST {{baseUrl}}/messages
+Content-Type: application/json
+Authorization: Bearer {{AdminToken}}
+
+{
+  "receiverId": "{{UserId}}",
+  "content": "Message 3 of 3",
+  "tempId": "temp_batch_003"
+}
+
+### 📸 30. Send message with different media types
+POST {{baseUrl}}/messages
+Content-Type: application/json
+Authorization: Bearer {{UserToken}}
+
+{
+  "receiverId": "{{AdminId}}",
+  "content": "Audio message",
+  "mediaUrl": "https://example.com/audio/voice-note.mp3",
+  "mediaType": "audio",
+  "tempId": "temp_media_001"
+}
+
+### 📄 31. Send message with document
+POST {{baseUrl}}/messages
+Content-Type: application/json
+Authorization: Bearer {{UserToken}}
+
+{
+  "receiverId": "{{AdminId}}",
+  "content": "Here's the document you requested",
+  "mediaUrl": "https://example.com/docs/report.pdf",
+  "mediaType": "document",
+  "tempId": "temp_media_002"
+}
+
+### 🔍 32. Test conversation with no messages (use non-existent user ID)
+GET {{baseUrl}}/messages/conversation/00000000-0000-0000-0000-000000000000?limit=50&offset=0
+Authorization: Bearer {{AdminToken}}
+
+### 📊 33. Get conversation list after multiple chats
+GET {{baseUrl}}/messages/conversations
+Authorization: Bearer {{AdminToken}}
+
+### ============================================
+### 🎯 SCENARIO TESTS (Real-world flows)
+### ============================================
+
+### 📝 SCENARIO 1: Complete conversation flow
+# Step 1: User sends initial message
+POST {{baseUrl}}/messages
+Content-Type: application/json
+Authorization: Bearer {{UserToken}}
+
+{
+  "receiverId": "{{AdminId}}",
+  "content": "Hi! I need help with my account.",
+  "tempId": "scenario1_step1"
+}
+
+### Step 2: Admin responds
+POST {{baseUrl}}/messages
+Content-Type: application/json
+Authorization: Bearer {{AdminToken}}
+
+{
+  "receiverId": "{{UserId}}",
+  "content": "Sure! What seems to be the problem?",
+  "tempId": "scenario1_step2"
+}
+
+### Step 3: User marks Admin's message as read
+GET {{baseUrl}}/messages/conversation/{{AdminId}}
+Authorization: Bearer {{UserToken}}
+
+###
+PATCH {{baseUrl}}/messages/conversation/{{AdminId}}/read
+Authorization: Bearer {{UserToken}}
+
+### Step 4: User continues conversation
+POST {{baseUrl}}/messages
+Content-Type: application/json
+Authorization: Bearer {{UserToken}}
+
+{
+  "receiverId": "{{AdminId}}",
+  "content": "I can't update my profile picture.",
+  "tempId": "scenario1_step3"
+}
+
+### Step 5: Check unread count (Admin should see unread message)
+GET {{baseUrl}}/messages/unread-count?otherUserId={{UserId}}
+Authorization: Bearer {{AdminToken}}
+
+### ============================================
+### 🔍 DEBUGGING & MONITORING
+### ============================================
+
+### 🔍 34. Check server health
+GET {{baseUrl}}/../health
+
+### 🔍 35. Get user profile (Admin)
+GET {{baseUrl}}/users/profile
+Authorization: Bearer {{AdminToken}}
+
+### 🔍 36. Get user profile (User)
+GET {{baseUrl}}/users/profile
+Authorization: Bearer {{UserToken}}
+
+### ============================================
+### 📝 NOTES & TIPS
+### ============================================
+
+# HOW TO USE THIS FILE:
+# 1. Make sure your server is running on http://localhost:5000
+# 2. Run the auth tests first to get fresh tokens (they expire!)
+# 3. Copy the tokens and user IDs into the variables at the top
+# 4. Run messaging tests in order
+# 5. After sending messages, copy a message ID and update @messageId variable
+# 6. Use the conversation GET requests to see all messages
+# 7. The WebSocket features (real-time delivery) won't be visible here
+#    Use the HTML test client for testing real-time features!
+
+# TESTING CHECKLIST:
+# ✅ Messages send successfully
+# ✅ Messages appear in conversation
+# ✅ Message status updates work
+# ✅ Unread counts are accurate
+# ✅ Only authorized users can perform actions
+# ✅ Error handling works (invalid tokens, missing fields, etc.)
+# ✅ Pagination works correctly
+# ✅ Media URLs are stored correctly
+# ✅ Conversation list shows all chats
+# ✅ Deleting messages works properly
+
+# COMMON ISSUES:
+# - Token expired: Run login again to get fresh token
+# - Message ID not found: Get a message ID from conversation response
+# - 401 Unauthorized: Check token is correct and not expired
+# - 404 Not Found: Verify the user IDs are correct
+# - 400 Bad Request: Check request body has required fields
+
+# NEXT STEPS:
+# 1. Test with the HTML Socket.IO client for real-time features
+# 2. Check database to verify messages are stored
+# 3. Monitor server logs for any errors
+# 4. Test with multiple users and conversations

@@ -1,24 +1,15 @@
-import { pgTable, uuid, varchar, text, timestamp, boolean, doublePrecision, pgEnum, } from "drizzle-orm/pg-core";
+import { pgTable, uuid, varchar, text, timestamp, boolean, doublePrecision, pgEnum, index, } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
 // ========================== ENUMS ==========================
-
 export const userRoleEnum = pgEnum("user_role", ["REGULAR", "CREATOR", "MODERATOR", "ADMIN",]);
-
 export const genderEnum = pgEnum("gender", ["MALE", "FEMALE", "NON_BINARY", "OTHER",]);
-
 export const orientationEnum = pgEnum("orientation", ["STRAIGHT", "GAY", "LESBIAN", "BISEXUAL", "ASEXUAL", "PANSEXUAL", "OTHER",]);
-
 export const visibilityEnum = pgEnum("visibility", ["PUBLIC", "PRIVATE", "FRIENDS_ONLY",]);
-
 export const messageStatusEnum = pgEnum("message_status", ["SENT", "DELIVERED", "READ",]);
-
 export const reportStatusEnum = pgEnum("report_status", ["PENDING", "REVIEWED", "RESOLVED", "DISMISSED",]);
-
 export const notificationTypeEnum = pgEnum("notification_type", ["MESSAGE", "LIKE", "COMMENT", "REPOST", "FOLLOW", "TIP", "SUBSCRIPTION", "ADMIN_MESSAGE", "MATCH",]);
-
 export const locationVisibilityEnum = pgEnum("location_visibility", ["VISIBLE", "HIDDEN",]);
-
 export const preferenceTypeEnum = pgEnum("preference_type", ["AGE", "DISTANCE", "GENDER", "INTEREST",]);
 
 // ========================== USERS ==========================
@@ -42,14 +33,20 @@ export const users = pgTable("users", {
   role: userRoleEnum("role").default("REGULAR").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => [
+  index("idx_users_created_at").on(table.createdAt.desc()),
+  index("idx_users_email").on(table.email),
+  index("idx_users_username").on(table.username),
+]);
 
 // ========================== INTERESTS ==========================
 export const interests = pgTable("interests", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: varchar("name", { length: 255 }).unique().notNull(),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => [
+  index("idx_interests_name").on(table.name),
+]);
 
 // Pivot: Users ↔ Interests
 export const userInterests = pgTable("user_interests", {
@@ -60,7 +57,10 @@ export const userInterests = pgTable("user_interests", {
     .references(() => interests.id, { onDelete: "cascade" })
     .notNull(),
   assignedAt: timestamp("assigned_at").defaultNow(),
-});
+}, (table) => [
+  index("idx_user_interests_user_id").on(table.userId),
+  index("idx_user_interests_interest_id").on(table.interestId),
+]);
 
 // ========================== FOLLOWS ==========================
 export const follows = pgTable("follows", {
@@ -72,7 +72,11 @@ export const follows = pgTable("follows", {
     .references(() => users.id, { onDelete: "cascade" })
     .notNull(),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => [
+  index("idx_follows_follower_id").on(table.followerId),
+  index("idx_follows_following_id").on(table.followingId),
+  index("idx_follows_created_at").on(table.createdAt.desc()),
+]);
 
 // ========================== BLOCKS ==========================
 export const blocks = pgTable("blocks", {
@@ -84,7 +88,10 @@ export const blocks = pgTable("blocks", {
     .references(() => users.id, { onDelete: "cascade" })
     .notNull(),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => [
+  index("idx_blocks_blocker_id").on(table.blockerId),
+  index("idx_blocks_blocked_id").on(table.blockedId),
+]);
 
 // ========================== MESSAGES ==========================
 export const messages = pgTable("messages", {
@@ -100,7 +107,12 @@ export const messages = pgTable("messages", {
   mediaType: varchar("media_type", { length: 50 }),
   status: messageStatusEnum("status").default("SENT"),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => [
+  index("idx_messages_sender_id").on(table.senderId),
+  index("idx_messages_receiver_id").on(table.receiverId),
+  index("idx_messages_created_at").on(table.createdAt.desc()),
+  index("idx_messages_status").on(table.status),
+]);
 
 // ========================== POSTS ==========================
 export const posts = pgTable("posts", {
@@ -111,7 +123,10 @@ export const posts = pgTable("posts", {
   content: text("content").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => [
+  index("idx_posts_created_at").on(table.createdAt.desc()),
+  index("idx_posts_author_id").on(table.authorId),
+]);
 
 // ========================== MEDIA (for posts) ==========================
 export const media = pgTable("media", {
@@ -122,7 +137,10 @@ export const media = pgTable("media", {
   url: text("url").notNull(),
   type: varchar("type", { length: 50 }).notNull(), // image, video, etc.
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => [
+  index("idx_media_post_id").on(table.postId),
+  index("idx_media_created_at").on(table.createdAt.desc()),
+]);
 
 // ========================== COMMENTS ==========================
 export const comments = pgTable("comments", {
@@ -135,7 +153,11 @@ export const comments = pgTable("comments", {
     .notNull(),
   content: text("content").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => [
+  index("idx_comments_post_id").on(table.postId),
+  index("idx_comments_user_id").on(table.userId),
+  index("idx_comments_created_at").on(table.createdAt.desc()),
+]);
 
 // ========================== LIKES ==========================
 export const likes = pgTable("likes", {
@@ -147,14 +169,20 @@ export const likes = pgTable("likes", {
     .references(() => users.id, { onDelete: "cascade" })
     .notNull(),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => [
+  index("idx_likes_post_id").on(table.postId),
+  index("idx_likes_user_id").on(table.userId),
+  index("idx_likes_created_at").on(table.createdAt.desc()),
+]);
 
 // ========================== TAGS ==========================
 export const tags = pgTable("tags", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: varchar("name", { length: 100 }).unique().notNull(),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => [
+  index("idx_tags_name").on(table.name),
+]);
 
 // Pivot: Posts ↔ Tags
 export const postTags = pgTable("post_tags", {
@@ -165,7 +193,10 @@ export const postTags = pgTable("post_tags", {
     .references(() => tags.id, { onDelete: "cascade" })
     .notNull(),
   assignedAt: timestamp("assigned_at").defaultNow(),
-});
+}, (table) => [
+  index("idx_post_tags_post_id").on(table.postId),
+  index("idx_post_tags_tag_id").on(table.tagId),
+]);
 
 // ========================== REPORTS ==========================
 export const reports = pgTable("reports", {
@@ -180,7 +211,12 @@ export const reports = pgTable("reports", {
   status: reportStatusEnum("status").default("PENDING"),
   createdAt: timestamp("created_at").defaultNow(),
   resolvedAt: timestamp("resolved_at"),
-});
+}, (table) => [
+  index("idx_reports_reporter_id").on(table.reporterId),
+  index("idx_reports_reported_user_id").on(table.reportedUserId),
+  index("idx_reports_status").on(table.status),
+  index("idx_reports_created_at").on(table.createdAt.desc()),
+]);
 
 // ========================== LOCATIONS ==========================
 export const locations = pgTable("locations", {
@@ -194,7 +230,11 @@ export const locations = pgTable("locations", {
   longitude: doublePrecision("longitude"),
   visibility: locationVisibilityEnum("visibility").default("VISIBLE"),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => [
+  index("idx_locations_user_id").on(table.userId),
+  index("idx_locations_country").on(table.country),
+  index("idx_locations_city").on(table.city),
+]);
 
 // ========================== USER PREFERENCES ==========================
 export const userPreferences = pgTable("user_preferences", {
@@ -205,7 +245,10 @@ export const userPreferences = pgTable("user_preferences", {
   type: preferenceTypeEnum("type").notNull(),
   value: varchar("value", { length: 255 }),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => [
+  index("idx_user_preferences_user_id").on(table.userId),
+  index("idx_user_preferences_type").on(table.type),
+]);
 
 // ========================== RELATIONSHIPS ==========================
 export const usersRelations = relations(users, ({ many }) => ({

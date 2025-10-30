@@ -13,6 +13,7 @@ import "./Middlewares/schedule";
 import { authRouter } from './Auth/Auth.route';
 import postRouter from './Services/posts/post.route';
 import messageRouter from './Services/Messages/message.route';
+import feedRouter from './Services/feed/feed.route';
 
 const app: Application = express();
 
@@ -35,6 +36,7 @@ app.use('/api', authRouter);
 app.use('/api', userRouters);
 app.use('/api/posts', postRouter)
 app.use('/api', messageRouter);
+app.use('/api/feed', feedRouter);
 
 // ---------------------------- Scheduler ----------------------------
 

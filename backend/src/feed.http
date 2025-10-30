@@ -1,0 +1,249 @@
+### Variables
+@UserToken = YOUR_AUTH_TOKEN_HERE
+@userId = YOUR_USER_ID_HERE
+
+@baseUrl = {{$dotenv API_BASE_URL}}
+@AdminToken = {{$dotenv ADMIN_TOKEN}}
+@UserToken = {{$dotenv USER_TOKEN}}
+
+@AdminId = {{$dotenv ADMIN_ID}}
+@UserId = {{$dotenv USER_ID}}
+
+### ============================================
+### FEED API TESTS
+### ============================================
+
+### 1. Get Personalized Feed (Default - Page 1, 20 items)
+GET {{baseUrl}}/api/feed
+Authorization: Bearer {{UserToken}}
+
+### 2. Get Personalized Feed (Page 1, 10 items)
+GET {{baseUrl}}/api/feed?page=1&limit=10
+Authorization: Bearer {{UserToken}}
+
+### 3. Get Personalized Feed (Page 2)
+GET {{baseUrl}}/api/feed?page=2&limit=20
+Authorization: Bearer {{UserToken}}
+
+### 4. Get Personalized Feed (Following Only)
+GET {{baseUrl}}/api/feed?includeFollowing=true&includeTrending=false
+Authorization: Bearer {{UserToken}}
+
+### 5. Get Personalized Feed (Trending Only)
+GET {{baseUrl}}/api/feed?includeFollowing=false&includeTrending=true
+Authorization: Bearer {{UserToken}}
+
+### 6. Get Personalized Feed (Maximum Limit - 100 items)
+GET {{baseUrl}}/api/feed?limit=100
+Authorization: Bearer {{UserToken}}
+
+### 7. Get Personalized Feed (Small Batch - 5 items for testing)
+GET {{baseUrl}}/api/feed?limit=5
+Authorization: Bearer {{UserToken}}
+
+### ============================================
+### TRENDING POSTS TESTS
+### ============================================
+
+### 8. Get Trending Posts (Default - Last 7 days, 20 items)
+GET {{baseUrl}}/api/feed/trending
+Authorization: Bearer {{UserToken}}
+
+### 9. Get Trending Posts (Last 24 hours)
+GET {{baseUrl}}/api/feed/trending?timeframe=1&limit=20
+Authorization: Bearer {{UserToken}}
+
+### 10. Get Trending Posts (Last 3 days)
+GET {{baseUrl}}/api/feed/trending?timeframe=3&limit=15
+Authorization: Bearer {{UserToken}}
+
+### 11. Get Trending Posts (Last 14 days)
+GET {{baseUrl}}/api/feed/trending?timeframe=14&limit=30
+Authorization: Bearer {{UserToken}}
+
+### 12. Get Trending Posts (Last 30 days - Maximum)
+GET {{baseUrl}}/api/feed/trending?timeframe=30&limit=50
+Authorization: Bearer {{UserToken}}
+
+### 13. Get Top 10 Trending Posts
+GET {{baseUrl}}/api/feed/trending?limit=10
+Authorization: Bearer {{UserToken}}
+
+### ============================================
+### FOLLOWING FEED TESTS
+### ============================================
+
+### 14. Get Following Feed (Default - Page 1, 20 items)
+GET {{baseUrl}}/api/feed/following
+Authorization: Bearer {{UserToken}}
+
+### 15. Get Following Feed (Page 1, 10 items)
+GET {{baseUrl}}/api/feed/following?page=1&limit=10
+Authorization: Bearer {{UserToken}}
+
+### 16. Get Following Feed (Page 2)
+GET {{baseUrl}}/api/feed/following?page=2&limit=20
+Authorization: Bearer {{UserToken}}
+
+### 17. Get Following Feed (Small Batch - 5 items)
+GET {{baseUrl}}/api/feed/following?limit=5
+Authorization: Bearer {{UserToken}}
+
+### 18. Get Following Feed (Large Batch - 50 items)
+GET {{baseUrl}}/api/feed/following?limit=50
+Authorization: Bearer {{UserToken}}
+
+### ============================================
+### ERROR CASES & VALIDATION TESTS
+### ============================================
+
+### 19. Test Invalid Page Number (Should fail - page < 1)
+GET {{baseUrl}}/api/feed?page=0&limit=20
+Authorization: Bearer {{UserToken}}
+
+### 20. Test Invalid Limit (Should fail - limit > 100)
+GET {{baseUrl}}/api/feed?page=1&limit=150
+Authorization: Bearer {{UserToken}}
+
+### 21. Test Invalid Limit (Should fail - limit < 1)
+GET {{baseUrl}}/api/feed?page=1&limit=0
+Authorization: Bearer {{UserToken}}
+
+### 22. Test Invalid Timeframe (Should fail - timeframe > 30)
+GET {{baseUrl}}/api/feed/trending?timeframe=45
+Authorization: Bearer {{UserToken}}
+
+### 23. Test Invalid Timeframe (Should fail - timeframe < 1)
+GET {{baseUrl}}/api/feed/trending?timeframe=0
+Authorization: Bearer {{UserToken}}
+
+### 24. Test Unauthorized Access (No UserToken)
+GET {{baseUrl}}/api/feed
+
+### 25. Test Invalid Token
+GET {{baseUrl}}/api/feed
+Authorization: Bearer invalid_UserToken_12345
+
+### ============================================
+### PAGINATION TESTS
+### ============================================
+
+### 26. Get First Page (5 items)
+GET {{baseUrl}}/api/feed?page=1&limit=5
+Authorization: Bearer {{UserToken}}
+
+### 27. Get Second Page (5 items)
+GET {{baseUrl}}/api/feed?page=2&limit=5
+Authorization: Bearer {{UserToken}}
+
+### 28. Get Third Page (5 items)
+GET {{baseUrl}}/api/feed?page=3&limit=5
+Authorization: Bearer {{UserToken}}
+
+### 29. Get Last Page (Check hasMore = false)
+GET {{baseUrl}}/api/feed?page=100&limit=20
+Authorization: Bearer {{UserToken}}
+
+### ============================================
+### COMBINED PARAMETERS TESTS
+### ============================================
+
+### 30. Following Feed with Custom Pagination
+GET {{baseUrl}}/api/feed/following?page=1&limit=15
+Authorization: Bearer {{UserToken}}
+
+### 31. Trending Posts with Custom Timeframe and Limit
+GET {{baseUrl}}/api/feed/trending?timeframe=5&limit=25
+Authorization: Bearer {{UserToken}}
+
+### 32. Personalized Feed - Following + Trending Combined
+GET {{baseUrl}}/api/feed?page=1&limit=30&includeFollowing=true&includeTrending=true
+Authorization: Bearer {{UserToken}}
+
+### ============================================
+### PERFORMANCE TESTS
+### ============================================
+
+### 33. Maximum Allowed Limit (100 items)
+GET {{baseUrl}}/api/feed?limit=100
+Authorization: Bearer {{UserToken}}
+
+### 34. Multiple Pages Quick Test (Page 1)
+GET {{baseUrl}}/api/feed?page=1&limit=20
+Authorization: Bearer {{UserToken}}
+
+### 35. Multiple Pages Quick Test (Page 2)
+GET {{baseUrl}}/api/feed?page=2&limit=20
+Authorization: Bearer {{UserToken}}
+
+### 36. Multiple Pages Quick Test (Page 3)
+GET {{baseUrl}}/api/feed?page=3&limit=20
+Authorization: Bearer {{UserToken}}
+
+### ============================================
+### EDGE CASES
+### ============================================
+
+### 37. Empty Following Feed (For new users with no follows)
+GET {{baseUrl}}/api/feed/following?page=1&limit=20
+Authorization: Bearer {{UserToken}}
+
+### 38. Trending Posts with Minimum Timeframe (1 day)
+GET {{baseUrl}}/api/feed/trending?timeframe=1&limit=10
+Authorization: Bearer {{UserToken}}
+
+### 39. Check Feed with Both Flags False (Should return public posts)
+GET {{baseUrl}}/api/feed?includeFollowing=false&includeTrending=false
+Authorization: Bearer {{UserToken}}
+
+### 40. Single Item Request
+GET {{baseUrl}}/api/feed?limit=1
+Authorization: Bearer {{UserToken}}
+
+### ============================================
+### COMPARISON TESTS
+### ============================================
+
+### 41. Compare: Following Only
+GET {{baseUrl}}/api/feed/following?limit=10
+Authorization: Bearer {{UserToken}}
+
+### 42. Compare: Trending Only
+GET {{baseUrl}}/api/feed/trending?limit=10
+Authorization: Bearer {{UserToken}}
+
+### 43. Compare: Mixed Feed
+GET {{baseUrl}}/api/feed?limit=10
+Authorization: Bearer {{UserToken}}
+
+### ============================================
+### REALISTIC USE CASES
+### ============================================
+
+### 44. Mobile App Initial Load (20 posts)
+GET {{baseUrl}}/api/feed?page=1&limit=20&includeFollowing=true&includeTrending=true
+Authorization: Bearer {{UserToken}}
+
+### 45. Infinite Scroll - Load More (Next Page)
+GET {{baseUrl}}/api/feed?page=2&limit=20
+Authorization: Bearer {{UserToken}}
+
+### 46. Refresh Feed (Get Latest)
+GET {{baseUrl}}/api/feed?page=1&limit=20
+Authorization: Bearer {{UserToken}}
+
+### 47. Explore Trending (Today's Hot Posts)
+GET {{baseUrl}}/api/feed/trending?timeframe=1&limit=20
+Authorization: Bearer {{UserToken}}
+
+### 48. Following Activity (What friends posted)
+GET {{baseUrl}}/api/feed/following?page=1&limit=20
+Authorization: Bearer {{UserToken}}
+
+### 49. Weekly Trending (Past 7 days)
+GET {{baseUrl}}/api/feed/trending?timeframe=7&limit=30
+Authorization: Bearer {{UserToken}}
+
+### 50. Monthly Highlights (Past 30 days)
+GET {{baseUrl}}/api/feed/trending?timeframe=30&limit=50
+Authorization: Bearer {{UserToken}}

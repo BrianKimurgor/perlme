@@ -1,0 +1,96 @@
+### 🔐 Set auth token (replace with your actual JWT)
+@token =eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImEyNzRkYjgwLWE4ZjUtNDdhZC1iN2EyLTZjYzJkODJlYWU5MyIsImVtYWlsIjoiam9zZXBobXdhbmdhemExQGdtYWlsLmNvbSIsInJvbGUiOiJBRE1JTiIsInVzZXJuYW1lIjoiQWRtaW5HYWtlbnllIiwiaWF0IjoxNzYxODQzNDIyLCJleHAiOjE3NjE4NDcwMjJ9.fFlVKvv2zuh8nX0Y7EvJhuSE2ZcQ-dcNl8xi20cAz_Y
+
+
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "josephmwangaza1@gmail.com",
+  "passwordHash": "12345678"
+}
+
+### 📦 Create a post
+POST http://localhost:5000/api/posts
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "content": "Enjoying the sunset 🌅 #goodvibes",
+  "media": [
+    { "url": "https://cdn.app.com/photos/sunset.jpg", "type": "image" }
+  ]
+}
+
+### 🌍 Get all public posts (feed) — first page
+GET http://localhost:5000/api/posts?limit=4
+Authorization: Bearer {{token}}
+
+###
+
+### 🌍 Get next page (pass the last post’s createdAt ISO string as cursor)
+@cursor = 2025-10-30T14:22:09.000Z
+
+GET http://localhost:5000/api/posts?limit=10&cursor={{cursor}}
+Authorization: Bearer {{token}}
+
+###
+
+### 🔍 Get a single post by ID
+@postId = a49af298-a8f4-4558-a31a-a15f25b50b3b
+
+GET http://localhost:5000/api/posts/{{postId}}
+Authorization: Bearer {{token}}
+
+###
+
+### ❤️ Like a post
+POST http://localhost:5000/api/posts/{{postId}}/like
+Authorization: Bearer {{token}}
+
+###
+
+### 💔 Unlike a post
+DELETE http://localhost:5000/api/posts/{{postId}}/like
+Authorization: Bearer {{token}}
+
+###
+
+### 💬 Comment on a post
+POST http://localhost:5000/api/posts/{{postId}}/comments
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "content": "This looks amazing! 😍"
+}
+
+###
+
+### 🗑️ Delete a post (only by author)
+DELETE http://localhost:5000/api/posts/{{postId}}
+Authorization: Bearer {{token}}
+
+
+### ✏️ Edit a post
+PATCH http://localhost:5000/api/posts/{{postId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "content": "Updated my post — feeling even more positive today! 🌞"
+}
+
+### 👤 Get all posts by a specific user
+@targetUserId = a274db80-a8f5-47ad-b7a2-6cc2d82eae93
+
+GET http://localhost:5000/api/posts/user/{{targetUserId}}?limit=10
+Authorization: Bearer {{token}}
+
+###
+
+### 📄 Next page (with cursor)
+@cursor = 2025-10-30T14:22:09.000Z
+
+GET http://localhost:5000/api/posts/user/{{targetUserId}}?limit=5&cursor={{cursor}}
+Authorization: Bearer {{token}}

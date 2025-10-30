@@ -233,6 +233,11 @@ export const postsRelations = relations(posts, ({ one, many }) => ({
   media: many(media),
 }));
 
+export const commentsRelations = relations(comments, ({ one }) => ({
+  post: one(posts, { fields: [comments.postId], references: [posts.id] }),
+  user: one(users, { fields: [comments.userId], references: [users.id] }),
+}));
+
 export const likesRelations = relations(likes, ({ one }) => ({
   post: one(posts, { fields: [likes.postId], references: [posts.id] }),
   user: one(users, { fields: [likes.userId], references: [users.id] }),

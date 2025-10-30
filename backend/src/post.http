@@ -1,18 +1,28 @@
-### 🔐 Set auth token (replace with your actual JWT)
-@token =eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImEyNzRkYjgwLWE4ZjUtNDdhZC1iN2EyLTZjYzJkODJlYWU5MyIsImVtYWlsIjoiam9zZXBobXdhbmdhemExQGdtYWlsLmNvbSIsInJvbGUiOiJBRE1JTiIsInVzZXJuYW1lIjoiQWRtaW5HYWtlbnllIiwiaWF0IjoxNzYxODQzNDIyLCJleHAiOjE3NjE4NDcwMjJ9.fFlVKvv2zuh8nX0Y7EvJhuSE2ZcQ-dcNl8xi20cAz_Y
+########################################
+### 🌍 ENVIRONMENT VARIABLES
+########################################
+@baseUrl = {{$dotenv API_BASE_URL}}
+@apiVersion = api
+
+# Tokens pulled from .env or set after login
+@AdminToken = {{$dotenv ADMIN_TOKEN}}
+@UserToken = {{$dotenv USER_TOKEN}}
+
+# Example user and post IDs for testing
+@targetUserId = {{$dotenv TEST_USER_ID}}
+@postId = {{$dotenv TEST_POST_ID}}
+@cursor = {{$dotenv TEST_CURSOR}}
+########################################
 
 
-POST http://localhost:5000/api/auth/login
-Content-Type: application/json
+########################################
+### 🟢 POSTS ENDPOINTS
+########################################
 
-{
-  "email": "josephmwangaza1@gmail.com",
-  "passwordHash": "12345678"
-}
-
-### 📦 Create a post
-POST http://localhost:5000/api/posts
-Authorization: Bearer {{token}}
+### 📦 Create a Post
+# @name create_post
+POST {{baseUrl}}/{{apiVersion}}/posts
+Authorization: Bearer {{UserToken}}
 Content-Type: application/json
 
 {
@@ -22,75 +32,82 @@ Content-Type: application/json
   ]
 }
 
-### 🌍 Get all public posts (feed) — first page
-GET http://localhost:5000/api/posts?limit=4
-Authorization: Bearer {{token}}
+---
 
-###
+### 🌍 Get All Public Posts (Feed — First Page)
+# @name get_public_posts
+GET {{baseUrl}}/{{apiVersion}}/posts?limit=4
+Authorization: Bearer {{UserToken}}
 
-### 🌍 Get next page (pass the last post’s createdAt ISO string as cursor)
-@cursor = 2025-10-30T14:22:09.000Z
+---
 
-GET http://localhost:5000/api/posts?limit=10&cursor={{cursor}}
-Authorization: Bearer {{token}}
+### 🌍 Get Next Page (Cursor Pagination)
+# @name get_public_posts_next_page
+GET {{baseUrl}}/{{apiVersion}}/posts?limit=10&cursor={{cursor}}
+Authorization: Bearer {{UserToken}}
 
-###
+---
 
-### 🔍 Get a single post by ID
-@postId = a49af298-a8f4-4558-a31a-a15f25b50b3b
+### 🔍 Get a Single Post by ID
+# @name get_post_by_id
+GET {{baseUrl}}/{{apiVersion}}/posts/{{postId}}
+Authorization: Bearer {{UserToken}}
 
-GET http://localhost:5000/api/posts/{{postId}}
-Authorization: Bearer {{token}}
+---
 
-###
+### ❤️ Like a Post
+# @name like_post
+POST {{baseUrl}}/{{apiVersion}}/posts/{{postId}}/like
+Authorization: Bearer {{UserToken}}
 
-### ❤️ Like a post
-POST http://localhost:5000/api/posts/{{postId}}/like
-Authorization: Bearer {{token}}
+---
 
-###
+### 💔 Unlike a Post
+# @name unlike_post
+DELETE {{baseUrl}}/{{apiVersion}}/posts/{{postId}}/like
+Authorization: Bearer {{UserToken}}
 
-### 💔 Unlike a post
-DELETE http://localhost:5000/api/posts/{{postId}}/like
-Authorization: Bearer {{token}}
+---
 
-###
-
-### 💬 Comment on a post
-POST http://localhost:5000/api/posts/{{postId}}/comments
-Authorization: Bearer {{token}}
+### 💬 Comment on a Post
+# @name comment_on_post
+POST {{baseUrl}}/{{apiVersion}}/posts/{{postId}}/comments
+Authorization: Bearer {{UserToken}}
 Content-Type: application/json
 
 {
   "content": "This looks amazing! 😍"
 }
 
-###
+---
 
-### 🗑️ Delete a post (only by author)
-DELETE http://localhost:5000/api/posts/{{postId}}
-Authorization: Bearer {{token}}
+### 🗑️ Delete a Post (Author Only)
+# @name delete_post
+DELETE {{baseUrl}}/{{apiVersion}}/posts/{{postId}}
+Authorization: Bearer {{UserToken}}
 
+---
 
-### ✏️ Edit a post
-PATCH http://localhost:5000/api/posts/{{postId}}
-Authorization: Bearer {{token}}
+### ✏️ Edit a Post
+# @name edit_post
+PATCH {{baseUrl}}/{{apiVersion}}/posts/{{postId}}
+Authorization: Bearer {{UserToken}}
 Content-Type: application/json
 
 {
   "content": "Updated my post — feeling even more positive today! 🌞"
 }
 
-### 👤 Get all posts by a specific user
-@targetUserId = a274db80-a8f5-47ad-b7a2-6cc2d82eae93
+---
 
-GET http://localhost:5000/api/posts/user/{{targetUserId}}?limit=10
-Authorization: Bearer {{token}}
+### 👤 Get All Posts by a Specific User
+# @name get_posts_by_user
+GET {{baseUrl}}/{{apiVersion}}/posts/user/{{targetUserId}}?limit=10
+Authorization: Bearer {{UserToken}}
 
-###
+---
 
-### 📄 Next page (with cursor)
-@cursor = 2025-10-30T14:22:09.000Z
-
-GET http://localhost:5000/api/posts/user/{{targetUserId}}?limit=5&cursor={{cursor}}
-Authorization: Bearer {{token}}
+### 📄 Next Page of User Posts (Cursor Pagination)
+# @name get_posts_by_user_next
+GET {{baseUrl}}/{{apiVersion}}/posts/user/{{targetUserId}}?limit=5&cursor={{cursor}}
+Authorization: Bearer {{UserToken}}

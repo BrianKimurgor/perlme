@@ -12,6 +12,7 @@ import postRouter from './Services/posts/post.route';
 import messageRouter from './Services/Messages/message.route';
 import { rateLimiterMiddleware } from './Middlewares/rateLimiter';
 import blockRouters from './Services/Block/block.routes';
+import reportRouters from './Services/Reports/report.route';
 
 dotenv.config();
 console.log("🟢 Scheduler file loaded");
@@ -44,6 +45,7 @@ app.use('/api', messageRouter);
 app.use('/api', anyAuth, checkUserActive, userRouters);
 app.use('/api', anyAuth, checkUserActive, postRouter);
 app.use('/api', anyAuth, checkUserActive, blockRouters);
+app.use('/api', anyAuth,checkUserActive ,reportRouters)
 
 // 404 handler
 app.use((req, res) => {

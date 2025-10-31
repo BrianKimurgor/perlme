@@ -14,6 +14,7 @@ import exploreRouter from './Services/Explore and Recommendations/exploreAndReco
 import { rateLimiterMiddleware } from './Middlewares/rateLimiter';
 import { checkUserActive } from './Middlewares/checkUserActivity';
 import blockRouters from './Services/Block/block.routes';
+import reportRouters from './Services/Reports/report.route';
 
 const app: Application = express();
 
@@ -34,6 +35,7 @@ app.use('/api/discover', exploreRouter )
 app.use('/api', anyAuth, checkUserActive, userRouters);
 app.use('/api', anyAuth, checkUserActive, postRouter);
 app.use('/api', anyAuth, checkUserActive, blockRouters);
+app.use('/api', anyAuth,checkUserActive ,reportRouters)
 
 // 404 handler
 app.use((req, res) => {

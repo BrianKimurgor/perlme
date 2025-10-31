@@ -23,6 +23,11 @@ export const preferenceTypeEnum = pgEnum("preference_type", ["AGE", "DISTANCE", 
 
 export const groupRoleEnum = pgEnum("group_role", ["GROUP_ADMIN","GROUP_MODERATOR","GROUP_MEMBER","GROUP_REMOVED"]);
 
+// ========================== ENUMS (extended) ==========================
+export const reportTypeEnum = pgEnum("report_type", ["USER","POST","COMMENT","MESSAGE",  "GROUP_MESSAGE",]);
+
+export const reportActionEnum = pgEnum("report_action", ["NONE",  "REMOVE_CONTENT",]);
+
 // ========================== USERS ==========================
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -170,20 +175,37 @@ export const postTags = pgTable("post_tags", {
   assignedAt: timestamp("assigned_at").defaultNow(),
 });
 
-// ========================== REPORTS ==========================
+// ========================== REPORTS (Enhanced) ==========================
 export const reports = pgTable("reports", {
   id: uuid("id").primaryKey().defaultRandom(),
-  reporterId: uuid("reporter_id")
-    .references(() => users.id, { onDelete: "cascade" })
-    .notNull(),
-  reportedUserId: uuid("reported_user_id")
-    .references(() => users.id, { onDelete: "cascade" })
-    .notNull(),
+
+  // Who reported
+  reporterId: uuid("reporter_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+
+  // Who or what is being reported
+  reportedUserId: uuid("reported_user_id").references(() => users.id, { onDelete: "cascade" })    .notNull(),
+
+  // Optional — if this is content-based reporting
+  postId: uuid("post_id").references(() => posts.id, { onDelete: "set null" }),
+  commentId: uuid("comment_id").references(() => comments.id, { onDelete: "set null" }),
+  messageId: uuid("message_id").references(() => messages.id, { onDelete: "set null" }),
+  groupMessageId: uuid("group_message_id").references(() => groupMessages.id, { onDelete: "set null" }),
+   // 👇 New field for moderation actions
+  action: reportActionEnum("action").default("NONE").notNull(),
+
+  // Report details
+  type: reportTypeEnum("type").default("USER"),
   reason: text("reason").notNull(),
+  details: text("details"), // optional additional context
+
+  // Moderation lifecycle
   status: reportStatusEnum("status").default("PENDING"),
+  reviewedBy: uuid("reviewed_by").references(() => users.id, { onDelete: "set null" }),
+  resolutionNotes: text("resolution_notes"),
   createdAt: timestamp("created_at").defaultNow(),
   resolvedAt: timestamp("resolved_at"),
 });
+
 
 // ========================== LOCATIONS ==========================
 export const locations = pgTable("locations", {
@@ -347,11 +369,14 @@ export const postTagsRelations = relations(postTags, ({ one }) => ({
 
 export const reportsRelations = relations(reports, ({ one }) => ({
   reporter: one(users, { fields: [reports.reporterId], references: [users.id] }),
-  reportedUser: one(users, {
-    fields: [reports.reportedUserId],
-    references: [users.id],
-  }),
+  reportedUser: one(users, { fields: [reports.reportedUserId], references: [users.id] }),
+  reviewedByUser: one(users, { fields: [reports.reviewedBy], references: [users.id] }),
+  post: one(posts, { fields: [reports.postId], references: [posts.id] }),
+  comment: one(comments, { fields: [reports.commentId], references: [comments.id] }),
+  message: one(messages, { fields: [reports.messageId], references: [messages.id] }),
+  groupMessage: one(groupMessages, { fields: [reports.groupMessageId],references: [groupMessages.id], }),
 }));
+
 
 export const groupChatsRelations = relations(groupChats, ({ one, many }) => ({
   creator: one(users, { fields: [groupChats.creatorId], references: [users.id] }),

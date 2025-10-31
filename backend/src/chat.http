@@ -1,0 +1,86 @@
+### ============================================
+### VARIABLES - CORRECTED
+### ============================================
+@baseUrl = {{$dotenv API_BASE_URL}}
+@AdminToken = {{$dotenv ADMIN_TOKEN}}
+@UserToken = {{$dotenv USER_TOKEN}}
+
+@AdminId = {{$dotenv ADMIN_ID}}
+@UserId = {{$dotenv USER_ID}}
+
+# Will be set after creating a message
+@messageId = MESSAGE_ID_HERE
+
+### ============================================
+### 🔐 AUTHENTICATION TESTS
+### ============================================
+
+### 🟢 Register Admin User
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "{{$dotenv ADMIN_USERNAME}}",
+  "email": "{{$dotenv ADMIN_EMAIL}}",
+  "passwordHash": "{{$dotenv ADMIN_PASSWORD}}",
+  "dateOfBirth": "{{$dotenv ADMIN_DOB}}",
+  "gender": "{{$dotenv GENDER_MALE}}",
+  "orientation": "{{$dotenv ORIENTATION_STRAIGHT}}",
+  "bio": "{{$dotenv ADMIN_BIO}}",
+  "role": "{{$dotenv ROLE_ADMIN}}"
+}
+
+### 🔵 Register Regular User
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "{{$dotenv USER_USERNAME}}",
+  "email": "{{$dotenv USER_EMAIL}}",
+  "passwordHash": "{{$dotenv USER_PASSWORD}}",
+  "dateOfBirth": "{{$dotenv USER_DOB}}",
+  "gender": "{{$dotenv GENDER_MALE}}",
+  "orientation": "{{$dotenv ORIENTATION_STRAIGHT}}",
+  "bio": "{{$dotenv USER_BIO}}"
+}
+
+### ❌ Register Underage User (Should Fail)
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "YoungUser",
+  "email": "{{$dotenv UNDERAGE_EMAIL}}",
+  "passwordHash": "{{$dotenv UNDERAGE_PASSWORD}}",
+  "dateOfBirth": "{{$dotenv UNDERAGE_DOB}}",
+  "gender": "{{$dotenv GENDER_FEMALE}}",
+  "orientation": "{{$dotenv ORIENTATION_STRAIGHT}}",
+  "bio": "Too young!"
+}
+
+### 🟣 Login Admin User
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{$dotenv ADMIN_EMAIL}}",
+  "passwordHash": "{{$dotenv ADMIN_PASSWORD}}"
+}
+
+### 🔷 Login Regular User
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{$dotenv USER_EMAIL}}",
+  "passwordHash": "{{$dotenv USER_PASSWORD}}"
+}
+
+### 💌 Verify Email (Admin)
+PUT {{baseUrl}}/api/auth/verify-email
+Content-Type: application/json
+
+{
+  "email": "{{$dotenv ADMIN_EMAIL}}",
+  "confirmationCode": "{{$dotenv ADMIN_VERIFICATION_CODE}}"
+}

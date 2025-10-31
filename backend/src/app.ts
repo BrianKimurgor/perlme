@@ -8,10 +8,8 @@ import "./Middlewares/schedule";
 import { authRouter } from './Auth/Auth.route';
 
 import postRouter from './Services/posts/post.route';
-import { anyAuth } from './Middlewares/BearAuth';
-
-import exploreRouter from './Services/Explore and Recommendations/exploreAndRecommend.routes';
 import { rateLimiterMiddleware } from './Middlewares/rateLimiter';
+import { anyAuth } from './Middlewares/BearAuth';
 import { checkUserActive } from './Middlewares/checkUserActivity';
 import blockRouters from './Services/Block/block.routes';
 import reportRouters from './Services/Reports/report.route';
@@ -29,7 +27,9 @@ app.use(logger);
 
 // ---------------------------- Public / Auth-Free Routes ----------------------------
 app.use('/api', authRouter);
-app.use('/api/discover', exploreRouter )
+
+app.use('/api', userRouters);
+app.use('/api/posts', postRouter)
 
 // ---------------------------- Protected Routes ----------------------------
 app.use('/api', anyAuth, checkUserActive, userRouters);

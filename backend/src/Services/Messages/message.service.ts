@@ -302,4 +302,32 @@ export class MessageService {
 
         return { success: true };
     }
+
+    //get messages between two users
+    async getMessagesBetweenUsers(userId1: string, userId2: string) {
+        const messagesBetween = await db
+            .select()
+            .from(messages)
+            .where(
+                or(
+                    and(eq(messages.senderId, userId1), eq(messages.receiverId, userId2)),
+                    and(eq(messages.senderId, userId2), eq(messages.receiverId, userId1))
+                )
+            )
+            .orderBy(desc(messages.createdAt));
+            if (messagesBetween.length > 0) {
+                return messagesBetween;
+            }
+            else {
+                throw new Error("No messages found between the users");
+            }
+
+
+        return messagesBetween;
+    }
+
+    //
 }
+
+
+

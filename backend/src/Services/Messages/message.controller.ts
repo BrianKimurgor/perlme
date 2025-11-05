@@ -144,4 +144,17 @@ export class MessageController {
             return ResponseHandler.badGateway(res, error.message || "Failed to delete message");
         }
     };
+
+    getMessagesBeetweenUsers = async (req: Request, res: Response) => {
+        try {
+            const { userId1, userId2 } = req.params;
+
+            const messages = await this.messageService.getMessagesBetweenUsers(userId1, userId2);
+
+            return ResponseHandler.ok(res, "Messages retrieved successfully", messages);
+        } catch (error: any) {
+            console.error("Get messages between users error:", error);
+            return ResponseHandler.badGateway(res, error.message || "Failed to get messages between users");
+        }
+    };
 }

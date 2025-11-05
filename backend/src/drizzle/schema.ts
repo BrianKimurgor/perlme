@@ -167,6 +167,23 @@ export const postTags = pgTable("post_tags", {
   assignedAt: timestamp("assigned_at").defaultNow(),
 });
 
+// ========================== NOTIFICATIONS ==========================
+export const notifications = pgTable("notifications", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  senderId: uuid("sender_id")
+    .references(() => users.id, { onDelete: "cascade" })
+    .notNull(),
+  receiverId: uuid("receiver_id")
+    .references(() => users.id, { onDelete: "cascade" })
+    .notNull(),
+  type: notificationTypeEnum("type").notNull(), // MESSAGE, LIKE, FOLLOW, etc.
+  content: text("content").notNull(),
+  entityId: uuid("entity_id"), // optional: related message/post/follow id
+  isRead: boolean("is_read").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+
 // ========================== REPORTS ==========================
 export const reports = pgTable("reports", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -260,6 +277,12 @@ export const reportsRelations = relations(reports, ({ one }) => ({
   }),
 }));
 
+export const notificationsRelations = relations(notifications, ({ one }) => ({
+  sender: one(users, { fields: [notifications.senderId], references: [users.id] }),
+  receiver: one(users, { fields: [notifications.receiverId], references: [users.id] }),
+}));
+
+
 // ========================== TYPES ==========================
 export type TSelectUser = typeof users.$inferSelect;
 export type TInsertUser = typeof users.$inferInsert;
@@ -302,3 +325,7 @@ export type TInsertMedia = typeof media.$inferInsert;
 
 export type TSelectReport = typeof reports.$inferSelect;
 export type TInsertReport = typeof reports.$inferInsert;
+
+export type TSelectNotification = typeof notifications.$inferSelect;
+export type TInsertNotification = typeof notifications.$inferInsert;
+

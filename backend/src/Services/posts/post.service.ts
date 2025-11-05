@@ -1,6 +1,7 @@
 import db from "../../drizzle/db";
 import {posts,likes,comments,media,TSelectPost,TInsertPost,TInsertMedia,} from "../../drizzle/schema";
-import { eq, and, desc, lt } from "drizzle-orm";
+import { eq, and, desc, lt, asc, sql } from "drizzle-orm";
+import { PaginationHandler } from "../../utils/paginationHandler";
 
 export type TPostAuthor = {
     id: string;
@@ -50,6 +51,7 @@ export type TCreatePostResult = TSelectPost & {
   media: TPostMedia[];
 };
 
+
 export const createPostService = async (postData: TInsertPost,mediaItems?: Omit<TInsertMedia, "postId">[]
 ): Promise<TCreatePostResult> => {
     const [newPost] = await db.insert(posts).values(postData).returning();
@@ -77,33 +79,45 @@ export const createPostService = async (postData: TInsertPost,mediaItems?: Omit<
 
 
 export const getAllPublicPostsService = async (
-  currentUserId?: string,
-  cursor?: string,
-  limit = 10
-): Promise<TPaginatedPosts> => {
-  const whereCondition = cursor ? lt(posts.createdAt, new Date(cursor)) : undefined;
+    currentUserId?: string,
+    page = 1,
+    limit = 10,
+    sortBy = "createdAt",
+    sortOrder: "asc" | "desc" = "desc"
+) => {
+    const offset = PaginationHandler.getOffset(page, limit);
 
-    const postsResult = await db.query.posts.findMany({
-        where: whereCondition,
-        with: {
-            author: {
-                columns: { id: true, username: true, avatarUrl: true },
-            },
-            media: {
-                columns: { id: true, url: true, type: true },
-            },
-            likes: {
-                columns: { id: true, userId: true },
-            },
-        },
-        orderBy: desc(posts.createdAt),
-        limit: limit + 1, // fetch one extra to check if more posts exist
-    });
+    if (!(sortBy in posts)) {
+        sortBy = "createdAt";
+    }
 
-    const enrichedPosts: TPostSummary[] = postsResult.map((post) => {
+    const orderByClause =
+        sortOrder === "asc"
+        ? asc((posts as any)[sortBy])
+        : desc((posts as any)[sortBy]);
+
+    const [totalResult, postsResult] = await Promise.all([
+        db
+        .select({ count: sql<number>`count(${posts.id})`.as("count") })
+        .from(posts),
+        db.query.posts.findMany({
+            with: {
+                author: { columns: { id: true, username: true, avatarUrl: true } },
+                media: { columns: { id: true, url: true, type: true } },
+                likes: { columns: { id: true, userId: true } },
+            },
+            orderBy: orderByClause,
+            limit,
+            offset,
+        }),
+    ]);
+
+    const totalItems = Number(totalResult[0]?.count ?? 0);
+
+    const enrichedPosts = postsResult.map((post) => {
         const likeCount = post.likes?.length ?? 0;
         const isLikedByCurrentUser = !!post.likes?.some(
-            (like) => like.userId === currentUserId
+        (like) => like.userId === currentUserId
         );
 
         return {
@@ -119,17 +133,7 @@ export const getAllPublicPostsService = async (
         };
     });
 
-  // Cursor-based pagination
-    const hasMore = enrichedPosts.length > limit;
-    const slicedPosts = hasMore ? enrichedPosts.slice(0, limit) : enrichedPosts;
-
-    const lastPost = slicedPosts.at(-1);
-    const nextCursor: string | null =
-        hasMore && lastPost?.createdAt
-        ? lastPost.createdAt.toISOString()
-        : null;
-
-    return { posts: slicedPosts, nextCursor };
+    return PaginationHandler.createResult(enrichedPosts, totalItems, page, limit);
 };
 
 export const getPostByIdService = async (postId: string,currentUserId?: string) => {
@@ -172,30 +176,50 @@ export const getPostByIdService = async (postId: string,currentUserId?: string) 
     };
 };
 
-export const getPostsByUserService = async (targetUserId: string,currentUserId?: string,cursor?: string,
-  limit = 10
-): Promise<TPaginatedPosts> => {
-    const whereConditions = [eq(posts.authorId, targetUserId)];
-    if (cursor) {
-        whereConditions.push(lt(posts.createdAt, new Date(cursor)));
+export const getPostsByUserService = async (
+    targetUserId: string,
+    currentUserId?: string,
+    page = 1,
+    limit = 10,
+    sortBy = "createdAt",
+    sortOrder: "asc" | "desc" = "desc"
+) => {
+    const offset = PaginationHandler.getOffset(page, limit);
+
+    if (!(sortBy in posts)) {
+        sortBy = "createdAt";
     }
 
-    const postsResult = await db.query.posts.findMany({
-        where: and(...whereConditions),
-        with: {
-            author: {
-                columns: { id: true, username: true, avatarUrl: true },
+    const orderByClause =
+        sortOrder === "asc"
+        ? asc((posts as any)[sortBy])
+        : desc((posts as any)[sortBy]);
+
+    const [totalResult, postsResult] = await Promise.all([
+        db
+        .select({ count: sql<number>`count(${posts.id})`.as("count") })
+        .from(posts)
+        .where(eq(posts.authorId, targetUserId)),
+        db.query.posts.findMany({
+            where: and(eq(posts.authorId, targetUserId)),
+            with: {
+                author: {
+                    columns: { id: true, username: true, avatarUrl: true },
+                },
+                media: {
+                    columns: { id: true, url: true, type: true },
+                },
+                likes: {
+                    columns: { id: true, userId: true },
+                },
             },
-            media: {
-                columns: { id: true, url: true, type: true },
-            },
-            likes: {
-                columns: { id: true, userId: true },
-            },
-        },
-        orderBy: desc(posts.createdAt),
-        limit: limit + 1, 
-    });
+            orderBy: orderByClause,
+            limit,
+            offset,
+        }),
+    ]);
+
+    const totalItems = Number(totalResult[0]?.count ?? 0);
 
     const enrichedPosts: TPostSummary[] = postsResult.map((post) => {
         const likeCount = post.likes?.length ?? 0;
@@ -216,15 +240,7 @@ export const getPostsByUserService = async (targetUserId: string,currentUserId?:
         };
     });
 
-    const hasMore = enrichedPosts.length > limit;
-    const slicedPosts = hasMore ? enrichedPosts.slice(0, limit) : enrichedPosts;
-    const lastPost = slicedPosts.at(-1);
-
-    const nextCursor = hasMore && lastPost?.createdAt
-        ? lastPost.createdAt.toISOString()
-        : null;
-
-    return { posts: slicedPosts, nextCursor };
+    return PaginationHandler.createResult(enrichedPosts, totalItems, page, limit);
 };
 
 export const updatePostService = async (postId: string,authorId: string,content: string) => {

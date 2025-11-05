@@ -1,7 +1,7 @@
 ########################################
 ### 🌍 ENVIRONMENT VARIABLES
 ########################################
-@baseUrl = {{$dotenv API_BASE_URL}}
+@baseUrl = {{$dotenv API_BASE_URL || 'http://localhost:5000'}}
 @apiVersion = api
 
 # Tokens pulled from .env or set after login
@@ -11,7 +11,6 @@
 # Example user and post IDs for testing
 @targetUserId = {{$dotenv TEST_USER_ID}}
 @postId = {{$dotenv TEST_POST_ID}}
-@cursor = {{$dotenv TEST_CURSOR}}
 ########################################
 
 
@@ -36,14 +35,14 @@ Content-Type: application/json
 
 ### 🌍 Get All Public Posts (Feed — First Page)
 # @name get_public_posts
-GET {{baseUrl}}/{{apiVersion}}/posts?limit=4
+GET {{baseUrl}}/{{apiVersion}}/posts?page=1&limit=4&sortBy=createdAt&sortOrder=desc
 Authorization: Bearer {{UserToken}}
 
 ---
 
-### 🌍 Get Next Page (Cursor Pagination)
+### 🌍 Get All Public Posts (Next Page)
 # @name get_public_posts_next_page
-GET {{baseUrl}}/{{apiVersion}}/posts?limit=10&cursor={{cursor}}
+GET {{baseUrl}}/{{apiVersion}}/posts?page=2&limit=4&sortBy=createdAt&sortOrder=desc
 Authorization: Bearer {{UserToken}}
 
 ---
@@ -100,14 +99,14 @@ Content-Type: application/json
 
 ---
 
-### 👤 Get All Posts by a Specific User
+### 👤 Get All Posts by a Specific User (First Page)
 # @name get_posts_by_user
-GET {{baseUrl}}/{{apiVersion}}/posts/user/{{targetUserId}}?limit=10
+GET {{baseUrl}}/{{apiVersion}}/posts/user/{{targetUserId}}?page=1&limit=10&sortBy=createdAt&sortOrder=desc
 Authorization: Bearer {{UserToken}}
 
 ---
 
-### 📄 Next Page of User Posts (Cursor Pagination)
+### 📄 Next Page of User Posts
 # @name get_posts_by_user_next
-GET {{baseUrl}}/{{apiVersion}}/posts/user/{{targetUserId}}?limit=5&cursor={{cursor}}
+GET {{baseUrl}}/{{apiVersion}}/posts/user/{{targetUserId}}?page=2&limit=10&sortBy=createdAt&sortOrder=desc
 Authorization: Bearer {{UserToken}}

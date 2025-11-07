@@ -1,10 +1,10 @@
-import { RateLimiterMemory } from "rate-limiter-flexible";
+import { RateLimiterMemory, RateLimiterRes } from "rate-limiter-flexible";
 import { Request, Response, NextFunction } from "express";
 
 // Configure limits
-const USER_LIMIT = 60; // 60 requests
-const GUEST_LIMIT = 30; // 30 requests
-const DURATION = 60; // per 60 seconds (1 minute)
+const USER_LIMIT = 10; 
+const GUEST_LIMIT = 5; 
+const DURATION = 60; 
 
 // In-memory rate limiters
 const userLimiter = new RateLimiterMemory({
@@ -17,23 +17,30 @@ const guestLimiter = new RateLimiterMemory({
 });
 
 export const rateLimiterMiddleware = async (req: Request, res: Response, next: NextFunction) => {
-  const userId = req.headers['x-user-id'] as string | undefined;
-  const identifier = userId || req.ip || 'unknown';
+  const anyReq = req as any;
+  const uid = anyReq.user?.id ?? (req.headers['x-user-id'] as string | undefined);
+  const identifier = uid ? `user:${String(uid)}` : `ip:${req.ip}`;
 
   try {
-    if (userId) {
+    if (uid) {
       // Logged-in user
-      await userLimiter.consume(identifier);
-      console.log(`Rate limit passed for user: ${identifier}`);
+      const rlRes = await userLimiter.consume(identifier);
+      res.setHeader("X-RateLimit-Limit", String(USER_LIMIT));
+      res.setHeader("X-RateLimit-Remaining", String(Math.max(0, rlRes.remainingPoints)));
+      res.setHeader("X-RateLimit-Reset", String(Math.floor((Date.now() + (rlRes.msBeforeNext ?? 0)) / 1000)));
+      next();
     } else {
       // Guest
-      await guestLimiter.consume(identifier);
-      console.log(`Rate limit passed for guest IP: ${identifier}`);
+      const rlRes = await guestLimiter.consume(identifier);
+      res.setHeader("X-RateLimit-Limit", String(GUEST_LIMIT));
+      res.setHeader("X-RateLimit-Remaining", String(Math.max(0, rlRes.remainingPoints)));
+      res.setHeader("X-RateLimit-Reset", String(Math.floor((Date.now() + (rlRes.msBeforeNext ?? 0)) / 1000)));
+      next();
     }
-    next();
-  } catch (error_) {
-    // 'error_' is the rejected response object from rate-limiter-flexible
-    const retrySec = Math.ceil((error_ as any).msBeforeNext / 1000);
+  } catch (err) {
+    // rate-limiter-flexible rejects with RateLimiterRes on consumed too many
+    const errObj = err as RateLimiterRes | any;
+    const retrySec = Math.ceil((errObj.msBeforeNext ?? 0) / 1000) || 1;
     res.setHeader('Retry-After', String(retrySec));
     res.status(429).json({
       error: "Too many requests. Please try again later.",

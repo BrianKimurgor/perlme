@@ -34,12 +34,11 @@ app.use("/api", anyAuth, checkUserActive); // 🔥 GLOBAL MIDDLEWARES
 //import route
 const PORT = process.env.PORT || 5000;
 
+// ---------------------------- Public / Auth-Free Routes ----------------------------
 app.use('/api', authRouter);
+
 app.use('/api', userRouters);
 app.use('/api/posts', postRouter)
-app.use('/api', messageRouter);
-
-// ---------------------------- Scheduler ----------------------------
 
 // ---------------------------- Protected Routes ----------------------------
 app.use('/api', anyAuth, checkUserActive, userRouters);

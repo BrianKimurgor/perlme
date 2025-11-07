@@ -9,8 +9,13 @@ import {
 } from "./report.controller";
 
 import {anyAuth,adminAuth, adminOrModeratorAuth} from "../../Middlewares/BearAuth";
+import { rateLimiterMiddleware } from "../../Middlewares/rateLimiter";
 
 const reportRouters = Router();
+
+const applyRatelimiting = rateLimiterMiddleware;
+
+reportRouters.use(applyRatelimiting);
 
 /**
  * ==========================

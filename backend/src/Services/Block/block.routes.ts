@@ -8,8 +8,13 @@ import {
 } from "./block.controller";
 
 import { anyAuth } from "../../Middlewares/BearAuth";
+import { rateLimiterMiddleware } from "../../Middlewares/rateLimiter";
 
 const blockRouters = Router();
+
+const applyRatelimiting = rateLimiterMiddleware;
+
+blockRouters.use(applyRatelimiting);
 
 /**
  * ==========================

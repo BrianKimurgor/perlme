@@ -1,8 +1,13 @@
 import { Router } from "express";
 import {commentOnPostController,createPostController,deletePostController,getAllPublicPostsController,getPostByIdController,getPostsByUserController,likePostController,unlikePostController, updatePostController,} from "./post.controller";
 import { authMiddleware } from "../../Middlewares/BearAuth";
+import { rateLimiterMiddleware } from "../../Middlewares/rateLimiter";
 
 const postRouter = Router();
+
+const applyRatelimiting = rateLimiterMiddleware;
+
+postRouter.use(applyRatelimiting);
 
 postRouter.get("/", authMiddleware(),getAllPublicPostsController);
 postRouter.get("/:postId",authMiddleware(), getPostByIdController);

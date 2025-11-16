@@ -4,10 +4,12 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/src/store";
 import { Ionicons, AntDesign, MaterialCommunityIcons, Feather } from "@expo/vector-icons";
 import ThemedWrapper from "@/src/components/ThemedWrapper";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function TabsLayout() {
   const theme = useSelector((state: RootState) => state.theme.mode);
   const accent = useSelector((state: RootState) => state.theme.accent);
+  const insets = useSafeAreaInsets();
 
   const inactiveColor = theme === "dark" ? "#aaa" : "#444";
   const backgroundColor = theme === "dark" ? "#000" : "#fff";
@@ -23,8 +25,8 @@ export default function TabsLayout() {
             backgroundColor,
             borderTopWidth: 0.4,
             borderTopColor: theme === "dark" ? "#333" : "#ddd",
-            height: 60,
-            paddingBottom: 6,
+            height: 60 + insets.bottom, // Custom height + safe area
+            paddingBottom: insets.bottom, // Safe area padding
           },
         }}
       >

@@ -1,17 +1,19 @@
-import express, { Application } from 'express';
+import cors from "cors";
 import dotenv from 'dotenv';
-import cors from "cors"
+import express, { Application } from 'express';
 import helmet from 'helmet';
-import { logger } from './Middlewares/Logger';
-import userRouters from './Services/Users/user.route';
-import "./Middlewares/schedule";
 import { authRouter } from './Auth/Auth.route';
 import { anyAuth } from './Middlewares/BearAuth';
 import { checkUserActive } from './Middlewares/checkUserActivity';
-import postRouter from './Services/posts/post.route';
-import messageRouter from './Services/Messages/message.route';
-import exploreRouter from './Services/Explore and Recommendations/exploreAndRecommend.routes';
+import { logger } from './Middlewares/Logger';
 import { rateLimiterMiddleware } from './Middlewares/rateLimiter';
+import "./Middlewares/schedule";
+import blockRouters from './Services/Block/block.routes';
+import exploreRouter from './Services/Explore and Recommendations/exploreAndRecommend.routes';
+import messageRouter from './Services/Messages/message.route';
+import postRouter from './Services/posts/post.route';
+import reportRouters from './Services/Reports/report.route';
+import userRouters from './Services/Users/user.route';
 
 
 dotenv.config();
@@ -48,7 +50,7 @@ app.use('/api/messages', messageRouter);
 app.use('/api', anyAuth, checkUserActive, userRouters);
 app.use('/api', anyAuth, checkUserActive, postRouter);
 app.use('/api', anyAuth, checkUserActive, blockRouters);
-app.use('/api', anyAuth,checkUserActive ,reportRouters)
+app.use('/api', anyAuth, checkUserActive, reportRouters)
 
 // 404 handler
 app.use((req, res) => {

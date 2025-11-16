@@ -1,5 +1,5 @@
 import { Router } from "express";
-import {commentOnPostController,createPostController,deletePostController,getAllPublicPostsController,getPostByIdController,getPostsByUserController,likePostController,unlikePostController, updatePostController,} from "./post.controller";
+import {commentOnPostController,createPostController,deletePostController,getAllPublicPostsController,getPostByIdController,likePostController,unlikePostController,} from "./post.controller";
 import { authMiddleware } from "../../Middlewares/BearAuth";
 
 const postRouter = Router();

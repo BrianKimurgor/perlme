@@ -1,6 +1,5 @@
 import db from "../../drizzle/db";
 import { ExploreAndRecommendParams } from "../../Validators/Explore.validator";
-import { desc } from "drizzle-orm";
 
 // ===============================
 // 🧭 EXPLORE SERVICE

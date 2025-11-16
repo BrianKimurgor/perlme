@@ -32,7 +32,8 @@ app.use("/api", anyAuth, checkUserActive); // 🔥 GLOBAL MIDDLEWARES
 
 // ---------------------------- Public / Auth-Free Routes ----------------------------
 app.use('/api', authRouter);
-app.use('/api/discover', exploreRouter); // ✅ public + optional auth handled internally
+app.use('/api/discover', exploreRouter);
+app.use('/api/messages', messageRouter);
 
 // ---------------------------- Protected Routes ----------------------------
 app.use('/api', anyAuth, checkUserActive, userRouters);

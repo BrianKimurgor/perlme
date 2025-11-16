@@ -16,8 +16,10 @@ import {
 import { anyAuth } from "../../Middlewares/BearAuth";
 import { groupRoleEnum } from "../../Validators/Group.Validators";
 import { authorizeGroupAction } from "../../Middlewares/GroupAuthoraization";
+import { rateLimiterMiddleware } from "../../Middlewares/rateLimiter";
 
 const groupRouters = Router();
+groupRouters.use(rateLimiterMiddleware);
 
 /**
  * ==========================

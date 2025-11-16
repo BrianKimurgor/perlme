@@ -1,41 +1,62 @@
-import { RateLimiterMemory } from "rate-limiter-flexible";
+import { RateLimiterMemory, RateLimiterRes } from "rate-limiter-flexible";
 import { Request, Response, NextFunction } from "express";
 
-// Configure limits
-const USER_LIMIT = 60; // 60 requests
-const GUEST_LIMIT = 30; // 30 requests
-const DURATION = 60; // per 60 seconds (1 minute)
+/**
+ * Rate limit configuration
+ */
+const RATE_LIMIT_CONFIG = {
+  user: { points: 60, duration: 60 },   // 60 requests per minute
+  guest: { points: 30, duration: 60 },  // 30 requests per minute
+};
 
-// In-memory rate limiters
-const userLimiter = new RateLimiterMemory({
-  points: USER_LIMIT,
-  duration: DURATION,
-});
-const guestLimiter = new RateLimiterMemory({
-  points: GUEST_LIMIT,
-  duration: DURATION,
-});
+// Create memory-based limiters
+const userLimiter = new RateLimiterMemory(RATE_LIMIT_CONFIG.user);
+const guestLimiter = new RateLimiterMemory(RATE_LIMIT_CONFIG.guest);
 
-export const rateLimiterMiddleware = async (req: Request, res: Response, next: NextFunction) => {
-  const userId = req.headers['x-user-id'] as string | undefined;
-  const identifier = userId || req.ip || 'unknown';
+/**
+ * Rate limiting middleware
+ */
+export const rateLimiterMiddleware = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const userId = req.headers["x-user-id"] as string | undefined;
+
+  // Use user ID if logged in, otherwise use IP
+  const identifier = userId || req.ip || "unknown";
+
+  // Select limiter
+  const limiter = userId ? userLimiter : guestLimiter;
 
   try {
-    if (userId) {
-      // Logged-in user
-      await userLimiter.consume(identifier);
-      console.log(`Rate limit passed for user: ${identifier}`);
-    } else {
-      // Guest
-      await guestLimiter.consume(identifier);
-      console.log(`Rate limit passed for guest IP: ${identifier}`);
-    }
+    const result = await limiter.consume(identifier);
+
+    // Add helpful rate limit headers (best practice)
+    res.setHeader("X-RateLimit-Limit", limiter.points);
+    res.setHeader("X-RateLimit-Remaining", result.remainingPoints);
+
+    console.log(
+      `[RATE-LIMIT] ${userId ? "User" : "Guest"} ${identifier} -> OK (${result.remainingPoints} left)`
+    );
+
     next();
-  } catch (error_) {
-    // 'error_' is the rejected response object from rate-limiter-flexible
-    const retrySec = Math.ceil((error_ as any).msBeforeNext / 1000);
-    res.setHeader('Retry-After', String(retrySec));
-    res.status(429).json({
+  } catch (err) {
+    const rlErr = err as RateLimiterRes;
+    const retrySec = Math.ceil(rlErr.msBeforeNext / 1000);
+
+    // Standard retry-after header
+    res.setHeader("Retry-After", retrySec);
+
+    // Rate limit headers
+    res.setHeader("X-RateLimit-Limit", limiter.points);
+    res.setHeader("X-RateLimit-Remaining", 0);
+
+    console.warn(
+      `[RATE-LIMIT] BLOCKED ${identifier}. Retry in ${retrySec}s`
+    );
+
+    return res.status(429).json({
       error: "Too many requests. Please try again later.",
       retryAfter: retrySec,
     });

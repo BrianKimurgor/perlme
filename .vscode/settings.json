@@ -6,14 +6,16 @@
   },
   "sqltools.connections": [
     {
+      "ssh": "Disabled",
       "previewLimit": 50,
       "server": "localhost",
       "port": 5432,
       "driver": "PostgreSQL",
+      "name": "pearlme",
       "database": "pearlme",
-      "username": "postgres",
-      "name": "pearlme"
+      "username": "postgres"
     }
   ],
-  "terminal.integrated.automationProfile.linux": {}
+  "terminal.integrated.automationProfile.linux": {},
+  "postman.settings.dotenv-detection-notification-visibility": false
 }

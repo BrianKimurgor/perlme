@@ -1,15 +1,27 @@
-@AdminToken = .......
-@UserToken = .......
+### Environment Variables
+@baseUrl = http://localhost:5000
+@apiVersion = api
 
-@userId = ........
-### 🟢 Register Admin User
-POST http://localhost:5000/api/auth/register
+# Tokens will be set dynamically after login
+@AdminToken = {{$dotenv ADMIN_TOKEN}}
+@UserToken = {{$dotenv USER_TOKEN}}
+
+@baseUrl = {{$dotenv API_BASE_URL}}
+@adminUsername = {{$dotenv ADMIN_USERNAME}}
+@adminEmail = {{$dotenv ADMIN_EMAIL}}
+@adminPassword = {{$dotenv ADMIN_PASSWORD}}
+
+
+### 🟢 AUTHENTICATION ENDPOINTS
+### Register Admin User
+# @name admin_register
+POST {{baseUrl}}/api/auth/register
 Content-Type: application/json
 
 {
-  "username": "AdminGakenye",
-  "email": "brayogakenye04@gmail.com",
-  "passwordHash": "........",
+  "username": "{{adminUsername}}",
+  "email": "{{adminEmail}}",
+  "passwordHash": "{{adminPassword}}",
   "dateOfBirth": "1998-03-12T00:00:00Z",
   "gender": "MALE",
   "orientation": "STRAIGHT",
@@ -17,150 +29,143 @@ Content-Type: application/json
   "role": "ADMIN"
 }
 
-### 🟣 Login Admin User
-POST http://localhost:5000/api/auth/login
+### Register Regular User
+# @name user_register
+POST {{baseUrl}}/api/auth/register
 Content-Type: application/json
 
 {
-  "email": "brayogakenye04@gmail.com",
-  "passwordHash": "........"
-}
-
-### 💌 Verify Email (Admin)
-PUT http://localhost:5000/api/auth/verify-email
-Content-Type: application/json
-
-{
-  "email": "brayogakenye04@gmail.com",
-  "confirmationCode": "900473"
-}
-
-### 🔁 Resend Verification Code (Admin)
-POST http://localhost:5000/api/auth/resend-verification
-Content-Type: application/json
-
-{
-  "email": "brayogakenye04@gmail.com"
-}
-
-### 🔐 Request Password Reset (Admin)
-POST http://localhost:5000/api/auth/password-reset
-Content-Type: application/json
-
-{
-  "email": "brayogakenye04@gmail.com"
-}
-
-### 🧱 Reset Password (Admin)
-PUT http://localhost:5000/api/auth/reset/{{AdminToken}}
-Content-Type: application/json
-
-{
-  "password": "newAdminPassword456"
-}
-
----
-
-### 🟢 Register Regular User
-POST http://localhost:5000/api/auth/register
-Content-Type: application/json
-
-{
-  "username": "UserGakenye",
-  "email": ".........",
-  "passwordHash": "............",
+  "username": "{{$dotenv USER_USERNAME}}",
+  "email": "{{$dotenv USER_EMAIL}}",
+  "passwordHash": "{{$dotenv USER_PASSWORD}}",
   "dateOfBirth": "1999-06-15T00:00:00Z",
   "gender": "MALE",
   "orientation": "STRAIGHT",
   "bio": "Excited to join PerlMe community 💜"
 }
 
-### 🟣 Login Regular User
-POST http://localhost:5000/api/auth/login
+### Register Underage User (Should Fail)
+POST {{baseUrl}}/api/auth/register
 Content-Type: application/json
 
 {
-  "email": ".........",
-  "passwordHash": "............"
+  "username": "YoungUser",
+  "email": "{{$dotenv UNDERAGE_EMAIL}}",
+  "passwordHash": "test1234",
+  "dateOfBirth": "2012-09-20T00:00:00Z",
+  "gender": "FEMALE",
+  "orientation": "STRAIGHT",
+  "bio": "I'm underage for this platform"
 }
 
-### 💌 Verify Email (Regular)
-PUT http://localhost:5000/api/auth/verify-email
+### Login Admin User
+# @name admin_login
+POST {{baseUrl}}/api/auth/login
 Content-Type: application/json
 
 {
-  "email": ".........",
-  "confirmationCode": "372891"
+  "email": "{{$dotenv ADMIN_EMAIL}}",
+  "passwordHash": "{{$dotenv ADMIN_PASSWORD}}"
 }
 
-### 🔁 Resend Verification Code (Regular)
-POST http://localhost:5000/api/auth/resend-verification
+### Login Regular User
+# @name user_login
+POST {{baseUrl}}/api/auth/login
 Content-Type: application/json
 
 {
-  "email": "........."
+  "email": "{{$dotenv USER_EMAIL}}",
+  "passwordHash": "{{$dotenv USER_PASSWORD}}"
 }
 
-### 🔐 Request Password Reset (Regular)
-POST http://localhost:5000/api/auth/password-reset
+### Verify Email (Generic - use appropriate email)
+PUT {{baseUrl}}/api/auth/verify-email
 Content-Type: application/json
 
 {
-  "email": "........."
+  "email": "{{$dotenv ADMIN_EMAIL}}",
+  "confirmationCode": "683946"
 }
 
-### 🧱 Reset Password (Regular)
-PUT http://localhost:5000/api/auth/reset/{{UserToken}}
+### Resend Verification Code
+POST {{baseUrl}}/api/auth/resend-verification
 Content-Type: application/json
 
 {
-  "password": "pass123"
+  "email": "{{$dotenv ADMIN_EMAIL}}"
+}
+
+### Request Password Reset
+POST {{baseUrl}}/api/auth/password-reset
+Content-Type: application/json
+
+{
+  "email": "{{$dotenv ADMIN_EMAIL}}"
+}
+
+### Reset Password (Replace token)
+PUT {{baseUrl}}/api/auth/reset/REPLACE_WITH_ACTUAL_TOKEN
+Content-Type: application/json
+
+{
+  "password": "newSecurePassword123"
 }
 
 ########################################
-### 👤 USER MANAGEMENT ENDPOINTS TESTING
+### 👤 USER MANAGEMENT ENDPOINTS
 ########################################
 
-###
-GET http://localhost:5000/api/users/all
-Authorization: Bearer {{AdminToken}}
+### Get All Users (Admin Only)
+GET {{baseUrl}}/api/users/all
+Authorization: Bearer {{$dotenv AdminToken}}
 
-### 🟢 Get User by ID (Auth Required)
-GET http://localhost:5000/api/users/{{userId}}
-Authorization: Bearer {{AdminToken}}
+### Get User by ID
+GET {{baseUrl}}/api/users/{{$dotenv TEST_USER_ID}}
+Authorization: Bearer {{$dotenv AdminToken}}
 
-### 🟣 Get User by Email (Admin or Moderator Only)
-GET http://localhost:5000/api/users?email=.........
-Authorization: Bearer {{AdminToken}}
+### Get User by Email (Admin Only)
+GET {{baseUrl}}/api/users?email={{$dotenv USER_EMAIL}}
+Authorization: Bearer {{$dotenv AdminToken}}
 
-### 🟡 Update User (Self or Admin)
-PATCH http://localhost:5000/api/users/{{userId}}
-Authorization: Bearer {{AdminToken}}
+### Update User Profile
+PATCH {{baseUrl}}/api/users/{{$dotenv TEST_USER_ID}}
+Authorization: Bearer {{$dotenv AdminToken}}
 Content-Type: application/json
 
 {
   "bio": "Just updated my bio 🌱",
-  "passwordHash": "pass123",
-  "role":"MODERATOR"
+  "passwordHash": "newPassword123",
+  "role": "MODERATOR"
 }
 
-### 🔴 Delete User (Admin Only)
-DELETE http://localhost:5000/api/users/{{userId}}
-Authorization: Bearer {{AdminToken}}
+### Delete User (Admin Only)
+DELETE {{baseUrl}}/api/users/{{$dotenv TEST_USER_ID}}
+Authorization: Bearer {{$dotenv AdminToken}}
 
-### ⚪ Suspend User (Admin or Moderator)
-POST http://localhost:5000/api/users/{{userId}}/suspend
-Authorization: Bearer {{AdminToken}}
+### Suspend User
+POST {{baseUrl}}/api/users/{{$dotenv TEST_USER_ID}}/suspend
+Authorization: Bearer {{$dotenv AdminToken}}
 Content-Type: application/json
 
 {
-  "until": "2025-10-25T14:44:42Z"
+  "until": "2025-10-25T14:44:42Z",
+  "reason": "Violation of community guidelines"
 }
 
-### 🟢 Unsuspend User (Admin or Moderator)
-POST http://localhost:5000/api/users/{{userId}}/unsuspend
-Authorization: Bearer {{AdminToken}}
+### Unsuspend User
+POST {{baseUrl}}/api/users/{{$dotenv TEST_USER_ID}}/unsuspend
+Authorization: Bearer {{$dotenv AdminToken}}
 
-### 🔍 Check User Status (Auth Required)
-GET http://localhost:5000/api/users/{{userId}}/status
-Authorization: Bearer {{AdminToken}}
+### Check User Status
+GET {{baseUrl}}/api/users/{{$dotenv TEST_USER_ID}}/status
+Authorization: Bearer {{$dotenv AdminToken}}
+
+########################################
+### 🎯 UTILITY REQUESTS
+########################################
+
+### Health Check
+GET {{baseUrl}}/health
+
+### API Version
+GET {{baseUrl}}/api/version

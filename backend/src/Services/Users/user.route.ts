@@ -15,8 +15,11 @@ import {
   adminAuth,
   adminOrModeratorAuth,
 } from "../../Middlewares/BearAuth";
+import { rateLimiterMiddleware } from "../../Middlewares/rateLimiter";
 
 const userRouters = Router();
+
+const applyRatelimiting = rateLimiterMiddleware;
 
 // ========================== USER ROUTES ==========================
 

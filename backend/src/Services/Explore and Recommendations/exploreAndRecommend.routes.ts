@@ -8,14 +8,10 @@ import {
   anyAuth,
 } from "../../Middlewares/BearAuth";
 import { checkUserActive } from "../../Middlewares/checkUserActivity";
-import { rateLimiterMiddleware } from "../../Middlewares/rateLimiter";
 
 
 const exploreRouter = Router();
 
-const applyRatelimiting = rateLimiterMiddleware;
-
-exploreRouter.use(applyRatelimiting);
 // ========================== 🧭 EXPLORE ==========================
 // Public route — anyone can explore public content.
 // If a user is logged in, req.user will still be available via the token.

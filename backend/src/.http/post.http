@@ -1,7 +1,7 @@
 @baseUrl = http://localhost:5000/api
-@AdminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImRkZjU2MmJiLTgyZDUtNDk2OS1iN2M3LWVhMzg5NmNkM2RiNiIsImVtYWlsIjoiYnJheW9nYWtlbnllMDRAZ21haWwuY29tIiwicm9sZSI6IkFETUlOIiwidXNlcm5hbWUiOiJBZG1pbkdha2VueWUiLCJpYXQiOjE3NjE1MDQwODcsImV4cCI6MTc2MTUwNzY4N30.-PVe_K8LyZl6SCGiF7_gto3vu6YDRB_NhxY_U_PMM8s
-@UserToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImY0YjdiNzMwLWU1YjktNDEyNC1iMzBlLWIwNDJmY2M3MzUwMiIsImVtYWlsIjoiZ2FrZW55ZWRlc2lnbnNAZ21haWwuY29tIiwicm9sZSI6IlJFR1VMQVIiLCJ1c2VybmFtZSI6IlVzZXJHYWtlbnllIiwiaWF0IjoxNzYxNjQ1MDc1LCJleHAiOjE3NjE2NDg2NzV9.JnGmOlGKYurW11MSniWCX5fA2U8l_ejCHn8ECG9qzxc
-@PostId = f399dbe2-f1a0-489a-a00d-13f28f114676
+@AdminToken = {{$dotenv ADMIN_TOKEN}}
+@UserToken = {{$dotenv USER_TOKEN}}
+@PostId = {{$dotenv POST_ID}}
 ###################################################
 ### 🟢 CREATE POST (Requires Auth + Active Account)
 ###################################################

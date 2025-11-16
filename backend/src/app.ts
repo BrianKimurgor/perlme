@@ -10,13 +10,12 @@ import { anyAuth } from './Middlewares/BearAuth';
 import { checkUserActive } from './Middlewares/checkUserActivity';
 import postRouter from './Services/posts/post.route';
 import messageRouter from './Services/Messages/message.route';
+import exploreRouter from './Services/Explore and Recommendations/exploreAndRecommend.routes';
 import { rateLimiterMiddleware } from './Middlewares/rateLimiter';
-import blockRouters from './Services/Block/block.routes';
-import reportRouters from './Services/Reports/report.route';
+
 
 dotenv.config();
 console.log("🟢 Scheduler file loaded");
-
 
 const app: Application = express();
 
@@ -39,6 +38,11 @@ app.use('/api', authRouter);
 
 app.use('/api', userRouters);
 app.use('/api/posts', postRouter)
+
+// ---------------------------- Public / Auth-Free Routes ----------------------------
+app.use('/api', authRouter);
+app.use('/api/discover', exploreRouter);
+app.use('/api/messages', messageRouter);
 
 // ---------------------------- Protected Routes ----------------------------
 app.use('/api', anyAuth, checkUserActive, userRouters);

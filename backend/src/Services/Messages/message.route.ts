@@ -1,9 +1,12 @@
 import { Router } from "express";
 import { MessageController } from "./message.controller";
 import { authMiddleware } from "../../Middlewares/BearAuth";
+import { rateLimiterMiddleware } from "../../Middlewares/rateLimiter";
 
 const messageRouter = Router();
 const messageController = new MessageController();
+const applyRatelimiting = rateLimiterMiddleware;
+messageRouter.use(applyRatelimiting);
 
 // All routes require authentication
 messageRouter.use(authMiddleware);

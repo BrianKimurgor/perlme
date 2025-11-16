@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {commentOnPostController,createPostController,deletePostController,getAllPublicPostsController,getPostByIdController,likePostController,unlikePostController,} from "./post.controller";
 import { authMiddleware } from "../../Middlewares/BearAuth";
+import { rateLimiterMiddleware } from "../../Middlewares/rateLimiter";
 
 const postRouter = Router();
 

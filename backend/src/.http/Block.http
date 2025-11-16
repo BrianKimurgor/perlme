@@ -1,0 +1,59 @@
+### ==========================
+###  BASE CONFIG
+### ==========================
+@baseUrl = http://localhost:5000/api
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImY0YjdiNzMwLWU1YjktNDEyNC1iMzBlLWIwNDJmY2M3MzUwMiIsImVtYWlsIjoiZ2FrZW55ZWRlc2lnbnNAZ21haWwuY29tIiwicm9sZSI6IlJFR1VMQVIiLCJ1c2VybmFtZSI6IlVzZXJHYWtlbnllIiwiaWF0IjoxNzYxNzIzMzk5LCJleHAiOjE3NjE3MjY5OTl9.ZEx4x_PIQvxS7iZsk-TFUbsuBr4bXWK8XOQZZPefZic
+@blockerId1 = ddf562bb-82d5-4969-b7c7-ea3896cd3db6
+@blockerId = f4b7b730-e5b9-4124-b30e-b042fcc73502
+@blockedId = da79559a-b2b4-499b-9af9-43e09f66832c
+@AdminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImY5OTU0NTI0LTBkOTgtNDQwMS1hYjE5LWI3MTUyNzMwYTdlOCIsImVtYWlsIjoiZ2FrZW55ZTEyM0BnbWFpbC5jb20iLCJyb2xlIjoiQURNSU4iLCJ1c2VybmFtZSI6IkFkbWluMUdha2VueWUiLCJpYXQiOjE3NjE3MjMwNTAsImV4cCI6MTc2MTcyNjY1MH0.vfonjyg2xCQvgyyGXOvCyo_P8nvjeCSis3Z4KfnKZk4
+
+### =========================
+### GET ALL USER
+### =========================
+
+GET http://localhost:5000/api/users/all
+Authorization: Bearer {{AdminToken}}
+
+
+### ==========================
+###  BLOCK A USER
+### ==========================
+POST {{baseUrl}}/blocks
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "blockerId": "{{blockerId}}",
+  "blockedId": "{{blockedId}}"
+}
+
+### ==========================
+###  UNBLOCK A USER
+### ==========================
+DELETE {{baseUrl}}/blocks
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "blockerId": "{{blockerId}}",
+  "blockedId": "{{blockedId}}"
+}
+
+### ==========================
+###  CHECK BLOCK STATUS
+### ==========================
+GET {{baseUrl}}/blocks/status/{{blockedId}}
+Authorization: Bearer {{authToken}}
+
+### ==========================
+###  GET ALL USERS I HAVE BLOCKED
+### ==========================
+GET {{baseUrl}}/blocks/me/blocked
+Authorization: Bearer {{authToken}}
+
+### ==========================
+###  GET ALL USERS WHO HAVE BLOCKED ME
+### ==========================
+GET {{baseUrl}}/blocks/me/blocked-by
+Authorization: Bearer {{adminToken@blockerId = ddf562bb-82d5-4969-b7c7-ea3896cd3db6}}

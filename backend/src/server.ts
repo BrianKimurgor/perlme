@@ -11,11 +11,16 @@ const server = http.createServer(app);
 // Initialize Socket.IO
 initializeSocketService(server);
 
-const PORT = process.env.PORT || 5000;
+const PORT = Number.parseInt(process.env.PORT || "5000", 10);
 
-server.listen(PORT, () => {
-    console.log(`🚀 PerlMe API running on http://localhost:${PORT}`);
+if (Number.isNaN(PORT)) {
+    throw new TypeError("Invalid PORT environment variable");
+}
+
+server.listen(PORT, "0.0.0.0", () => {
+    console.log(`🚀 PerlMe API running on http://0.0.0.0:${PORT}`);
 });
+
 
 // Graceful shutdown
 process.on("SIGTERM", () => {

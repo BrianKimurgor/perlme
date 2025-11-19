@@ -21,6 +21,16 @@ console.log("🟢 Scheduler file loaded");
 
 const app: Application = express();
 
+// Health Check Route (Public)
+app.get("/health", (req, res) => {
+    res.status(200).json({
+        status: "OK",
+        uptime: process.uptime(),
+        timestamp: new Date().toISOString()
+    });
+});
+
+
 // Basic Middleware
 app.use(helmet());
 app.use(cors());

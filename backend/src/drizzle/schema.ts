@@ -413,36 +413,6 @@ export const userMetricsRelations = relations(userMetrics, ({ one }) => ({
   }),
 }));
 
-export const groupChatsRelations = relations(groupChats, ({ one, many }) => ({
-  creator: one(users, { fields: [groupChats.creatorId], references: [users.id] }),
-  members: many(groupMembers),
-  messages: many(groupMessages),
-}));
-
-export const groupMembersRelations = relations(groupMembers, ({ one }) => ({
-  group: one(groupChats, { fields: [groupMembers.groupId], references: [groupChats.id] }),
-  user: one(users, { fields: [groupMembers.userId], references: [users.id] }),
-}));
-
-export const groupMessagesRelations = relations(groupMessages, ({ one }) => ({
-  group: one(groupChats, { fields: [groupMessages.groupId], references: [groupChats.id] }),
-  sender: one(users, { fields: [groupMessages.senderId], references: [users.id] }),
-}));
-
-export const postMetricsRelations = relations(postMetrics, ({ one }) => ({
-  post: one(posts, {
-    fields: [postMetrics.postId],
-    references: [posts.id],
-  }),
-}));
-
-export const userMetricsRelations = relations(userMetrics, ({ one }) => ({
-  user: one(users, {
-    fields: [userMetrics.userId],
-    references: [users.id],
-  }),
-}));
-
 export const groupTagsRelations = relations(groupTags, ({ one }) => ({
   group: one(groupChats, {
     fields: [groupTags.groupId],

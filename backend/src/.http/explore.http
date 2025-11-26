@@ -1,0 +1,72 @@
+@token = {{$dotenv DISCOVER_TOKEN}}
+@BaseURL = {{$dotenvBASE_URL}}
+
+### ============================
+### 1️⃣ 🧭 EXPLORE (Guest)
+### ============================
+
+# 👇 No Authorization required
+GET {{BaseURL}}/discover/explore?includeCreators=true&includeGroups=true&limit=10&offset=0
+Accept: application/json
+
+
+### ============================
+### 2️⃣ 🧭 EXPLORE (Authenticated User)
+### ============================
+
+GET {{BaseURL}}/discover/explore?includeCreators=true&includeGroups=true&limit=10&offset=0
+Authorization: Bearer {{token}}
+Accept: application/json
+
+
+### ============================
+### 3️⃣ 🧭 EXPLORE (Authenticated with Filters)
+### ============================
+
+GET {{BaseURL}}/discover/explore?includeCreators=true&includeGroups=false&limit=5
+Authorization: Bearer {{token}}
+Accept: application/json
+
+
+### ============================
+### 4️⃣ ❤️ RECOMMENDATIONS (Authenticated + Active User)
+### ============================
+
+GET {{BaseURL}}/discover/recommendations?minAge=20&maxAge=35&distanceKm=50&interests=Music,Travel
+Authorization: Bearer {{token}}
+Accept: application/json
+
+
+### ============================
+### 5️⃣ ❌ INVALID TOKEN TEST
+### ============================
+
+GET {{BaseURL}}/discover/recommendations?minAge=18&maxAge=30
+Authorization: Bearer invalid.token.123
+Accept: application/json
+
+
+### ============================
+### 6️⃣ 🚫 NO TOKEN TEST
+### ============================
+
+GET {{BaseURL}}/discover/recommendations
+Accept: application/json
+
+
+### ============================
+### 7️⃣ ❤️ RECOMMENDATIONS (Authenticated - Basic)
+### ============================
+
+GET {{BaseURL}}/discover/recommendations?limit=10&offset=0
+Authorization: Bearer {{token}}
+Accept: application/json
+
+
+### ============================
+### 8️⃣ 🔒 INVALID / EXPIRED TOKEN TEST
+### ============================
+
+GET {{BaseURL}}/discover/recommendations
+Authorization: Bearer invalid.token.value
+Accept: application/json

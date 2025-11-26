@@ -1,0 +1,59 @@
+@baseUrl = http://localhost:5000/api
+@AdminToken = {{$dotenv ADMIN_TOKEN}}
+@UserToken = {{$dotenv USER_TOKEN}}
+@PostId = {{$dotenv POST_ID}}
+###################################################
+### 🟢 CREATE POST (Requires Auth + Active Account)
+###################################################
+POST {{baseUrl}}/posts
+Authorization: Bearer {{UserToken}}
+Content-Type: application/json
+
+{
+  "content": "🚀 Hello world! This is my first post on PerlMe!"
+}
+
+###################################################
+### 🟣 GET ALL PUBLIC POSTS
+###################################################
+GET {{baseUrl}}/posts
+Authorization:Bearer {{UserToken}}
+
+
+###################################################
+### 🟡 GET SINGLE POST BY ID
+###################################################
+GET {{baseUrl}}/posts/{{PostId}}
+Authorization: Bearer {{UserToken}}
+
+###################################################
+### 💬 COMMENT ON A POST
+###################################################
+POST {{baseUrl}}/posts/{{PostId}}/comments
+Authorization: Bearer {{UserToken}}
+Content-Type: application/json
+
+{
+  "content": "🔥 This post is amazing!"
+}
+
+
+###################################################
+### ❤️ LIKE POST
+###################################################
+POST {{baseUrl}}/posts/{{PostId}}/like
+Authorization: Bearer {{UserToken}}
+
+
+###################################################
+### 💔 UNLIKE POST
+###################################################
+DELETE {{baseUrl}}/posts/{{PostId}}/like
+Authorization: Bearer {{UserToken}}
+
+
+###################################################
+### ❌ DELETE POST (Author or Admin)
+###################################################
+DELETE {{baseUrl}}/posts/{{PostId}}
+Authorization: Bearer {{UserToken}}

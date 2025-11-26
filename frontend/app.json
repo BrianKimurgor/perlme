@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "",
+    "name": "pearlmeapp",
     "slug": "perlme",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -12,6 +12,7 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.pearlme.pearlmeapp",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -37,6 +38,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "2f1f4281-a741-432d-b4f8-30eb4d34b45f"
+      }
     }
   }
 }

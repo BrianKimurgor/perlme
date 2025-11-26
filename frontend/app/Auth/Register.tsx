@@ -228,7 +228,7 @@ export default function RegisterScreen() {
             onPress={() => router.push("/Auth/verifyEmail")}
           >
             <Text style={[styles.registerLink, { fontSize: 14 }]}>
-              Didn't receive verification email? Verify here
+              Didn&lsquo;t receive verification email? Verify here
             </Text>
           </TouchableOpacity>
 

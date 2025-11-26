@@ -39,7 +39,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(rateLimiterMiddleware);
 app.use(logger);
 // ✅ Protected routes (require login + active account)
-app.use("/api", anyAuth, checkUserActive); // 🔥 GLOBAL MIDDLEWARES
+// app.use("/api", anyAuth, checkUserActive); // 🔥 GLOBAL MIDDLEWARES
 
 
 //import route

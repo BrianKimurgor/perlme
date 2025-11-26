@@ -1,0 +1,60 @@
+# ==============================
+# 🌱 ENVIRONMENT & SECRETS
+# ==============================
+.env
+**/.env 
+client.http
+# Ignore all .env files in any subdirectory
+# ==============================
+# 🧱 BUILD & DIST OUTPUT
+# ==============================
+dist/
+build/
+out/
+coverage/
+.http/
+# ==============================
+# 🧩 DEPENDENCIES
+# ==============================
+node_modules/
+pnpm-lock.yaml
+yarn.lock
+package-lock.json
+
+# ==============================
+# 🧰 DATABASE & MIGRATIONS
+# ==============================
+src/drizzle/migrations/
+*.sqlite
+*.db
+drizzle.config.ts
+
+# ==============================
+# 🧑‍💻 IDE & OS FILES
+# ==============================
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# ==============================
+# ⚙️ LOGS & TEMP FILES
+# ==============================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.tmp/
+temp/
+.cache/
+
+# ==============================
+# 📦 OTHER COMMON IGNORE
+# ==============================
+*.local
+*.swp
+*.swo
+*.bak
+*.old

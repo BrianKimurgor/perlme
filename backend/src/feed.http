@@ -1,0 +1,112 @@
+########################################
+### 🌍 ENVIRONMENT VARIABLES
+########################################
+@baseUrl = {{$dotenv API_BASE_URL || 'http://localhost:5000'}}
+@apiVersion = api
+
+# Tokens pulled from .env or set after login
+@AdminToken = {{$dotenv ADMIN_TOKEN}}
+@UserToken = {{$dotenv USER_TOKEN}}
+
+# Example user and post IDs for testing
+@targetUserId = {{$dotenv TEST_USER_ID}}
+@postId = {{$dotenv TEST_POST_ID}}
+########################################
+
+
+########################################
+### 🟢 POSTS ENDPOINTS
+########################################
+
+### 📦 Create a Post
+# @name create_post
+POST {{baseUrl}}/{{apiVersion}}/posts
+Authorization: Bearer {{UserToken}}
+Content-Type: application/json
+
+{
+  "content": "Enjoying the sunset 🌅 #goodvibes",
+  "media": [
+    { "url": "https://cdn.app.com/photos/sunset.jpg", "type": "image" }
+  ]
+}
+
+---
+
+### 🌍 Get All Public Posts (Feed — First Page)
+# @name get_public_posts
+GET {{baseUrl}}/{{apiVersion}}/posts?page=1&limit=4&sortBy=createdAt&sortOrder=desc
+Authorization: Bearer {{UserToken}}
+
+---
+
+### 🌍 Get All Public Posts (Next Page)
+# @name get_public_posts_next_page
+GET {{baseUrl}}/{{apiVersion}}/posts?page=2&limit=4&sortBy=createdAt&sortOrder=desc
+Authorization: Bearer {{UserToken}}
+
+---
+
+### 🔍 Get a Single Post by ID
+# @name get_post_by_id
+GET {{baseUrl}}/{{apiVersion}}/posts/{{postId}}
+Authorization: Bearer {{UserToken}}
+
+---
+
+### ❤️ Like a Post
+# @name like_post
+POST {{baseUrl}}/{{apiVersion}}/posts/{{postId}}/like
+Authorization: Bearer {{UserToken}}
+
+---
+
+### 💔 Unlike a Post
+# @name unlike_post
+DELETE {{baseUrl}}/{{apiVersion}}/posts/{{postId}}/like
+Authorization: Bearer {{UserToken}}
+
+---
+
+### 💬 Comment on a Post
+# @name comment_on_post
+POST {{baseUrl}}/{{apiVersion}}/posts/{{postId}}/comments
+Authorization: Bearer {{UserToken}}
+Content-Type: application/json
+
+{
+  "content": "This looks amazing! 😍"
+}
+
+---
+
+### 🗑️ Delete a Post (Author Only)
+# @name delete_post
+DELETE {{baseUrl}}/{{apiVersion}}/posts/{{postId}}
+Authorization: Bearer {{UserToken}}
+
+---
+
+### ✏️ Edit a Post
+# @name edit_post
+PATCH {{baseUrl}}/{{apiVersion}}/posts/{{postId}}
+Authorization: Bearer {{UserToken}}
+Content-Type: application/json
+
+{
+  "content": "Updated my post — feeling even more positive today! 🌞"
+}
+
+---
+
+### 👤 Get All Posts by a Specific User (First Page)
+# @name get_posts_by_user
+GET {{baseUrl}}/{{apiVersion}}/posts/user/{{targetUserId}}?page=1&limit=10&sortBy=createdAt&sortOrder=desc
+Authorization: Bearer {{UserToken}}
+
+---
+
+### 📄 Next Page of User Posts
+# @name get_posts_by_user_next
+GET {{baseUrl}}/{{apiVersion}}/posts/user/{{targetUserId}}?page=2&limit=10&sortBy=createdAt&sortOrder=desc
+Authorization: Bearer {{UserToken}}

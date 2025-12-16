@@ -1,16 +1,15 @@
 'use client'
-import Link from 'next/link'
-import { Logo } from '@/components/logo'
-import { Menu, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import React from 'react'
-import { useScroll, motion } from 'motion/react'
 import { cn } from '@/lib/utils'
+import { Menu, X } from 'lucide-react'
+import { motion, useScroll } from 'motion/react'
+import Link from 'next/link'
+import React from 'react'
 
 const menuItems = [
-    { name: 'Features', href: '#link' },
-    { name: 'Solution', href: '#link' },
-    { name: 'Pricing', href: '#link' },
+    { name: 'Features', href: '/features' },
+    { name: 'Solutions', href: '/solutions' },
+    { name: 'Pricing', href: '/pricing' },
     { name: 'About', href: '/about' },
 ]
 

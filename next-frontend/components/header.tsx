@@ -11,6 +11,7 @@ const menuItems = [
     { name: 'Solutions', href: '/solutions' },
     { name: 'Pricing', href: '/pricing' },
     { name: 'About', href: '/about' },
+    {name:'Privacy-policy',href:'/privacy-policy'}
 ]
 
 export const HeroHeader = () => {

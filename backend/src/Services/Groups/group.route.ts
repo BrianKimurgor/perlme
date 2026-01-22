@@ -22,18 +22,73 @@ const groupRouters = Router();
 groupRouters.use(rateLimiterMiddleware);
 
 /**
- * ==========================
- * GROUP MANAGEMENT ROUTES
- * ==========================
+ * @swagger
+ * tags:
+ *   name: Groups
+ *   description: Group, member, and group messaging management
  */
 
-// 🔹 Create new group — any authenticated user
+/**
+ * @swagger
+ * /api/groups:
+ *   post:
+ *     summary: Create a new group
+ *     tags: [Groups]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: My Group
+ *     responses:
+ *       201:
+ *         description: Group created successfully
+ */
 groupRouters.post("/groups", anyAuth, createGroupController);
 
-// 🔹 Get all groups — any authenticated user
+/**
+ * @swagger
+ * /api/groups:
+ *   get:
+ *     summary: Get all groups
+ *     tags: [Groups]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of groups
+ */
 groupRouters.get("/groups", anyAuth, getAllGroupsController);
 
-// 🔹 Get group by ID — any member or admin
+/**
+ * @swagger
+ * /api/groups/{groupId}:
+ *   get:
+ *     summary: Get group by ID
+ *     tags: [Groups]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: groupId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the group
+ *     responses:
+ *       200:
+ *         description: Group details
+ *       403:
+ *         description: Unauthorized access
+ */
 groupRouters.get(
   "/groups/:groupId",
   anyAuth,
@@ -45,7 +100,35 @@ groupRouters.get(
   getGroupByIdController
 );
 
-// 🔹 Update group — only GROUP_ADMIN or GROUP_MODERATOR
+/**
+ * @swagger
+ * /api/groups/{groupId}:
+ *   patch:
+ *     summary: Update group
+ *     tags: [Groups]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: groupId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Group updated successfully
+ *       403:
+ *         description: Unauthorized
+ */
 groupRouters.patch(
   "/groups/:groupId",
   anyAuth,
@@ -56,7 +139,26 @@ groupRouters.patch(
   updateGroupController
 );
 
-// 🔹 Delete group — only GROUP_ADMIN or SYSTEM ADMIN
+/**
+ * @swagger
+ * /api/groups/{groupId}:
+ *   delete:
+ *     summary: Delete a group
+ *     tags: [Groups]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: groupId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Group deleted
+ *       403:
+ *         description: Unauthorized
+ */
 groupRouters.delete(
   "/groups/:groupId",
   anyAuth,
@@ -65,12 +167,34 @@ groupRouters.delete(
 );
 
 /**
- * ==========================
- * MEMBER MANAGEMENT ROUTES
- * ==========================
+ * @swagger
+ * /api/groups/{groupId}/members:
+ *   post:
+ *     summary: Add a member to group
+ *     tags: [Groups]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: groupId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userId
+ *             properties:
+ *               userId:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Member added successfully
  */
-
-// 🔹 Add member — only GROUP_ADMIN or GROUP_MODERATOR
 groupRouters.post(
   "/groups/:groupId/members",
   anyAuth,
@@ -81,7 +205,29 @@ groupRouters.post(
   addGroupMemberController
 );
 
-// 🔹 Remove member — only GROUP_ADMIN or GROUP_MODERATOR
+/**
+ * @swagger
+ * /api/groups/{groupId}/members/{userId}:
+ *   delete:
+ *     summary: Remove a member from group
+ *     tags: [Groups]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: groupId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Member removed
+ */
 groupRouters.delete(
   "/groups/:groupId/members/:userId",
   anyAuth,
@@ -92,7 +238,41 @@ groupRouters.delete(
   removeGroupMemberController
 );
 
-// 🔹 Update member role — only GROUP_ADMIN
+/**
+ * @swagger
+ * /api/groups/{groupId}/members/{userId}/role:
+ *   patch:
+ *     summary: Update member role
+ *     tags: [Groups]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: groupId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - role
+ *             properties:
+ *               role:
+ *                 type: string
+ *                 example: GROUP_MEMBER
+ *     responses:
+ *       200:
+ *         description: Member role updated
+ */
 groupRouters.patch(
   "/groups/:groupId/members/:userId/role",
   anyAuth,
@@ -100,7 +280,24 @@ groupRouters.patch(
   updateMemberRoleController
 );
 
-// 🔹 Get group members — any group member
+/**
+ * @swagger
+ * /api/groups/{groupId}/members:
+ *   get:
+ *     summary: Get all members of a group
+ *     tags: [Groups]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: groupId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: List of group members
+ */
 groupRouters.get(
   "/groups/:groupId/members",
   anyAuth,
@@ -113,12 +310,35 @@ groupRouters.get(
 );
 
 /**
- * ==========================
- * GROUP MESSAGING ROUTES
- * ==========================
+ * @swagger
+ * /api/groups/{groupId}/messages:
+ *   post:
+ *     summary: Send a message in a group
+ *     tags: [Groups]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: groupId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - message
+ *             properties:
+ *               message:
+ *                 type: string
+ *                 example: Hello group!
+ *     responses:
+ *       200:
+ *         description: Message sent
  */
-
-// 🔹 Send message — any group member
 groupRouters.post(
   "/groups/:groupId/messages",
   anyAuth,
@@ -130,7 +350,24 @@ groupRouters.post(
   sendGroupMessageController
 );
 
-// 🔹 Get messages — any group member
+/**
+ * @swagger
+ * /api/groups/{groupId}/messages:
+ *   get:
+ *     summary: Get all messages in a group
+ *     tags: [Groups]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: groupId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: List of messages
+ */
 groupRouters.get(
   "/groups/:groupId/messages",
   anyAuth,

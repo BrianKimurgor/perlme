@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { 
+import {
   registerUser,
   loginUser,
   passwordReset,
@@ -8,24 +8,202 @@ import {
   resendVerificationEmail,
 } from "./Auth.controller";
 
+import {
+  authLoginLimiter,
+  authRegistrationLimiter,
+  authPasswordResetLimiter,
+  authVerificationLimiter,
+} from "../Middlewares/rateLimiter";
+
+
 export const authRouter = Router();
 
-// -------------------- AUTH ROUTES --------------------
+/**
+ * @swagger
+ * tags:
+ *   name: Auth
+ *   description: Authentication and account management
+ */
 
-// Register a new user
-authRouter.post("/auth/register", registerUser);
+/**
+ * @swagger
+ * /api/auth/register:
+ *   post:
+ *     summary: Register a new user
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *               - username
+ *               - dateOfBirth
+ *             properties:
+ *               username:
+ *                 type: string
+ *                 example: JohnDoe
+ *               email:
+ *                 type: string
+ *                 example: john@example.com
+ *               password:
+ *                 type: string
+ *                 example: StrongPassword123
+ *               dateOfBirth:
+ *                 type: string
+ *                 example: 1990-01-01
+ *     responses:
+ *       201:
+ *         description: User registered successfully
+ *       400:
+ *         description: Validation error
+ */
+authRouter.post("/register",authRegistrationLimiter, registerUser);
 
-// Login user
-authRouter.post("/auth/login", loginUser);
+/**
+ * @swagger
+ * /api/auth/login:
+ *   post:
+ *     summary: Login user
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: john@example.com
+ *               password:
+ *                 type: string
+ *                 example: StrongPassword123
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *       401:
+ *         description: Invalid credentials
+ */
+authRouter.post("/login",authLoginLimiter, loginUser);
 
-// Send password reset email
-authRouter.post("/auth/password-reset", passwordReset);
+/**
+ * @swagger
+ * /api/auth/password-reset:
+ *   post:
+ *     summary: Send password reset email
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: john@example.com
+ *     responses:
+ *       200:
+ *         description: Password reset email sent
+ *       404:
+ *         description: User not found
+ */
+authRouter.post("/password-reset",authPasswordResetLimiter, passwordReset);
 
-// Reset password using token
-authRouter.put("/auth/reset/:token", updatePassword);
+/**
+ * @swagger
+ * /api/auth/reset/{token}:
+ *   put:
+ *     summary: Reset password using token
+ *     tags: [Auth]
+ *     parameters:
+ *       - in: path
+ *         name: token
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Password reset token
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - password
+ *             properties:
+ *               password:
+ *                 type: string
+ *                 example: NewStrongPassword123
+ *     responses:
+ *       200:
+ *         description: Password updated successfully
+ *       400:
+ *         description: Invalid or expired token
+ */
+authRouter.put("/reset/:token",authPasswordResetLimiter, updatePassword);
 
-// Verify email using confirmation code
-authRouter.put("/auth/verify-email", emailVerification);
+/**
+ * @swagger
+ * /api/auth/verify-email:
+ *   put:
+ *     summary: Verify user email
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - confirmationCode
+ *             properties:
+ *               email:
+ *                 type: string  
+ *                 example: john@example.com
+ *               confirmationCode:
+ *                 type: string
+ *                 example: 123456
+ *     responses:
+ *       200:
+ *         description: Email verified successfully
+ *       400:
+ *         description: Invalid verification code
+ */
+authRouter.put("/verify-email",authVerificationLimiter, emailVerification);
 
-// Resend verification code
-authRouter.post("/auth/resend-verification", resendVerificationEmail);
+/**
+ * @swagger
+ * /api/auth/resend-verification:
+ *   post:
+ *     summary: Resend email verification code
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: john@example.com
+ *     responses:
+ *       200:
+ *         description: Verification email resent
+ *       404:
+ *         description: User not found
+ */
+authRouter.post("/resend-verification",authVerificationLimiter, resendVerificationEmail);

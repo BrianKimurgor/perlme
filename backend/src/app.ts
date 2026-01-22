@@ -1,7 +1,6 @@
 import cors from "cors";
-import dotenv from 'dotenv';
 import express, { Application } from 'express';
-import helmet from 'helmet';
+import { applySecurityHeaders, corsOptions } from './Middlewares/securityHeader.middleware';
 import { authRouter } from './Auth/Auth.route';
 import { anyAuth } from './Middlewares/BearAuth';
 import { checkUserActive } from './Middlewares/checkUserActivity';
@@ -14,14 +13,18 @@ import messageRouter from './Services/Messages/message.route';
 import postRouter from './Services/posts/post.route';
 import reportRouters from './Services/Reports/report.route';
 import userRouters from './Services/Users/user.route';
+import swaggerUi from "swagger-ui-express";
+import swaggerSpec from "./swagger";
+import { EmailServiceFactory, EmailProviderType } from './Services/email/EmailServiceFactory';
 
 
-dotenv.config();
 console.log("🟢 Scheduler file loaded");
 
 const app: Application = express();
 
-// Health Check Route (Public)
+// ============================================================================
+// 🏥 HEALTH CHECK (Before other middleware)
+// ============================================================================
 app.get("/health", (req, res) => {
     res.status(200).json({
         status: "OK",
@@ -30,41 +33,98 @@ app.get("/health", (req, res) => {
     });
 });
 
+// ===== INITIALIZE EMAIL SERVICE =====
+// This should happen early in your app initialization
+const emailProvider = (process.env.EMAIL_PROVIDER as EmailProviderType) || 'resend';
 
-// Basic Middleware
-app.use(helmet());
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+try {
+    EmailServiceFactory.initialize(emailProvider);
+    console.log(`✅ Email service initialized with provider: ${emailProvider}`);
+} catch (error) {
+    console.error('❌ Failed to initialize email service:', error);
+    process.exit(1);
+}
+
+// ============================================================================
+// 🌐 CORS CONFIGURATION
+// ============================================================================
+// Use production-ready CORS config from securityHeaders.middleware
+app.use(cors(corsOptions));
+
+// ============================================================================
+// 📦 BODY PARSING (with size limits to prevent DoS)
+// ============================================================================
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+
+// ============================================================================
+// 🚦 RATE LIMITING
+// ============================================================================
 app.use(rateLimiterMiddleware);
+
+// ============================================================================
+// 📝 LOGGING
+// ============================================================================
 app.use(logger);
-// ✅ Protected routes (require login + active account)
-// app.use("/api", anyAuth, checkUserActive); // 🔥 GLOBAL MIDDLEWARES
 
+// ============================================================================
+// 🔧 TRUST PROXY (if behind nginx/load balancer/cloudflare)
+// ============================================================================
+if (process.env.NODE_ENV === "production") {
+    app.set("trust proxy", 1); // Trust first proxy
+}
 
-//import route
-const PORT = process.env.PORT || 5000;
+// ============================================================================
+// 📚 SWAGGER DOCS (Development only)
+// ============================================================================
+if (process.env.NODE_ENV !== "production") {
+    app.use(
+        "/api/docs",
+        swaggerUi.serve,
+        swaggerUi.setup(swaggerSpec, {
+            swaggerOptions: {
+                persistAuthorization: true,
+            },
+        })
+    );
+}
 
-// ---------------------------- Public / Auth-Free Routes ----------------------------
-app.use('/api', authRouter);
-
-app.use('/api', userRouters);
-app.use('/api/posts', postRouter)
-
-// ---------------------------- Public / Auth-Free Routes ----------------------------
-app.use('/api', authRouter);
+// ============================================================================
+// 🛣️ PUBLIC ROUTES (No authentication required)
+// ============================================================================
+app.use('/api/auth', authRouter);
 app.use('/api/discover', exploreRouter);
-app.use('/api/messages', messageRouter);
 
-// ---------------------------- Protected Routes ----------------------------
+// ============================================================================
+// 🔐 PROTECTED ROUTES (Require authentication + active account)
+// ============================================================================
 app.use('/api', anyAuth, checkUserActive, userRouters);
 app.use('/api', anyAuth, checkUserActive, postRouter);
+app.use('/api', anyAuth, checkUserActive, messageRouter);
 app.use('/api', anyAuth, checkUserActive, blockRouters);
-app.use('/api', anyAuth, checkUserActive, reportRouters)
-
-// 404 handler
+app.use('/api', anyAuth, checkUserActive, reportRouters);
+// ============================================================================
+// ❌ 404 HANDLER
+// ============================================================================
 app.use((req, res) => {
     res.status(404).json({ error: "Route not found" });
+});
+
+// ============================================================================
+// 🚨 GLOBAL ERROR HANDLER
+// ============================================================================
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    console.error("Unhandled error:", err);
+
+    // Don't expose internal error details in production
+    const message = process.env.NODE_ENV === "production"
+        ? "Internal server error"
+        : err.message;
+
+    res.status(err.status || 500).json({
+        error: message,
+        ...(process.env.NODE_ENV !== "production" && { stack: err.stack })
+    });
 });
 
 export default app;

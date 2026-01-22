@@ -1,5 +1,6 @@
 import { pgTable, uuid, varchar, text, timestamp, boolean, doublePrecision, pgEnum, integer, } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
+import { fail } from "assert";
 
 // ========================== ENUMS ==========================
 
@@ -45,6 +46,8 @@ export const users = pgTable("users", {
   isVerified: boolean("is_verified").default(false),
   confirmationCode: varchar("confirmation_code", { length: 255 }),
   confirmationCodeExpiresAt: timestamp("confirmation_code_expires_at"),
+  failedLoginAttempts: integer("failed_login_attempts").default(0),
+  accountLockedUntil: timestamp("account_locked_until"),
   visibility: visibilityEnum("visibility").default("PUBLIC"),
   role: userRoleEnum("role").default("REGULAR").notNull(),
   createdAt: timestamp("created_at").defaultNow(),

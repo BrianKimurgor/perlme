@@ -8,6 +8,14 @@ import {
   resendVerificationEmail,
 } from "./Auth.controller";
 
+import {
+  authLoginLimiter,
+  authRegistrationLimiter,
+  authPasswordResetLimiter,
+  authVerificationLimiter,
+} from "../Middlewares/rateLimiter";
+
+
 export const authRouter = Router();
 
 /**
@@ -53,7 +61,7 @@ export const authRouter = Router();
  *       400:
  *         description: Validation error
  */
-authRouter.post("/register", registerUser);
+authRouter.post("/register",authRegistrationLimiter, registerUser);
 
 /**
  * @swagger
@@ -83,7 +91,7 @@ authRouter.post("/register", registerUser);
  *       401:
  *         description: Invalid credentials
  */
-authRouter.post("/login", loginUser);
+authRouter.post("/login",authLoginLimiter, loginUser);
 
 /**
  * @swagger
@@ -109,7 +117,7 @@ authRouter.post("/login", loginUser);
  *       404:
  *         description: User not found
  */
-authRouter.post("/password-reset", passwordReset);
+authRouter.post("/password-reset",authPasswordResetLimiter, passwordReset);
 
 /**
  * @swagger
@@ -142,7 +150,7 @@ authRouter.post("/password-reset", passwordReset);
  *       400:
  *         description: Invalid or expired token
  */
-authRouter.put("/reset/:token", updatePassword);
+authRouter.put("/reset/:token",authPasswordResetLimiter, updatePassword);
 
 /**
  * @swagger
@@ -172,7 +180,7 @@ authRouter.put("/reset/:token", updatePassword);
  *       400:
  *         description: Invalid verification code
  */
-authRouter.put("/verify-email", emailVerification);
+authRouter.put("/verify-email",authVerificationLimiter, emailVerification);
 
 /**
  * @swagger
@@ -198,4 +206,4 @@ authRouter.put("/verify-email", emailVerification);
  *       404:
  *         description: User not found
  */
-authRouter.post("/resend-verification", resendVerificationEmail);
+authRouter.post("/resend-verification",authVerificationLimiter, resendVerificationEmail);

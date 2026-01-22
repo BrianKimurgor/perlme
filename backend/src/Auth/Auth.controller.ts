@@ -58,10 +58,19 @@ try {
 const generateSecureVerificationCode = (length: number = VERIFICATION_CODE_LENGTH): string => {
   const digits = "0123456789";
   let code = "";
-  const randomBytes = crypto.randomBytes(length);
+  // Use rejection sampling to avoid modulo bias when mapping bytes to digits
+  const charsetLength = digits.length; // 10
+  const maxUnbiasedValue = Math.floor(256 / charsetLength) * charsetLength; // 250
 
-  for (let i = 0; i < length; i++) {
-    code += digits[randomBytes[i] % digits.length];
+  while (code.length < length) {
+    const randomBytes = crypto.randomBytes(1);
+    const byte = randomBytes[0];
+
+    if (byte >= maxUnbiasedValue) {
+      continue; // discard biased values
+    }
+
+    code += digits[byte % charsetLength];
   }
 
   return code;

@@ -16,6 +16,8 @@ import userRouters from './Services/Users/user.route';
 import swaggerUi from "swagger-ui-express";
 import swaggerSpec from "./swagger";
 import { EmailServiceFactory, EmailProviderType } from './Services/email/EmailServiceFactory';
+import healthRoute from "./routes/health.route";
+import metricsRoute from "./routes/metrics.route";
 
 
 console.log("🟢 Scheduler file loaded");
@@ -61,6 +63,7 @@ app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 // 🚦 RATE LIMITING
 // ============================================================================
 app.use(rateLimiterMiddleware);
+app.set("trust proxy", true);
 
 // ============================================================================
 // 📝 LOGGING
@@ -94,6 +97,10 @@ if (process.env.NODE_ENV !== "production") {
 // ============================================================================
 app.use('/api/auth', authRouter);
 app.use('/api/discover', exploreRouter);
+
+// Health and Metrics routes
+app.use(healthRoute);
+app.use(metricsRoute);
 
 // ============================================================================
 // 🔐 PROTECTED ROUTES (Require authentication + active account)

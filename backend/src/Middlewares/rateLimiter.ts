@@ -1,6 +1,7 @@
 import { RateLimiterMemory, RateLimiterRedis, RateLimiterRes } from "rate-limiter-flexible";
 import { Request, Response, NextFunction } from "express";
 import Redis from "ioredis";
+import { logger } from "../utils/logger";
 
 // Initialize Redis (fallback to memory if not available)
 let redisClient: Redis | null = null;
@@ -8,9 +9,24 @@ let redisClient: Redis | null = null;
 if (process.env.REDIS_URL) {
   try {
     redisClient = new Redis(process.env.REDIS_URL);
-    console.log("✅ Redis connected for rate limiting");
+    logger.info(
+      {
+        type: "system",
+        scope: "rate-limit",
+        backend: "redis",
+      },
+      "Connected to Redis for rate limiting"
+    );
   } catch (error) {
-    console.warn("⚠️  Redis connection failed, using memory-based rate limiting");
+    logger.warn(
+      {
+        type: "system",
+        scope: "rate-limit",
+        backend: "memory",
+        err: error instanceof Error ? error : undefined,
+      },
+      "Redis unavailable, falling back to in-memory rate limiting"
+    );
   }
 }
 
@@ -114,8 +130,16 @@ const createRateLimiterMiddleware = (
       res.setHeader("X-RateLimit-Remaining", result.remainingPoints);
       res.setHeader("X-RateLimit-Reset", new Date(Date.now() + result.msBeforeNext).toISOString());
 
-      console.log(
-        `[RATE-LIMIT:${limitName}] ${identifier} -> OK (${result.remainingPoints} left)`
+      logger.info(
+        {
+          type: "security",
+          action: "rate-limit-allow",
+          scope: limitName,
+          identifier,
+          remaining: result.remainingPoints,
+          requestId: (req as any).requestId,
+        },
+        "Rate limit OK"
       );
 
       next();
@@ -128,8 +152,16 @@ const createRateLimiterMiddleware = (
       res.setHeader("X-RateLimit-Remaining", 0);
       res.setHeader("X-RateLimit-Reset", new Date(Date.now() + rlErr.msBeforeNext).toISOString());
 
-      console.warn(
-        `[RATE-LIMIT:${limitName}] BLOCKED ${identifier}. Retry in ${retrySec}s`
+      logger.warn(
+        {
+          type: "security",
+          action: "rate-limit-block",
+          scope: limitName,
+          identifier,
+          retryAfterSeconds: retrySec,
+          requestId: (req as any).requestId,
+        },
+        "Rate limit exceeded"
       );
 
       return res.status(429).json({
@@ -159,9 +191,17 @@ export const rateLimiterMiddleware = async (
     res.setHeader("X-RateLimit-Remaining", result.remainingPoints);
     res.setHeader("X-RateLimit-Reset", new Date(Date.now() + result.msBeforeNext).toISOString());
 
-    console.log(
-      `[RATE-LIMIT:API] ${userId ? "User" : "Guest"} ${identifier} -> OK (${result.remainingPoints} left)`
-    );
+    logger.info(
+        {
+          type: "security",
+          action: "rate-limit-allow",
+          scope: "api",
+          identifier,
+          remaining: result.remainingPoints,
+          requestId: (req as any).requestId,
+        },
+        "Rate limit OK"
+      );
 
     next();
   } catch (err) {
@@ -172,8 +212,16 @@ export const rateLimiterMiddleware = async (
     res.setHeader("X-RateLimit-Limit", limiter.points);
     res.setHeader("X-RateLimit-Remaining", 0);
 
-    console.warn(
-      `[RATE-LIMIT:API] BLOCKED ${identifier}. Retry in ${retrySec}s`
+    logger.warn(
+      {
+        type: "security",
+        action: "rate-limit-block",
+        scope: "api",
+        identifier,
+        retryAfterSeconds: retrySec,
+        requestId: (req as any).requestId,
+      },
+      "Rate limit exceeded"
     );
 
     return res.status(429).json({

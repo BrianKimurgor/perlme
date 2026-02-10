@@ -342,9 +342,6 @@ export default function AboutPage() {
                                         {/* Center dot */}
                                         <div className="absolute left-1/2 transform -translate-x-1/2 md:static md:order-2">
                                             <div
-                                                style={{
-                                                    backgroundColor: ['#ff3366', '#0a7ea4', '#06b6d4', '#f59e0b'][index],
-                                                }}
                                                 className="w-12 h-12 rounded-full flex items-center justify-center border-4 md:w-16 md:h-16"
                                                 style={{
                                                     backgroundColor: ['#ff3366', '#0a7ea4', '#06b6d4', '#f59e0b'][index],

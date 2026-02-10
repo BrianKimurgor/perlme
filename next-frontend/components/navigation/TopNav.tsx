@@ -183,7 +183,7 @@ export default function TopNav() {
 
       {/* Close dropdown when clicking outside */}
       {showDropdown && (
-        <div
+        <button
           className="fixed inset-0 z-40"
           onClick={() => setShowDropdown(false)}
         />

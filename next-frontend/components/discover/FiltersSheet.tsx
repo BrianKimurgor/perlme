@@ -36,7 +36,7 @@ export default function FiltersSheet({ isOpen, onClose }: FiltersSheetProps) {
     return (
         <div className="fixed inset-0 z-50 overflow-hidden">
         {/* Backdrop */}
-        <div 
+        <button 
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={onClose}
         />

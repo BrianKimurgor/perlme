@@ -346,10 +346,6 @@ export default function AboutPage() {
                                                     backgroundColor: ['#ff3366', '#0a7ea4', '#06b6d4', '#f59e0b'][index],
                                                 }}
                                                 className="w-12 h-12 rounded-full flex items-center justify-center border-4 md:w-16 md:h-16"
-                                                style={{
-                                                    backgroundColor: ['#ff3366', '#0a7ea4', '#06b6d4', '#f59e0b'][index],
-                                                    borderColor: bgColor,
-                                                }}
                                             >
                                                 <Icon className="text-white" size={24} />
                                             </div>
@@ -358,8 +354,8 @@ export default function AboutPage() {
                                         {/* Right side (odd) */}
                                         <div
                                             className={`${index % 2 === 0
-                                                    ? 'md:order-2 md:pl-8'
-                                                    : 'md:pr-8 md:text-right'
+                                                ? 'md:order-2 md:pl-8'
+                                                : 'md:pr-8 md:text-right'
                                                 }`}
                                         >
                                             <div

@@ -21,7 +21,7 @@ export const Footer = () => {
                     <div>
                         <h3
                             className="text-lg font-semibold"
-                            style={{ color: THEME_COLORS.primary }}>
+                            style={{ color: THEME_COLORS.light.primary }}>
                             Perlme
                         </h3>
                         <p className="mt-2 text-sm text-gray-600">

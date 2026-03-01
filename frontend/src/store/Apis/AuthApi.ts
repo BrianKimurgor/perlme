@@ -4,18 +4,18 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 export interface RegisterRequest {
   username: string;
   email: string;
-  passwordHash: string;
+  password: string;
   dateOfBirth: string;
-  gender: "MALE" | "FEMALE" | "NON_BINARY" | "OTHER";
-  orientation:
-    | "STRAIGHT"
-    | "GAY"
-    | "LESBIAN"
-    | "BISEXUAL"
-    | "ASEXUAL"
-    | "PANSEXUAL"
-    | "OTHER";
-  bio: string;
+  gender?: "MALE" | "FEMALE" | "NON_BINARY" | "OTHER";
+  orientation?:
+  | "STRAIGHT"
+  | "GAY"
+  | "LESBIAN"
+  | "BISEXUAL"
+  | "ASEXUAL"
+  | "PANSEXUAL"
+  | "OTHER";
+  bio?: string;
   avatarUrl?: string | null;
   coverPhotoUrl?: string | null;
   visibility?: "PUBLIC" | "PRIVATE" | "FRIENDS_ONLY";
@@ -24,13 +24,14 @@ export interface RegisterRequest {
 
 export interface LoginRequest {
   email: string;
-  passwordHash: string;
+  password: string;
 }
 
 export interface AuthResponse {
-  message?: string; // <-- add this
+  message?: string;
   user: any;
-  token?: string;
+  accessToken?: string;
+  refreshToken?: string;
 }
 
 
@@ -39,7 +40,7 @@ export interface AuthResponse {
 export const authApi = createApi({
   reducerPath: "authApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "http://185.113.249.87:3000/api/",
+    baseUrl: "http://192.168.88.113:3000/api/",
   }),
   tagTypes: ["Auth"],
 
@@ -76,7 +77,7 @@ export const authApi = createApi({
       query: ({ token, newPassword }) => ({
         url: `auth/reset/${token}`,
         method: "PUT",
-        body: { passwordHash: newPassword },
+        body: { password: newPassword },
       }),
     }),
 

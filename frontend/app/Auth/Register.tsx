@@ -1,23 +1,24 @@
 // app/auth/register.tsx
+import { RegisterRequest, useRegisterMutation } from "@/src/store/Apis/AuthApi";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-  View,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
-  ActivityIndicator,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
+  View,
 } from "react-native";
-import Toast from "react-native-toast-message";
-import { useRouter } from "expo-router";
-import { Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import DropDownPicker from "react-native-dropdown-picker";
-import { useRegisterMutation, RegisterRequest } from "@/src/store/Apis/AuthApi";
+import Toast from "react-native-toast-message";
 
 export const orientationEnum = [
   "STRAIGHT",
@@ -32,7 +33,7 @@ export const orientationEnum = [
 export default function RegisterScreen() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
-  const [passwordHash, setPasswordHash] = useState("");
+  const [password, setPassword] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [gender, setGender] = useState<"MALE" | "FEMALE">("MALE");
@@ -47,7 +48,7 @@ export default function RegisterScreen() {
   const router = useRouter();
 
   const handleRegister = async () => {
-    if (!username || !email || !passwordHash || !dateOfBirth || !gender || !orientation) {
+    if (!username || !email || !password || !dateOfBirth) {
       Toast.show({ type: "error", text1: "Please fill in all required fields" });
       return;
     }
@@ -56,16 +57,22 @@ export default function RegisterScreen() {
       const payload: RegisterRequest = {
         username,
         email,
-        passwordHash,
+        password,
         dateOfBirth: dateOfBirth.toISOString(),
-        gender,
-        orientation,
-        bio,
+        ...(gender && { gender }),
+        ...(orientation && { orientation }),
+        ...(bio && { bio }),
       };
 
+      console.log("📤 [FRONTEND] Sending registration payload:", JSON.stringify(payload, null, 2));
+
       const res = await register(payload).unwrap();
+      console.log("✅ [FRONTEND] Registration response:", res);
 
       Toast.show({ type: "success", text1: res.message || "Registration Successful!" });
+
+      // Save email to AsyncStorage for verification page
+      await AsyncStorage.setItem("userEmail", email);
 
       // Automatically navigate to VerifyEmail page after registration
       router.replace({
@@ -74,6 +81,8 @@ export default function RegisterScreen() {
       });
 
     } catch (err: any) {
+      console.error("❌ [FRONTEND] Registration error:", err);
+      console.error("❌ [FRONTEND] Error data:", err?.data);
       Toast.show({
         type: "error",
         text1: "Registration Failed",
@@ -128,8 +137,8 @@ export default function RegisterScreen() {
               style={[styles.input, { flex: 1 }]}
               placeholder="Password"
               placeholderTextColor="rgba(255,255,255,0.7)"
-              value={passwordHash}
-              onChangeText={setPasswordHash}
+              value={password}
+              onChangeText={setPassword}
               secureTextEntry={!showPassword}
             />
             <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>

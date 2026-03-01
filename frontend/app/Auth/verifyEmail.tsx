@@ -1,25 +1,26 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useResendVerificationMutation, useVerifyEmailMutation } from "@/src/store/Apis/AuthApi";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { LinearGradient } from "expo-linear-gradient";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useEffect, useRef, useState } from "react";
 import {
-  View,
+  ActivityIndicator,
+  Animated,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  Animated,
-  ScrollView,
-  ActivityIndicator,
+  View,
 } from "react-native";
 import Toast from "react-native-toast-message";
-import { useRouter } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
-import { useVerifyEmailMutation, useResendVerificationMutation } from "@/src/store/Apis/AuthApi";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function VerifyEmailScreen() {
   const router = useRouter();
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const params = useLocalSearchParams();
+  const [otp, setOtp] = useState(["", "", "", "", "", "", "", ""]);
   const [verifyEmail, { isLoading }] = useVerifyEmailMutation();
   const [resendVerification, { isLoading: isResending }] = useResendVerificationMutation();
   const [resendCooldown, setResendCooldown] = useState(0);
@@ -28,15 +29,33 @@ export default function VerifyEmailScreen() {
   const [isSuccess, setIsSuccess] = useState(false);
 
   const inputsRef = useRef<TextInput[]>([]);
-  const otpAnim = useRef(Array(6).fill(0).map(() => new Animated.Value(1))).current;
+  const otpAnim = useRef(Array(8).fill(0).map(() => new Animated.Value(1))).current;
 
-  // Load email from AsyncStorage
+  // Load email from route params or AsyncStorage
   useEffect(() => {
-    AsyncStorage.getItem("userEmail").then((storedEmail) => {
+    const loadEmail = async () => {
+      // First try to get from route params
+      const routeEmail = params.email as string;
+      console.log("🔍 [FRONTEND] Route params email:", routeEmail);
+
+      if (routeEmail) {
+        console.log("✅ [FRONTEND] Email found in route params:", routeEmail);
+        setEmail(routeEmail);
+        // Save to AsyncStorage for future use
+        await AsyncStorage.setItem("userEmail", routeEmail);
+        setLoadingEmail(false);
+        return;
+      }
+
+      // Fall back to AsyncStorage
+      const storedEmail = await AsyncStorage.getItem("userEmail");
+      console.log("🔍 [FRONTEND] AsyncStorage email:", storedEmail);
       setEmail(storedEmail);
       setLoadingEmail(false);
-    });
-  }, []);
+    };
+
+    loadEmail();
+  }, [params.email]);
 
   // Countdown for resend button
   useEffect(() => {
@@ -66,7 +85,7 @@ export default function VerifyEmailScreen() {
       inputsRef.current[index + 1]?.focus();
     }
 
-    // Auto-verify when all 6 digits entered
+    // Auto-verify when all 8 digits entered
     if (newOtp.every((d) => d !== "")) {
       handleVerify(newOtp.join(""));
     }
@@ -79,22 +98,29 @@ export default function VerifyEmailScreen() {
   };
 
   const handleVerify = async (confirmationCode: string) => {
+    console.log("🔍 [FRONTEND] Attempting to verify email:", email);
+    console.log("🔍 [FRONTEND] Confirmation code:", confirmationCode);
+
     if (!email) {
+      console.error("❌ [FRONTEND] Email is null or undefined");
       Toast.show({ type: "error", text1: "Email not found" });
       return;
     }
 
     try {
+      console.log("📤 [FRONTEND] Sending verification request...");
       await verifyEmail({ email, confirmationCode }).unwrap();
+      console.log("✅ [FRONTEND] Email verified successfully!");
       Toast.show({ type: "success", text1: "✅ Email verified!" });
       setIsSuccess(true);
       setTimeout(() => router.replace("/(tabs)"), 1500);
     } catch (err: any) {
+      console.error("❌ [FRONTEND] Verification failed:", err);
       Toast.show({
         type: "error",
         text1: err?.data?.error || "❌ Invalid or expired code.",
       });
-      setOtp(["", "", "", "", "", ""]);
+      setOtp(["", "", "", "", "", "", "", ""]);
       inputsRef.current[0]?.focus();
     }
   };
@@ -129,12 +155,11 @@ export default function VerifyEmailScreen() {
           <View style={styles.card}>
             <Text style={styles.title}>Verify Your Email</Text>
             <Text style={styles.subtitle}>
-  Enter the 6-digit code sent to{" "}
-  <Text style={styles.email}>{email}</Text>. This code ensures that your account is secure 
-  and helps us verify your identity so you can access all features of the PERL Me app, 
-  including personalized content, exclusive updates, and seamless app experience. 
-  Please check your inbox or spam folder, and make sure to enter the code accurately.
-</Text>
+              Enter the 8-digit code sent to{" "}
+              <Text style={styles.email}>{email}</Text>
+              {". "}This code ensures your account is secure and helps us verify your identity.
+              Please check your inbox or spam folder.
+            </Text>
 
 
             <View style={styles.otpContainer}>
@@ -161,8 +186,8 @@ export default function VerifyEmailScreen() {
               {isSuccess
                 ? "✅ Email Verified! Redirecting..."
                 : isLoading
-                ? "🔄 Verifying your code..."
-                : `⏳ Auto-verifying once you enter all digits...`}
+                  ? "🔄 Verifying your code..."
+                  : `⏳ Auto-verifying once you enter all digits...`}
             </Text>
 
             {/* Resend button */}
@@ -175,8 +200,8 @@ export default function VerifyEmailScreen() {
                 {isResending
                   ? "🔁 Resending..."
                   : resendCooldown > 0
-                  ? `Resend in ${resendCooldown}s`
-                  : "🔁 Resend Code"}
+                    ? `Resend in ${resendCooldown}s`
+                    : "🔁 Resend Code"}
               </Text>
             </TouchableOpacity>
 
@@ -196,7 +221,8 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: "#fff",
     borderRadius: 25,
-    padding: 30,
+    padding: 20,
+    marginHorizontal: 10,
     shadowColor: "#000",
     shadowOpacity: 0.3,
     shadowOffset: { width: 0, height: 6 },
@@ -204,16 +230,23 @@ const styles = StyleSheet.create({
     elevation: 7,
     alignItems: "center",
   },
-  title: { fontSize: 26, fontWeight: "800", color: "#8e44ad", textAlign: "center", marginBottom: 8 },
-  subtitle: { fontSize: 14, color: "#555", textAlign: "center", marginBottom: 20 },
+  title: { fontSize: 24, fontWeight: "800", color: "#8e44ad", textAlign: "center", marginBottom: 8 },
+  subtitle: { fontSize: 13, color: "#555", textAlign: "center", marginBottom: 20, lineHeight: 18 },
   email: { fontWeight: "600", color: "#8e44ad" },
-  otpContainer: { flexDirection: "row", justifyContent: "center", gap: 12, marginBottom: 15 },
+  otpContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    flexWrap: "wrap",
+    gap: 8,
+    marginBottom: 15,
+    maxWidth: "100%",
+  },
   otpInput: {
-    width: 55,
-    height: 60,
+    width: 42,
+    height: 52,
     borderRadius: 12,
     textAlign: "center",
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: "700",
     shadowColor: "#8e44ad",
     shadowOffset: { width: 0, height: 0 },
@@ -223,7 +256,7 @@ const styles = StyleSheet.create({
   otpInputFilled: { backgroundColor: "#f3f3f3", borderWidth: 2, borderColor: "#8e44ad", color: "#8e44ad" },
   otpInputEmpty: { backgroundColor: "#fff", borderWidth: 1, borderColor: "#ccc", color: "#333" },
   otpSuccess: { borderColor: "green", backgroundColor: "#d4fcd4" },
-  statusText: { textAlign: "center", marginBottom: 15, fontSize: 14, color: "#555" },
+  statusText: { textAlign: "center", marginBottom: 15, fontSize: 13, color: "#555", paddingHorizontal: 10 },
   resendButton: {
     paddingVertical: 12,
     paddingHorizontal: 25,

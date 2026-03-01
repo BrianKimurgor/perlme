@@ -1,23 +1,23 @@
 // app/auth/login.tsx
+import { AuthResponse, useLoginMutation } from "@/src/store/Apis/AuthApi";
+import { setCredentials } from "@/src/store/AuthSlice";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { useDispatch } from "react-redux";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useRouter } from "expo-router";
 import Toast from "react-native-toast-message";
-import { Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { useLoginMutation, AuthResponse } from "@/src/store/Apis/AuthApi";
-import { setCredentials } from "@/src/store/AuthSlice";
-import { LinearGradient } from "expo-linear-gradient";
+import { useDispatch } from "react-redux";
 
 // Types
 interface User {
@@ -30,27 +30,33 @@ interface User {
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
-  const [passwordHash, setPasswordHash] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [login, { isLoading }] = useLoginMutation();
   const dispatch = useDispatch();
   const router = useRouter();
 
   const handleLogin = async () => {
-    if (!email || !passwordHash) {
+    if (!email || !password) {
       Toast.show({ type: "error", text1: "Fill in all fields" });
       return;
     }
 
+    console.log("📤 [FRONTEND] Initiating login for email:", email);
+
     try {
-      const apiRes: AuthResponse = await login({ email, passwordHash }).unwrap();
+      const apiRes: AuthResponse = await login({ email, password }).unwrap();
+
+      console.log("📥 [FRONTEND] Login response:", apiRes);
 
       // Handle optional token/message
-      const token = apiRes.token || "";
+      const token = apiRes.accessToken || "";
+      const refreshToken = apiRes.refreshToken || "";
       const message = apiRes.message || "Login successful";
       const user = apiRes.user;
 
       if (!token) {
+        console.error("❌ [FRONTEND] No accessToken in response");
         Toast.show({
           type: "error",
           text1: "Login Failed",
@@ -59,11 +65,14 @@ export default function LoginScreen() {
         return;
       }
 
+      console.log("✅ [FRONTEND] Token received, saving to Redux and AsyncStorage");
+
       // Save Redux
       dispatch(setCredentials({ token, user }));
 
       // Save AsyncStorage
       await AsyncStorage.setItem("token", token);
+      await AsyncStorage.setItem("refreshToken", refreshToken);
       await AsyncStorage.setItem("user", JSON.stringify(user));
 
       // Show message from backend
@@ -82,7 +91,7 @@ export default function LoginScreen() {
   };
 
   return (
-     <LinearGradient colors={["#8e44ad", "#ff5fa2"]} style={{ flex: 1 }}>
+    <LinearGradient colors={["#8e44ad", "#ff5fa2"]} style={{ flex: 1 }}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={{ flex: 1, justifyContent: "center", padding: 25 }}
@@ -109,8 +118,8 @@ export default function LoginScreen() {
             style={[styles.input, { flex: 1 }]}
             placeholder="Password"
             placeholderTextColor="rgba(255,255,255,0.7)"
-            value={passwordHash}
-            onChangeText={setPasswordHash}
+            value={password}
+            onChangeText={setPassword}
             secureTextEntry={!showPassword}
           />
           <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>

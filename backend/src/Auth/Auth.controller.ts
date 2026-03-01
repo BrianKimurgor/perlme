@@ -1,24 +1,24 @@
-import { RequestHandler } from "express";
 import bcrypt from "bcrypt";
+import { RequestHandler } from "express";
 import jwt from "jsonwebtoken";
 import crypto from "node:crypto";
+import { sendEmail } from "../Services/email/EmailService";
 import {
+  loginUserValidator,
+  registerUserValidator,
+} from "../Validators/Auth.validator";
+import { TInsertUser } from "../drizzle/schema";
+import {
+  generateAndSetNewConfirmationCode,
   getUserByEmailService,
+  getUserByIdService,
+  incrementFailedLoginAttempts,
+  lockAccount,
   registerUserService,
+  resetFailedLoginAttempts,
   updateUserPasswordService,
   updateVerificationStatusService,
-  generateAndSetNewConfirmationCode,
-  incrementFailedLoginAttempts,
-  resetFailedLoginAttempts,
-  lockAccount,
-  getUserByIdService,
 } from "./Auth.service";
-import {
-  registerUserValidator,
-  loginUserValidator,
-} from "../Validators/Auth.validator";
-import { sendEmail } from "../Services/email/EmailService";
-import { TInsertUser } from "../drizzle/schema";
 
 // --------------------------- CONSTANTS ---------------------------
 const BCRYPT_ROUNDS = 12;
@@ -126,10 +126,15 @@ export const baseEmailTemplate = (
 // --------------------------- REGISTER ---------------------------
 export const registerUser: RequestHandler = async (req, res) => {
   try {
+    console.log("📥 [BACKEND] Received registration request body:", JSON.stringify(req.body, null, 2));
+
     const parseResult = registerUserValidator.safeParse(req.body);
     if (!parseResult.success) {
+      console.error("❌ [BACKEND] Validation failed:", parseResult.error.issues);
       return res.status(400).json({ error: parseResult.error.issues });
     }
+
+    console.log("✅ [BACKEND] Validation passed. Parsed data:", JSON.stringify(parseResult.data, null, 2));
 
     const userData = parseResult.data;
 
@@ -206,8 +211,11 @@ export const registerUser: RequestHandler = async (req, res) => {
 // --------------------------- LOGIN ---------------------------
 export const loginUser: RequestHandler = async (req, res) => {
   try {
+    console.log("📥 [BACKEND] Received login request:", JSON.stringify(req.body, null, 2));
+
     const parseResult = loginUserValidator.safeParse(req.body);
     if (!parseResult.success) {
+      console.error("❌ [BACKEND] Login validation failed:", parseResult.error.issues);
       return res.status(400).json({ error: parseResult.error.issues });
     }
 
@@ -248,11 +256,13 @@ export const loginUser: RequestHandler = async (req, res) => {
     }
 
     if (!user.isVerified) {
+      console.warn("⚠️ [BACKEND] User not verified:", user.email);
       return res.status(403).json({
         error: "Please verify your email first 💌",
       });
     }
 
+    console.log("✅ [BACKEND] User verification checks passed");
     await resetFailedLoginAttempts(user.id);
 
     const { accessToken, refreshToken } = generateTokenPair(
@@ -262,7 +272,10 @@ export const loginUser: RequestHandler = async (req, res) => {
       user.username
     );
 
-    res.status(200).json({
+    console.log("✅ [BACKEND] Login successful for user:", user.username);
+    console.log("🔑 [BACKEND] Generated tokens - accessToken length:", accessToken.length, "refreshToken length:", refreshToken.length);
+
+    const responseData = {
       message: "Welcome back to PerlMe 💜",
       accessToken,
       refreshToken,
@@ -273,7 +286,11 @@ export const loginUser: RequestHandler = async (req, res) => {
         role: user.role,
         avatarUrl: user.avatarUrl,
       },
-    });
+    };
+
+    console.log("📤 [BACKEND] Sending login response:", JSON.stringify({ ...responseData, accessToken: "***", refreshToken: "***" }, null, 2));
+
+    res.status(200).json(responseData);
   } catch (error: any) {
     console.error("Login error:", error);
     res.status(500).json({
@@ -430,22 +447,34 @@ export const updatePassword: RequestHandler = async (req, res) => {
 // --------------------------- EMAIL VERIFICATION ---------------------------
 export const emailVerification: RequestHandler = async (req, res) => {
   try {
+    console.log("📥 [BACKEND] Received email verification request:", JSON.stringify(req.body, null, 2));
+
     const { email, confirmationCode } = req.body;
 
     if (!email || !confirmationCode) {
+      console.error("❌ [BACKEND] Missing email or confirmation code");
       return res.status(400).json({
         error: "Email and confirmation code required",
       });
     }
 
     const normalizedEmail = email.toLowerCase();
+    console.log("🔍 [BACKEND] Looking up user with email:", normalizedEmail);
     const user = await getUserByEmailService(normalizedEmail);
 
     if (!user) {
+      console.error("❌ [BACKEND] User not found for email:", normalizedEmail);
       return res.status(404).json({ error: "User not found" });
     }
 
+    console.log("✅ [BACKEND] User found:", user.username);
+    console.log("🔍 [BACKEND] User verification status:", user.isVerified);
+    console.log("🔍 [BACKEND] Stored code:", user.confirmationCode);
+    console.log("🔍 [BACKEND] Received code:", confirmationCode);
+    console.log("🔍 [BACKEND] Code expires at:", user.confirmationCodeExpiresAt);
+
     if (user.isVerified) {
+      console.warn("⚠️ [BACKEND] Email already verified");
       return res.status(400).json({ error: "Email already verified" });
     }
 
@@ -454,16 +483,20 @@ export const emailVerification: RequestHandler = async (req, res) => {
       !user.confirmationCodeExpiresAt ||
       new Date() > new Date(user.confirmationCodeExpiresAt)
     ) {
+      console.error("❌ [BACKEND] Verification code expired");
       return res.status(400).json({
         error: "Verification code expired ⏰. Please request a new one.",
       });
     }
 
     if (!secureCompare(user.confirmationCode, confirmationCode)) {
+      console.error("❌ [BACKEND] Invalid verification code");
       return res.status(400).json({ error: "Invalid verification code" });
     }
 
+    console.log("✅ [BACKEND] Verification code matches! Updating user...");
     await updateVerificationStatusService(user.email, true, null);
+    console.log("✅ [BACKEND] User verified successfully");
 
     const message = `
       Hi ${user.username}, your email has been successfully verified 💜<br><br>

@@ -10,7 +10,6 @@ export default function RootLayout() {
         <Stack.Screen name="index" />
         <Stack.Screen name="splashScreen" />
         <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="theme" />
       </Stack>
     </Provider>
   );

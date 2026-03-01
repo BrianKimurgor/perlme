@@ -17,7 +17,7 @@ export interface User {
 
 class SocketService {
   private socket: Socket | null = null;
-  private serverUrl: string = 'http://localhost:3001'; // Change this for production
+  private serverUrl: string = 'http://192.168.88.113:3000'; // Updated to use local IP
 
   // Event callbacks
   private onMessageCallback?: (message: Message) => void;

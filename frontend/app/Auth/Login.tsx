@@ -67,13 +67,18 @@ export default function LoginScreen() {
 
       console.log("✅ [FRONTEND] Token received, saving to Redux and AsyncStorage");
 
-      // Save Redux
+      // Clear any old data first
+      await AsyncStorage.clear();
+
+      // Save new credentials to Redux (will be persisted automatically)
       dispatch(setCredentials({ token, user }));
 
-      // Save AsyncStorage
+      // Save tokens to AsyncStorage as backup
       await AsyncStorage.setItem("token", token);
       await AsyncStorage.setItem("refreshToken", refreshToken);
       await AsyncStorage.setItem("user", JSON.stringify(user));
+
+      console.log("💾 New session saved successfully");
 
       // Show message from backend
       Toast.show({ type: "success", text1: message });

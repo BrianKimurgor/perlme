@@ -1,16 +1,19 @@
 import { Router } from "express";
 import {
+  checkIfFollowingController,
+  checkUserStatusController,
+  deleteUserController,
+  followUserController,
   getAllUsersController,
   getUser,
   getUserByEmailController,
-  updateUserController,
-  deleteUserController,
   suspendUserController,
+  unfollowUserController,
   unsuspendUserController,
-  checkUserStatusController,
+  updateUserController,
 } from "./user.controller";
 
-import { anyAuth, adminAuth, adminOrModeratorAuth } from "../../Middlewares/BearAuth";
+import { adminAuth, adminOrModeratorAuth, anyAuth } from "../../Middlewares/BearAuth";
 import { rateLimiterMiddleware } from "../../Middlewares/rateLimiter";
 
 const userRouters = Router();
@@ -201,5 +204,68 @@ userRouters.post("/users/:id/unsuspend", adminOrModeratorAuth, unsuspendUserCont
  *         description: User status returned
  */
 userRouters.get("/users/:id/status", anyAuth, checkUserStatusController);
+
+/**
+ * @swagger
+ * /api/users/{userId}/follow:
+ *   post:
+ *     summary: Follow a user
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the user to follow
+ *     responses:
+ *       200:
+ *         description: User followed successfully
+ */
+userRouters.post("/users/:userId/follow", anyAuth, followUserController);
+
+/**
+ * @swagger
+ * /api/users/{userId}/unfollow:
+ *   delete:
+ *     summary: Unfollow a user
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the user to unfollow
+ *     responses:
+ *       200:
+ *         description: User unfollowed successfully
+ */
+userRouters.delete("/users/:userId/unfollow", anyAuth, unfollowUserController);
+
+/**
+ * @swagger
+ * /api/users/{userId}/following:
+ *   get:
+ *     summary: Check if following a user
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the user to check
+ *     responses:
+ *       200:
+ *         description: Follow status returned
+ */
+userRouters.get("/users/:userId/following", anyAuth, checkIfFollowingController);
 
 export default userRouters;

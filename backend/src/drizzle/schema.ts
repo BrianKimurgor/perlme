@@ -1,6 +1,5 @@
-import { pgTable, uuid, varchar, text, timestamp, boolean, doublePrecision, pgEnum, integer, } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-import { fail } from "assert";
+import { boolean, doublePrecision, integer, pgEnum, pgTable, text, timestamp, uuid, varchar, } from "drizzle-orm/pg-core";
 
 // ========================== ENUMS ==========================
 
@@ -22,12 +21,12 @@ export const locationVisibilityEnum = pgEnum("location_visibility", ["VISIBLE", 
 
 export const preferenceTypeEnum = pgEnum("preference_type", ["AGE", "DISTANCE", "GENDER", "INTEREST",]);
 
-export const groupRoleEnum = pgEnum("group_role", ["GROUP_ADMIN","GROUP_MODERATOR","GROUP_MEMBER","GROUP_REMOVED"]);
+export const groupRoleEnum = pgEnum("group_role", ["GROUP_ADMIN", "GROUP_MODERATOR", "GROUP_MEMBER", "GROUP_REMOVED"]);
 
 // ========================== ENUMS (extended) ==========================
-export const reportTypeEnum = pgEnum("report_type", ["USER","POST","COMMENT","MESSAGE",  "GROUP_MESSAGE",]);
+export const reportTypeEnum = pgEnum("report_type", ["USER", "POST", "COMMENT", "MESSAGE", "GROUP_MESSAGE",]);
 
-export const reportActionEnum = pgEnum("report_action", ["NONE",  "REMOVE_CONTENT",]);
+export const reportActionEnum = pgEnum("report_action", ["NONE", "REMOVE_CONTENT",]);
 
 // ========================== USERS ==========================
 export const users = pgTable("users", {
@@ -186,14 +185,14 @@ export const reports = pgTable("reports", {
   reporterId: uuid("reporter_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
 
   // Who or what is being reported
-  reportedUserId: uuid("reported_user_id").references(() => users.id, { onDelete: "cascade" })    .notNull(),
+  reportedUserId: uuid("reported_user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
 
   // Optional — if this is content-based reporting
   postId: uuid("post_id").references(() => posts.id, { onDelete: "set null" }),
   commentId: uuid("comment_id").references(() => comments.id, { onDelete: "set null" }),
   messageId: uuid("message_id").references(() => messages.id, { onDelete: "set null" }),
   groupMessageId: uuid("group_message_id").references(() => groupMessages.id, { onDelete: "set null" }),
-   // 👇 New field for moderation actions
+  // 👇 New field for moderation actions
   action: reportActionEnum("action").default("NONE").notNull(),
 
   // Report details
@@ -346,7 +345,22 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   preferences: many(userPreferences),
 }));
 
+export const interestsRelations = relations(interests, ({ many }) => ({
+  users: many(userInterests),
+}));
 
+export const userInterestsRelations = relations(userInterests, ({ one }) => ({
+  user: one(users, { fields: [userInterests.userId], references: [users.id] }),
+  interest: one(interests, { fields: [userInterests.interestId], references: [interests.id] }),
+}));
+
+export const userPreferencesRelations = relations(userPreferences, ({ one }) => ({
+  user: one(users, { fields: [userPreferences.userId], references: [users.id] }),
+}));
+
+export const locationsRelations = relations(locations, ({ one }) => ({
+  user: one(users, { fields: [locations.userId], references: [users.id] }),
+}));
 
 export const postsRelations = relations(posts, ({ one, many }) => ({
   author: one(users, { fields: [posts.authorId], references: [users.id] }),
@@ -382,7 +396,7 @@ export const reportsRelations = relations(reports, ({ one }) => ({
   post: one(posts, { fields: [reports.postId], references: [posts.id] }),
   comment: one(comments, { fields: [reports.commentId], references: [comments.id] }),
   message: one(messages, { fields: [reports.messageId], references: [messages.id] }),
-  groupMessage: one(groupMessages, { fields: [reports.groupMessageId],references: [groupMessages.id], }),
+  groupMessage: one(groupMessages, { fields: [reports.groupMessageId], references: [groupMessages.id], }),
 }));
 
 

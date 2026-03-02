@@ -1,14 +1,17 @@
 import { Request, Response } from "express";
 import {
-  getAllUsers,
-  getUserById,
-  getUserByEmail,
-  updateUser,
   deleteUser,
-  suspendUser,
-  unsuspendUser,
+  followUser,
+  getAllUsers,
+  getUserByEmail,
+  getUserById,
+  isFollowing,
   isUserActive,
-} from "../Users/users.service"
+  suspendUser,
+  unfollowUser,
+  unsuspendUser,
+  updateUser,
+} from "../Users/users.service";
 
 import { sendNotificationEmail } from "../../Middlewares/GoogleMailer";
 import { userValidator } from "../../Validators/users.vslidator";
@@ -240,3 +243,82 @@ export const checkUserStatusController = async (req: Request, res: Response) => 
     res.status(500).json({ error: error.message || "Failed to check user status" });
   }
 };
+
+// ========================== FOLLOW USER ==========================
+export const followUserController = async (req: Request, res: Response) => {
+  try {
+    const followerId = (req as any).user.id; // Current logged-in user
+    const { userId } = req.params; // User to follow
+
+    if (followerId === userId) {
+      return res.status(400).json({
+        success: false,
+        message: "You cannot follow yourself"
+      });
+    }
+
+    const follow = await followUser(followerId, userId);
+    res.status(200).json({
+      success: true,
+      message: "User followed successfully",
+      data: follow
+    });
+  } catch (error: any) {
+    if (error.message === "Already following this user") {
+      return res.status(400).json({
+        success: false,
+        message: error.message
+      });
+    }
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to follow user"
+    });
+  }
+};
+
+// ========================== UNFOLLOW USER ==========================
+export const unfollowUserController = async (req: Request, res: Response) => {
+  try {
+    const followerId = (req as any).user.id; // Current logged-in user
+    const { userId } = req.params; // User to unfollow
+
+    const deleted = await unfollowUser(followerId, userId);
+    res.status(200).json({
+      success: true,
+      message: "User unfollowed successfully",
+      data: deleted
+    });
+  } catch (error: any) {
+    if (error.message === "Follow relationship not found") {
+      return res.status(404).json({
+        success: false,
+        message: error.message
+      });
+    }
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to unfollow user"
+    });
+  }
+};
+
+// ========================== CHECK IF FOLLOWING ==========================
+export const checkIfFollowingController = async (req: Request, res: Response) => {
+  try {
+    const followerId = (req as any).user.id; // Current logged-in user
+    const { userId } = req.params; // User to check
+
+    const following = await isFollowing(followerId, userId);
+    res.status(200).json({
+      success: true,
+      data: { isFollowing: following }
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to check follow status"
+    });
+  }
+};
+

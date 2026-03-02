@@ -10,7 +10,7 @@ interface ChatListItemProps {
 
 const ChatListItem: React.FC<ChatListItemProps> = ({ name, lastMessage, time, onPress }) => {
   return (
-    <TouchableOpacity style={styles.container} onPress={onPress}>
+    <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.textContainer}>
         <Text style={styles.name}>{name}</Text>
         <Text style={styles.lastMessage} numberOfLines={1}>{lastMessage}</Text>
@@ -24,26 +24,29 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     borderBottomWidth: 1,
-    borderColor: '#eee',
+    borderColor: '#fce4ec',
     backgroundColor: '#fff',
   },
   textContainer: {
     flex: 1,
   },
   name: {
-    fontWeight: 'bold',
+    fontWeight: '700',
     fontSize: 16,
-    marginBottom: 2,
+    color: '#1f2937',
+    marginBottom: 3,
   },
   lastMessage: {
-    color: '#555',
+    color: '#6b7280',
     fontSize: 14,
   },
   time: {
-    color: '#999',
+    color: '#8e44ad',
     fontSize: 12,
+    fontWeight: '500',
     marginLeft: 8,
   },
 });

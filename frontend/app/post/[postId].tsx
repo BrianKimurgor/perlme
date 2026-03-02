@@ -1,4 +1,4 @@
-import { Avatar, Loading } from "@/components/ui";
+import { Avatar, CommentInput, CommentItem, LikeButton, Loading, ShareSheet } from "@/components/ui";
 import { RootState } from "@/src/store";
 import {
     Comment,
@@ -16,7 +16,6 @@ import {
     ScrollView,
     StyleSheet,
     Text,
-    TextInput,
     TouchableOpacity,
     View,
 } from "react-native";
@@ -35,10 +34,13 @@ export default function PostDetailScreen() {
     const [likePost] = useLikePostMutation();
     const [unlikePost] = useUnlikePostMutation();
     const [commentOnPost, { isLoading: isCommenting }] = useCommentOnPostMutation();
+    const [showShareSheet, setShowShareSheet] = useState(false);
 
-    const [commentText, setCommentText] = useState("");
+    const isLiked = (post as any)?.isLikedByCurrentUser
+        ?? post?.likes?.some((like) => like.userId === currentUserId)
+        ?? false;
 
-    const isLiked = post?.likes?.some((like) => like.userId === currentUserId) || false;
+    const likeCount = (post as any)?.likeCount ?? post?.likes?.length ?? 0;
 
     const handleLike = async () => {
         if (!postId) return;
@@ -53,25 +55,16 @@ export default function PostDetailScreen() {
         }
     };
 
-    const handleComment = async () => {
-        if (!commentText.trim() || !postId) return;
-
+    const handleComment = async (text: string) => {
+        if (!postId) return;
         try {
             await commentOnPost({
                 postId,
-                data: { content: commentText.trim() },
+                data: { content: text },
             }).unwrap();
-
-            setCommentText("");
-            Toast.show({
-                type: "success",
-                text1: "Comment posted",
-            });
-        } catch (error) {
-            Toast.show({
-                type: "error",
-                text1: "Failed to post comment",
-            });
+            Toast.show({ type: "success", text1: "Comment posted" });
+        } catch {
+            Toast.show({ type: "error", text1: "Failed to post comment" });
         }
     };
 
@@ -87,19 +80,6 @@ export default function PostDetailScreen() {
         return date.toLocaleDateString();
     };
 
-    const renderComment = ({ item }: { item: Comment }) => (
-        <View style={styles.commentItem}>
-            <Avatar uri={item.user?.avatarUrl} name={item.user?.username} size={36} />
-            <View style={styles.commentContent}>
-                <View style={styles.commentHeader}>
-                    <Text style={styles.commentUsername}>{item.user?.username}</Text>
-                    <Text style={styles.commentTime}>{formatTimeAgo(item.createdAt)}</Text>
-                </View>
-                <Text style={styles.commentText}>{item.content}</Text>
-            </View>
-        </View>
-    );
-
     if (isLoading) {
         return <Loading fullScreen text="Loading post..." />;
     }
@@ -107,19 +87,23 @@ export default function PostDetailScreen() {
     if (!post) {
         return (
             <View style={styles.errorContainer}>
+                <Ionicons name="alert-circle-outline" size={48} color="#e5c6f5" />
                 <Text style={styles.errorText}>Post not found</Text>
             </View>
         );
     }
+
+    const comments: Comment[] = post.comments || [];
 
     return (
         <KeyboardAvoidingView
             style={styles.container}
             behavior={Platform.OS === "ios" ? "padding" : undefined}
         >
+            {/* Header */}
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => router.back()}>
-                    <Ionicons name="arrow-back" size={24} color="#111827" />
+                    <Ionicons name="arrow-back" size={24} color="#8e44ad" />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Post</Text>
                 <View style={{ width: 24 }} />
@@ -147,31 +131,45 @@ export default function PostDetailScreen() {
 
                 {/* Post Actions */}
                 <View style={styles.postActions}>
-                    <TouchableOpacity style={styles.actionButton} onPress={handleLike}>
-                        <Ionicons
-                            name={isLiked ? "heart" : "heart-outline"}
-                            size={28}
-                            color={isLiked ? "#ff3366" : "#6b7280"}
-                        />
-                        <Text style={styles.actionText}>{post._count?.likes || 0} likes</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.actionButton}>
+                    <LikeButton
+                        isLiked={isLiked}
+                        likeCount={likeCount}
+                        onToggle={handleLike}
+                        size="large"
+                    />
+                    <View style={styles.actionButton}>
                         <Ionicons name="chatbubble-outline" size={26} color="#6b7280" />
                         <Text style={styles.actionText}>
-                            {post._count?.comments || 0} comments
+                            {comments.length} {comments.length === 1 ? "comment" : "comments"}
                         </Text>
+                    </View>
+                    <TouchableOpacity
+                        style={styles.actionButton}
+                        onPress={() => setShowShareSheet(true)}
+                    >
+                        <Ionicons name="share-outline" size={26} color="#6b7280" />
+                        <Text style={styles.actionText}>Share</Text>
                     </TouchableOpacity>
                 </View>
 
                 {/* Comments Section */}
                 <View style={styles.commentsSection}>
                     <Text style={styles.commentsTitle}>Comments</Text>
-                    {post.comments && post.comments.length > 0 ? (
-                        post.comments.map((comment) => (
-                            <View key={comment.id}>{renderComment({ item: comment })}</View>
+                    {comments.length > 0 ? (
+                        comments.map((comment) => (
+                            <CommentItem
+                                key={comment.id}
+                                comment={comment}
+                                onUserPress={(userId) => router.push(`/user/${userId}`)}
+                            />
                         ))
                     ) : (
                         <View style={styles.noComments}>
+                            <Ionicons
+                                name="chatbubble-ellipses-outline"
+                                size={40}
+                                color="#e5c6f5"
+                            />
                             <Text style={styles.noCommentsText}>
                                 No comments yet. Be the first!
                             </Text>
@@ -181,26 +179,16 @@ export default function PostDetailScreen() {
             </ScrollView>
 
             {/* Comment Input */}
-            <View style={styles.commentInputContainer}>
-                <Avatar uri={currentUserId} name="You" size={36} />
-                <TextInput
-                    style={styles.commentInput}
-                    placeholder="Add a comment..."
-                    value={commentText}
-                    onChangeText={setCommentText}
-                    multiline
+            <CommentInput onSubmit={handleComment} isSubmitting={isCommenting} />
+
+            {/* Share Sheet */}
+            {post && (
+                <ShareSheet
+                    post={post}
+                    visible={showShareSheet}
+                    onClose={() => setShowShareSheet(false)}
                 />
-                <TouchableOpacity
-                    onPress={handleComment}
-                    disabled={!commentText.trim() || isCommenting}
-                >
-                    <Ionicons
-                        name="send"
-                        size={24}
-                        color={commentText.trim() ? "#ff3366" : "#d1d5db"}
-                    />
-                </TouchableOpacity>
-            </View>
+            )}
         </KeyboardAvoidingView>
     );
 }
@@ -216,13 +204,13 @@ const styles = StyleSheet.create({
         alignItems: "center",
         paddingHorizontal: 16,
         paddingVertical: 12,
-        borderBottomWidth: 0.5,
-        borderBottomColor: "#e5e7eb",
+        borderBottomWidth: 1,
+        borderBottomColor: "#fce4ec",
     },
     headerTitle: {
         fontSize: 18,
-        fontWeight: "600",
-        color: "#111827",
+        fontWeight: "700",
+        color: "#8e44ad",
     },
     content: {
         flex: 1,
@@ -237,13 +225,14 @@ const styles = StyleSheet.create({
     },
     postUsername: {
         fontSize: 16,
-        fontWeight: "600",
-        color: "#111827",
+        fontWeight: "700",
+        color: "#1f2937",
     },
     postTime: {
         fontSize: 12,
-        color: "#9ca3af",
+        color: "#8e44ad",
         marginTop: 2,
+        fontWeight: "500",
     },
     postContent: {
         fontSize: 16,
@@ -256,9 +245,9 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         paddingHorizontal: 16,
         paddingVertical: 12,
-        borderTopWidth: 0.5,
-        borderBottomWidth: 0.5,
-        borderColor: "#e5e7eb",
+        borderTopWidth: 1,
+        borderBottomWidth: 1,
+        borderColor: "#fce4ec",
         gap: 24,
     },
     actionButton: {
@@ -277,35 +266,8 @@ const styles = StyleSheet.create({
     commentsTitle: {
         fontSize: 18,
         fontWeight: "700",
-        color: "#111827",
+        color: "#8e44ad",
         marginBottom: 16,
-    },
-    commentItem: {
-        flexDirection: "row",
-        marginBottom: 16,
-    },
-    commentContent: {
-        flex: 1,
-        marginLeft: 12,
-    },
-    commentHeader: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        marginBottom: 4,
-    },
-    commentUsername: {
-        fontSize: 14,
-        fontWeight: "600",
-        color: "#111827",
-    },
-    commentTime: {
-        fontSize: 12,
-        color: "#9ca3af",
-    },
-    commentText: {
-        fontSize: 14,
-        color: "#374151",
-        lineHeight: 20,
     },
     noComments: {
         paddingVertical: 40,
@@ -313,22 +275,8 @@ const styles = StyleSheet.create({
     },
     noCommentsText: {
         fontSize: 14,
-        color: "#9ca3af",
-    },
-    commentInputContainer: {
-        flexDirection: "row",
-        alignItems: "center",
-        paddingHorizontal: 16,
-        paddingVertical: 12,
-        borderTopWidth: 0.5,
-        borderTopColor: "#e5e7eb",
-        gap: 12,
-    },
-    commentInput: {
-        flex: 1,
-        fontSize: 14,
-        color: "#111827",
-        maxHeight: 100,
+        color: "#b0b0b0",
+        marginTop: 10,
     },
     errorContainer: {
         flex: 1,
@@ -337,6 +285,8 @@ const styles = StyleSheet.create({
     },
     errorText: {
         fontSize: 18,
-        color: "#6b7280",
+        color: "#8e44ad",
+        marginTop: 12,
+        fontWeight: "600",
     },
 });

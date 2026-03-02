@@ -1,13 +1,13 @@
-// Theme colors matching Android app
+// Theme colors — unified romance / love palette
 export const THEME_COLORS = {
     light: {
         background: '#ffffff',
         text: '#11181C',
-        primary: '#0a7ea4', // Tint color
-        secondary: '#ff3366', // Accent color
-        tertiary: '#687076',
-        border: '#e0e0e0',
-        surface: '#f5f5f5',
+        primary: '#db2777',   // Pink-600  – romantic pink
+        secondary: '#9333ea', // Purple-600 – romantic purple
+        tertiary: '#6b7280',
+        border: '#fce7f3',    // Pink-100  – soft romantic border
+        surface: '#fdf2f8',   // Pink-50   – warm romantic surface
         success: '#10b981',
         warning: '#f59e0b',
         error: '#ef4444',
@@ -15,11 +15,11 @@ export const THEME_COLORS = {
     dark: {
         background: '#151718',
         text: '#ECEDEE',
-        primary: '#ffffff',
-        secondary: '#ff3366',
+        primary: '#f9a8d4',   // Pink-300  – visible on dark
+        secondary: '#c084fc', // Purple-400
         tertiary: '#9BA1A6',
-        border: '#333333',
-        surface: '#1f2023',
+        border: '#4a1942',    // Dark pink-purple border
+        surface: '#2d1a2e',   // Dark with pink tint
         success: '#10b981',
         warning: '#f59e0b',
         error: '#ef4444',
@@ -27,12 +27,12 @@ export const THEME_COLORS = {
 };
 
 export const ACCENT_COLORS = [
-    '#ff3366',
-    '#ff6b6b',
-    '#ff8c42',
-    '#ffa500',
-    '#06b6d4',
-    '#3b82f6',
-    '#8b5cf6',
-    '#ec4899',
+    '#db2777', // Pink-600
+    '#e11d48', // Rose-600
+    '#f43f5e', // Rose-500
+    '#ec4899', // Pink-500
+    '#9333ea', // Purple-600
+    '#a855f7', // Purple-500
+    '#c026d3', // Fuchsia-600
+    '#f472b6', // Pink-400
 ];

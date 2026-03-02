@@ -1,11 +1,11 @@
 'use client';
 
+import { Footer } from '@/components/footer';
 import { HeroHeader } from '@/components/header';
-import { THEME_COLORS } from '@/lib/theme';
 import { BarChart3, BookOpen, Heart, Lightbulb, Target } from 'lucide-react';
 import { motion } from 'motion/react';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 const solutions = [
     {
@@ -30,7 +30,7 @@ const solutions = [
             'Group discovery by interests',
             'Community moderation tools',
         ],
-        color: '#0a7ea4',
+        color: '#9333ea',
     },
     {
         icon: Target,
@@ -42,7 +42,7 @@ const solutions = [
             'Trending content discovery',
             'Post scheduling',
         ],
-        color: '#06b6d4',
+        color: '#c026d3',
     },
     {
         icon: Lightbulb,
@@ -54,7 +54,7 @@ const solutions = [
             'Interest-based recommendations',
             'Smart notifications',
         ],
-        color: '#f59e0b',
+        color: '#e11d48',
     },
     {
         icon: BarChart3,
@@ -66,7 +66,7 @@ const solutions = [
             'Content performance metrics',
             'Growth analytics',
         ],
-        color: '#10b981',
+        color: '#f472b6',
     },
     {
         icon: BookOpen,
@@ -78,29 +78,15 @@ const solutions = [
             'Feature tutorials',
             'Best practice articles',
         ],
-        color: '#8b5cf6',
+        color: '#a855f7',
     },
 ];
 
 export default function SolutionsPage() {
-    const [isDark, setIsDark] = useState(false);
     const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
 
-    useEffect(() => {
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme) {
-            setIsDark(savedTheme === 'dark');
-        } else {
-            setIsDark(window.matchMedia('(prefers-color-scheme: dark)').matches);
-        }
-    }, []);
-
-    const colors = isDark ? THEME_COLORS.dark : THEME_COLORS.light;
-    const bgColor = isDark ? '#151718' : '#ffffff';
-    const textColor = isDark ? '#ECEDEE' : '#11181C';
-
     return (
-        <div style={{ backgroundColor: bgColor, color: textColor }} className="transition-colors duration-300">
+        <div className="bg-[#fffbfc] dark:bg-[#151718] text-[#11181C] dark:text-[#ECEDEE] transition-colors duration-300">
             <HeroHeader />
 
             {/* Hero Section */}
@@ -137,11 +123,7 @@ export default function SolutionsPage() {
                                     whileInView={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 0.5, delay: index * 0.1 }}
                                     viewport={{ once: true }}
-                                    style={{
-                                        backgroundColor: isDark ? '#1f2023' : '#f5f5f5',
-                                        borderColor: isDark ? '#333333' : '#e0e0e0',
-                                    }}
-                                    className="rounded-2xl border overflow-hidden backdrop-blur-sm cursor-pointer hover:shadow-lg transition-all duration-300"
+                                    className="rounded-2xl border overflow-hidden backdrop-blur-sm cursor-pointer hover:shadow-lg hover:shadow-pink-100/50 dark:hover:shadow-pink-900/20 transition-all duration-300 bg-[#fdf2f8] dark:bg-[#2d1a2e] border-pink-100 dark:border-[#4a1942]"
                                     onClick={() => setExpandedIndex(isExpanded ? null : index)}
                                 >
                                     <div className="p-6">
@@ -169,7 +151,7 @@ export default function SolutionsPage() {
                                             transition={{ duration: 0.3 }}
                                             className="overflow-hidden"
                                         >
-                                            <div className="pt-4 border-t" style={{ borderColor: isDark ? '#333333' : '#e0e0e0' }}>
+                                            <div className="pt-4 border-t border-pink-100 dark:border-[#4a1942]">
                                                 <p className="text-sm font-semibold mb-3 opacity-70">Key Benefits:</p>
                                                 <ul className="space-y-2">
                                                     {solution.benefits.map((benefit, i) => (
@@ -202,7 +184,7 @@ export default function SolutionsPage() {
             </section>
 
             {/* How It Works */}
-            <section className="py-20 px-4 border-t" style={{ borderColor: isDark ? '#333333' : '#e0e0e0' }}>
+            <section className="py-20 px-4 border-t border-pink-100 dark:border-[#4a1942]">
                 <div className="max-w-7xl mx-auto">
                     <h2 className="text-4xl md:text-5xl font-bold mb-16 text-center">How Perlme Works</h2>
 
@@ -238,11 +220,7 @@ export default function SolutionsPage() {
                                 className="relative"
                             >
                                 <div
-                                    style={{
-                                        backgroundColor: isDark ? '#1f2023' : '#f5f5f5',
-                                        borderColor: isDark ? '#333333' : '#e0e0e0',
-                                    }}
-                                    className="p-6 rounded-2xl border h-full"
+                                    className="p-6 rounded-2xl border h-full bg-[#fdf2f8] dark:bg-[#2d1a2e] border-pink-100 dark:border-[#4a1942]"
                                 >
                                     <div
                                         style={{ backgroundColor: '#ff3366' }}
@@ -298,11 +276,7 @@ export default function SolutionsPage() {
                                 viewport={{ once: true }}
                             >
                                 <div
-                                    style={{
-                                        backgroundColor: isDark ? '#1f2023' : '#f5f5f5',
-                                        borderColor: isDark ? '#333333' : '#e0e0e0',
-                                    }}
-                                    className="p-8 rounded-2xl border h-full hover:shadow-lg transition-all duration-300"
+                                    className="p-8 rounded-2xl border h-full hover:shadow-lg hover:shadow-pink-100/50 dark:hover:shadow-pink-900/20 transition-all duration-300 bg-[#fdf2f8] dark:bg-[#2d1a2e] border-pink-100 dark:border-[#4a1942]"
                                 >
                                     <div
                                         className="w-1 h-8 rounded mb-4"
@@ -344,6 +318,8 @@ export default function SolutionsPage() {
                     </motion.div>
                 </div>
             </section>
+
+            <Footer />
         </div>
     );
 }

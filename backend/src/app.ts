@@ -1,5 +1,6 @@
 import cors from "cors";
 import express, { Application } from 'express';
+import path from "node:path";
 import swaggerUi from "swagger-ui-express";
 import { authRouter } from './Auth/Auth.route';
 import { anyAuth } from './Middlewares/BearAuth';
@@ -16,6 +17,7 @@ import exploreRouter from './Services/Explore and Recommendations/exploreAndReco
 import messageRouter from './Services/Messages/message.route';
 import postRouter from './Services/posts/post.route';
 import reportRouters from './Services/Reports/report.route';
+import uploadRouter from './Services/upload/upload.route';
 import userRouters from './Services/Users/user.route';
 import swaggerSpec from "./swagger";
 
@@ -58,6 +60,11 @@ app.use(cors(corsOptions));
 // ============================================================================
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+
+// ============================================================================
+// 📁 STATIC FILES (Serve uploaded media)
+// ============================================================================
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 // ============================================================================
 // 🚦 RATE LIMITING
@@ -110,6 +117,7 @@ app.use('/api', anyAuth, checkUserActive, postRouter);
 app.use('/api/messages', anyAuth, checkUserActive, messageRouter);
 app.use('/api', anyAuth, checkUserActive, blockRouters);
 app.use('/api', anyAuth, checkUserActive, reportRouters);
+app.use('/api', anyAuth, checkUserActive, uploadRouter);
 // ============================================================================
 // ❌ 404 HANDLER
 // ============================================================================

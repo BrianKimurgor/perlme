@@ -1,9 +1,9 @@
-import { Loading, PostCard } from "@/components/ui";
+import { CommentsSheet, Loading, PostCard, ShareSheet } from "@/components/ui";
 import { RootState } from "@/src/store";
 import { Post, useGetAllPostsQuery, useLikePostMutation, useUnlikePostMutation } from "@/src/store/Apis/PostsApi";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   FlatList,
   RefreshControl,
@@ -16,18 +16,17 @@ import { useSelector } from "react-redux";
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { data: posts, isLoading, error, refetch } = useGetAllPostsQuery();
+  const { data: posts, isLoading, refetch } = useGetAllPostsQuery();
   const [likePost] = useLikePostMutation();
   const [unlikePost] = useUnlikePostMutation();
   const [refreshing, setRefreshing] = useState(false);
   const currentUserId = useSelector((state: RootState) => state.auth.user?.id);
 
-  // Debug logging
-  React.useEffect(() => {
-    console.log("Posts data:", posts);
-    console.log("Loading:", isLoading);
-    console.log("Error:", error);
-  }, [posts, isLoading, error]);
+  // ─── Comments Sheet State ───────────────────────────────────
+  const [commentsPostId, setCommentsPostId] = useState<string | null>(null);
+
+  // ─── Share Sheet State ──────────────────────────────────────
+  const [sharePost, setSharePost] = useState<Post | null>(null);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -35,7 +34,7 @@ export default function HomeScreen() {
     setRefreshing(false);
   };
 
-  const handleLike = async (postId: string, isLiked: boolean) => {
+  const handleLike = useCallback(async (postId: string, isLiked: boolean) => {
     try {
       if (isLiked) {
         await unlikePost(postId).unwrap();
@@ -45,11 +44,18 @@ export default function HomeScreen() {
     } catch (error) {
       console.error("Failed to toggle like:", error);
     }
-  };
+  }, [likePost, unlikePost]);
 
   const checkIfLiked = (post: Post): boolean => {
-    if (!currentUserId || !post.likes) return false;
-    return post.likes.some((like) => like.userId === currentUserId);
+    if (!currentUserId) return false;
+    // Support both backend shapes
+    if ((post as any).isLikedByCurrentUser !== undefined) {
+      return (post as any).isLikedByCurrentUser;
+    }
+    if (post.likes) {
+      return post.likes.some((like) => like.userId === currentUserId);
+    }
+    return false;
   };
 
   const renderPost = ({ item }: { item: Post }) => (
@@ -57,7 +63,8 @@ export default function HomeScreen() {
       post={item}
       isLiked={checkIfLiked(item)}
       onLike={() => handleLike(item.id, checkIfLiked(item))}
-      onComment={() => router.push(`/post/${item.id}`)}
+      onComment={() => setCommentsPostId(item.id)}
+      onShare={() => setSharePost(item)}
       onUserPress={() => router.push(`/user/${item.authorId}`)}
     />
   );
@@ -92,7 +99,7 @@ export default function HomeScreen() {
         }
         ListEmptyComponent={
           <View style={styles.empty}>
-            <Ionicons name="documents-outline" size={64} color="#d1d5db" />
+            <Ionicons name="documents-outline" size={64} color="#e5c6f5" />
             <Text style={styles.emptyText}>No posts yet</Text>
             <Text style={styles.emptySubtext}>
               Follow some users to see their posts
@@ -100,6 +107,28 @@ export default function HomeScreen() {
           </View>
         }
       />
+
+      {/* Comments Sheet (opens as modal from feed) */}
+      {commentsPostId && (
+        <CommentsSheet
+          postId={commentsPostId}
+          visible={!!commentsPostId}
+          onClose={() => setCommentsPostId(null)}
+          onUserPress={(userId) => {
+            setCommentsPostId(null);
+            router.push(`/user/${userId}`);
+          }}
+        />
+      )}
+
+      {/* Share Sheet */}
+      {sharePost && (
+        <ShareSheet
+          post={sharePost}
+          visible={!!sharePost}
+          onClose={() => setSharePost(null)}
+        />
+      )}
     </View>
   );
 }
@@ -107,7 +136,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f9fafb",
+    backgroundColor: "#fdf2f8",
   },
   header: {
     flexDirection: "row",
@@ -116,13 +145,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     backgroundColor: "#fff",
-    borderBottomWidth: 0.5,
-    borderBottomColor: "#e5e7eb",
+    borderBottomWidth: 1,
+    borderBottomColor: "#fce4ec",
   },
   headerTitle: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#111827",
+    fontSize: 26,
+    fontWeight: "800",
+    color: "#8e44ad",
   },
   listContent: {
     paddingVertical: 8,
@@ -134,13 +163,13 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 18,
-    fontWeight: "600",
-    color: "#6b7280",
+    fontWeight: "700",
+    color: "#8e44ad",
     marginTop: 16,
   },
   emptySubtext: {
     fontSize: 14,
-    color: "#9ca3af",
+    color: "#b0b0b0",
     marginTop: 8,
   },
 });

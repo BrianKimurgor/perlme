@@ -1,4 +1,5 @@
 import { io, Socket } from 'socket.io-client';
+import { SOCKET_SERVER_URL } from '../src/utils/config';
 
 export interface Message {
   id: string;
@@ -17,7 +18,7 @@ export interface User {
 
 class SocketService {
   private socket: Socket | null = null;
-  private serverUrl: string = 'http://192.168.88.113:3000'; // Updated to use local IP
+  private serverUrl: string = SOCKET_SERVER_URL;
 
   // Event callbacks
   private onMessageCallback?: (message: Message) => void;

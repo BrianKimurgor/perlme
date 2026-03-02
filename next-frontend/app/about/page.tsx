@@ -1,11 +1,10 @@
 'use client';
 
+import { Footer } from '@/components/footer';
 import { HeroHeader } from '@/components/header';
-import { THEME_COLORS } from '@/lib/theme';
 import { Globe, Heart, TrendingUp, Users, Zap } from 'lucide-react';
 import { motion } from 'motion/react';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
 
 const teamMembers = [
     {
@@ -79,25 +78,8 @@ const values = [
 ];
 
 export default function AboutPage() {
-    const [isDark, setIsDark] = useState(false);
-
-    useEffect(() => {
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme) {
-            setIsDark(savedTheme === 'dark');
-        } else {
-            setIsDark(window.matchMedia('(prefers-color-scheme: dark)').matches);
-        }
-    }, []);
-
-    const colors = isDark ? THEME_COLORS.dark : THEME_COLORS.light;
-    const bgColor = isDark ? '#151718' : '#ffffff';
-    const textColor = isDark ? '#ECEDEE' : '#11181C';
-    const surfaceColor = isDark ? '#1f2023' : '#f5f5f5';
-    const borderColor = isDark ? '#333333' : '#e0e0e0';
-
     return (
-        <div style={{ backgroundColor: bgColor, color: textColor }} className="transition-colors duration-300">
+        <div className="bg-[#fffbfc] dark:bg-[#151718] text-[#11181C] dark:text-[#ECEDEE] transition-colors duration-300">
             <HeroHeader />
 
             {/* Hero Section */}
@@ -130,17 +112,8 @@ export default function AboutPage() {
                             transition={{ duration: 0.6 }}
                             viewport={{ once: true }}
                         >
-                            <div
-                                style={{
-                                    backgroundColor: surfaceColor,
-                                    borderColor: borderColor,
-                                }}
-                                className="p-8 rounded-2xl border"
-                            >
-                                <div
-                                    style={{ backgroundColor: '#ff3366' }}
-                                    className="w-12 h-12 rounded-lg flex items-center justify-center mb-4"
-                                >
+                            <div className="p-8 rounded-2xl border bg-[#fdf2f8] dark:bg-[#2d1a2e] border-pink-100 dark:border-[#4a1942]">
+                                <div className="w-12 h-12 rounded-lg flex items-center justify-center mb-4 bg-[#ff3366]">
                                     <Heart className="text-white" size={24} />
                                 </div>
                                 <h2 className="text-3xl font-bold mb-4">Our Mission</h2>
@@ -162,17 +135,8 @@ export default function AboutPage() {
                             transition={{ duration: 0.6 }}
                             viewport={{ once: true }}
                         >
-                            <div
-                                style={{
-                                    backgroundColor: surfaceColor,
-                                    borderColor: borderColor,
-                                }}
-                                className="p-8 rounded-2xl border"
-                            >
-                                <div
-                                    style={{ backgroundColor: '#0a7ea4' }}
-                                    className="w-12 h-12 rounded-lg flex items-center justify-center mb-4"
-                                >
+                            <div className="p-8 rounded-2xl border bg-[#fdf2f8] dark:bg-[#2d1a2e] border-pink-100 dark:border-[#4a1942]">
+                                <div className="w-12 h-12 rounded-lg flex items-center justify-center mb-4 bg-[#9333ea]">
                                     <Globe className="text-white" size={24} />
                                 </div>
                                 <h2 className="text-3xl font-bold mb-4">Our Vision</h2>
@@ -191,10 +155,7 @@ export default function AboutPage() {
             </section>
 
             {/* Our Story */}
-            <section
-                className="py-20 px-4 border-t"
-                style={{ borderColor: borderColor }}
-            >
+            <section className="py-20 px-4 border-t border-pink-100 dark:border-[#4a1942]">
                 <div className="max-w-4xl mx-auto">
                     <h2 className="text-4xl md:text-5xl font-bold mb-12 text-center">Our Story</h2>
 
@@ -204,11 +165,7 @@ export default function AboutPage() {
                             whileInView={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.6 }}
                             viewport={{ once: true }}
-                            style={{
-                                backgroundColor: surfaceColor,
-                                borderColor: borderColor,
-                            }}
-                            className="p-8 rounded-2xl border"
+                            className="p-8 rounded-2xl border bg-[#fdf2f8] dark:bg-[#2d1a2e] border-pink-100 dark:border-[#4a1942]"
                         >
                             <h3 className="text-2xl font-semibold mb-4">The Beginning</h3>
                             <p className="opacity-70 leading-relaxed">
@@ -223,11 +180,7 @@ export default function AboutPage() {
                             whileInView={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.6, delay: 0.1 }}
                             viewport={{ once: true }}
-                            style={{
-                                backgroundColor: surfaceColor,
-                                borderColor: borderColor,
-                            }}
-                            className="p-8 rounded-2xl border"
+                            className="p-8 rounded-2xl border bg-[#fdf2f8] dark:bg-[#2d1a2e] border-pink-100 dark:border-[#4a1942]"
                         >
                             <h3 className="text-2xl font-semibold mb-4">The Development</h3>
                             <p className="opacity-70 leading-relaxed">
@@ -242,11 +195,7 @@ export default function AboutPage() {
                             whileInView={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.6, delay: 0.2 }}
                             viewport={{ once: true }}
-                            style={{
-                                backgroundColor: surfaceColor,
-                                borderColor: borderColor,
-                            }}
-                            className="p-8 rounded-2xl border"
+                            className="p-8 rounded-2xl border bg-[#fdf2f8] dark:bg-[#2d1a2e] border-pink-100 dark:border-[#4a1942]"
                         >
                             <h3 className="text-2xl font-semibold mb-4">Today & Beyond</h3>
                             <p className="opacity-70 leading-relaxed">
@@ -274,16 +223,12 @@ export default function AboutPage() {
                                     whileInView={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 0.5, delay: index * 0.1 }}
                                     viewport={{ once: true }}
-                                    style={{
-                                        backgroundColor: surfaceColor,
-                                        borderColor: borderColor,
-                                    }}
-                                    className="p-6 rounded-2xl border"
+                                    className="p-6 rounded-2xl border bg-[#fdf2f8] dark:bg-[#2d1a2e] border-pink-100 dark:border-[#4a1942]"
                                 >
                                     {typeof Icon !== 'string' && (
                                         <div
                                             style={{
-                                                backgroundColor: ['#ff3366', '#0a7ea4', '#06b6d4', '#f59e0b'][index],
+                                                backgroundColor: ['#db2777', '#9333ea', '#c026d3', '#e11d48'][index],
                                             }}
                                             className="w-12 h-12 rounded-lg flex items-center justify-center mb-4"
                                         >
@@ -300,19 +245,13 @@ export default function AboutPage() {
             </section>
 
             {/* Milestones */}
-            <section
-                className="py-20 px-4 border-t"
-                style={{ borderColor: borderColor }}
-            >
+            <section className="py-20 px-4 border-t border-pink-100 dark:border-[#4a1942]">
                 <div className="max-w-5xl mx-auto">
                     <h2 className="text-4xl md:text-5xl font-bold mb-16 text-center">Our Journey</h2>
 
                     <div className="relative">
                         {/* Timeline line */}
-                        <div
-                            style={{ backgroundColor: borderColor }}
-                            className="absolute left-1/2 transform -translate-x-1/2 w-1 h-full"
-                        />
+                        <div className="absolute left-1/2 transform -translate-x-1/2 w-1 h-full bg-pink-100 dark:bg-[#4a1942]" />
 
                         <div className="space-y-12">
                             {milestones.map((milestone, index) => {
@@ -331,7 +270,7 @@ export default function AboutPage() {
                                         <div className={index % 2 === 0 ? 'md:pr-8 md:text-right' : 'md:order-2 md:pl-8'}>
                                             <div
                                                 style={{
-                                                    backgroundColor: ['#ff3366', '#0a7ea4', '#06b6d4', '#f59e0b'][index],
+                                                    backgroundColor: ['#db2777', '#9333ea', '#c026d3', '#e11d48'][index],
                                                 }}
                                                 className="inline-block px-4 py-2 rounded-full text-white font-semibold text-sm"
                                             >
@@ -355,13 +294,7 @@ export default function AboutPage() {
                                                 : 'md:pr-8 md:text-right'
                                                 }`}
                                         >
-                                            <div
-                                                style={{
-                                                    backgroundColor: surfaceColor,
-                                                    borderColor: borderColor,
-                                                }}
-                                                className="p-6 rounded-xl border"
-                                            >
+                                            <div className="p-6 rounded-xl border bg-[#fdf2f8] dark:bg-[#2d1a2e] border-pink-100 dark:border-[#4a1942]">
                                                 <h3 className="text-xl font-semibold mb-2">{milestone.title}</h3>
                                                 <p className="opacity-60 text-sm">{milestone.description}</p>
                                             </div>
@@ -387,11 +320,7 @@ export default function AboutPage() {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.5, delay: index * 0.1 }}
                                 viewport={{ once: true }}
-                                style={{
-                                    backgroundColor: surfaceColor,
-                                    borderColor: borderColor,
-                                }}
-                                className="rounded-2xl p-8 border text-center hover:shadow-lg transition-all duration-300"
+                                className="rounded-2xl p-8 border text-center hover:shadow-lg transition-all duration-300 bg-[#fdf2f8] dark:bg-[#2d1a2e] border-pink-100 dark:border-[#4a1942]"
                             >
                                 <div className="text-6xl mb-4">{member.image}</div>
                                 <h3 className="text-2xl font-semibold mb-1">{member.name}</h3>
@@ -409,10 +338,7 @@ export default function AboutPage() {
             </section>
 
             {/* Stats */}
-            <section
-                className="py-20 px-4 border-t"
-                style={{ borderColor: borderColor }}
-            >
+            <section className="py-20 px-4 border-t border-pink-100 dark:border-[#4a1942]">
                 <div className="max-w-6xl mx-auto">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
                         {[
@@ -468,6 +394,8 @@ export default function AboutPage() {
                     </motion.div>
                 </div>
             </section>
+
+            <Footer />
         </div>
     );
 }

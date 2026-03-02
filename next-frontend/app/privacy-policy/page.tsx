@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import { Footer } from '@/components/footer';
 import { HeroHeader } from '@/components/header';
 import { THEME_COLORS } from '@/lib/theme';
 import { motion } from 'motion/react';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 export default function PrivacyPolicy() {
     const [mounted, setMounted] = useState(false);
@@ -49,7 +50,7 @@ export default function PrivacyPolicy() {
     ];
 
     return (
-        <div className="min-h-screen" style={{ backgroundColor: THEME_COLORS.light.background }}>
+        <div className="min-h-screen bg-gradient-to-b from-pink-50/40 to-white dark:from-[#1a0f15] dark:to-[#151718]">
             <HeroHeader />
 
             <main className="mx-auto max-w-7xl px-6 pb-20 pt-32 lg:px-12">
@@ -62,7 +63,7 @@ export default function PrivacyPolicy() {
                     <h1 className="text-4xl font-bold tracking-tight lg:text-5xl" style={{ color: THEME_COLORS.light.primary }}>
                         Privacy Policy
                     </h1>
-                    <p className="mt-4 text-lg text-gray-600">
+                    <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">
                         Last updated: January 19, 2026
                     </p>
                 </motion.div>
@@ -75,13 +76,13 @@ export default function PrivacyPolicy() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, delay: index * 0.1 }}
-                            className="rounded-lg border border-gray-200 p-8">
+                            className="rounded-lg border border-pink-100 dark:border-[#4a1942] dark:bg-[#2d1a2e] p-8">
                             <h2
                                 className="mb-4 text-2xl font-bold"
                                 style={{ color: THEME_COLORS.light.primary }}>
                                 {section.title}
                             </h2>
-                            <p className="whitespace-pre-line leading-relaxed text-gray-700">
+                            <p className="whitespace-pre-line leading-relaxed text-gray-700 dark:text-gray-300">
                                 {section.content}
                             </p>
                         </motion.div>
@@ -93,8 +94,8 @@ export default function PrivacyPolicy() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: sections.length * 0.1 }}
-                    className="mt-16 rounded-lg bg-linear-to-r from-blue-50 to-purple-50 p-8 text-center">
-                    <p className="mb-4 text-gray-700">
+                    className="mt-16 rounded-lg bg-gradient-to-r from-pink-50 to-rose-50 dark:from-[#2d1a2e] dark:to-[#1a0f15] p-8 text-center">
+                    <p className="mb-4 text-gray-700 dark:text-gray-300">
                         Have questions about our privacy practices?
                     </p>
                     <Link
@@ -108,6 +109,8 @@ export default function PrivacyPolicy() {
                     </Link>
                 </motion.div>
             </main>
+
+            <Footer />
         </div>
     );
 }

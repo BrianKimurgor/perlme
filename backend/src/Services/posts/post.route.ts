@@ -1,4 +1,6 @@
 import { Router } from "express";
+import { authMiddleware } from "../../Middlewares/BearAuth";
+import { rateLimiterMiddleware } from "../../Middlewares/rateLimiter";
 import {
     commentOnPostController,
     createPostController,
@@ -6,10 +8,9 @@ import {
     getAllPublicPostsController,
     getPostByIdController,
     likePostController,
+    repostController,
     unlikePostController,
 } from "./post.controller";
-import { authMiddleware } from "../../Middlewares/BearAuth";
-import { rateLimiterMiddleware } from "../../Middlewares/rateLimiter";
 
 const postRouter = Router();
 postRouter.use(rateLimiterMiddleware);
@@ -188,5 +189,25 @@ postRouter.delete("/posts/:postId/like", authMiddleware(), unlikePostController)
  *         description: Comment added
  */
 postRouter.post("/posts/:postId/comments", authMiddleware(), commentOnPostController);
+
+/**
+ * @swagger
+ * /api/posts/{postId}/repost:
+ *   post:
+ *     summary: Repost a post to your own feed
+ *     tags: [Posts]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: postId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       201:
+ *         description: Post shared to your feed
+ */
+postRouter.post("/posts/:postId/repost", authMiddleware(), repostController);
 
 export default postRouter;

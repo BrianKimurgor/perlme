@@ -1,15 +1,15 @@
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import React, { useEffect, useRef } from "react";
 import {
-  View,
-  Text,
-  Pressable,
-  StyleSheet,
-  ScrollView,
   Animated,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
 
 export default function MoreScreen() {
   const router = useRouter();
@@ -20,7 +20,7 @@ export default function MoreScreen() {
       items: [
         { title: "Manage Account", icon: "person-circle-outline", path: "/settings/manage" },
         { title: "Change Password", icon: "key-outline", path: "/settings/password" },
-        { title: "Logout", icon: "log-out-outline", path: "/settings/logout" },
+        { title: "Logout", icon: "log-out-outline", path: "/Auth/Logout" },
       ],
     },
     {

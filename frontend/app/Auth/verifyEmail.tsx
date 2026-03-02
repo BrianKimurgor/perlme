@@ -111,9 +111,9 @@ export default function VerifyEmailScreen() {
       console.log("📤 [FRONTEND] Sending verification request...");
       await verifyEmail({ email, confirmationCode }).unwrap();
       console.log("✅ [FRONTEND] Email verified successfully!");
-      Toast.show({ type: "success", text1: "✅ Email verified!" });
+      Toast.show({ type: "success", text1: "✅ Email verified! Please log in." });
       setIsSuccess(true);
-      setTimeout(() => router.replace("/(tabs)"), 1500);
+      setTimeout(() => router.replace("/Auth/Login"), 1500);
     } catch (err: any) {
       console.error("❌ [FRONTEND] Verification failed:", err);
       Toast.show({

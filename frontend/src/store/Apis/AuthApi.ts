@@ -1,4 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { API_BASE_URL } from "../../../src/utils/config";
 
 // -------------------- TYPES --------------------
 export interface RegisterRequest {
@@ -40,7 +41,7 @@ export interface AuthResponse {
 export const authApi = createApi({
   reducerPath: "authApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "http://192.168.88.113:3000/api/",
+    baseUrl: API_BASE_URL,
   }),
   tagTypes: ["Auth"],
 

@@ -1,11 +1,11 @@
 'use client';
 
+import { Footer } from '@/components/footer';
 import { HeroHeader } from '@/components/header';
-import { THEME_COLORS } from '@/lib/theme';
 import { Check, X } from 'lucide-react';
 import { motion } from 'motion/react';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 const pricingPlans = [
     {
@@ -34,7 +34,7 @@ const pricingPlans = [
         price: 4.99,
         period: '/month',
         description: 'For active daters',
-        color: '#0a7ea4',
+        color: '#9333ea',
         featured: true,
         features: [
             { text: 'Everything in Free', included: true },
@@ -75,26 +75,10 @@ const pricingPlans = [
 ];
 
 export default function PricingPage() {
-    const [isDark, setIsDark] = useState(false);
     const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
 
-    useEffect(() => {
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme) {
-            setIsDark(savedTheme === 'dark');
-        } else {
-            setIsDark(window.matchMedia('(prefers-color-scheme: dark)').matches);
-        }
-    }, []);
-
-    const colors = isDark ? THEME_COLORS.dark : THEME_COLORS.light;
-    const bgColor = isDark ? '#151718' : '#ffffff';
-    const textColor = isDark ? '#ECEDEE' : '#11181C';
-    const surfaceColor = isDark ? '#1f2023' : '#f5f5f5';
-    const borderColor = isDark ? '#333333' : '#e0e0e0';
-
     return (
-        <div style={{ backgroundColor: bgColor, color: textColor }} className="transition-colors duration-300">
+        <div className="bg-[#fffbfc] dark:bg-[#151718] text-[#11181C] dark:text-[#ECEDEE] transition-colors duration-300">
             <HeroHeader />
 
             {/* Hero Section */}
@@ -119,8 +103,7 @@ export default function PricingPage() {
             {/* Pricing Toggle */}
             <section className="py-10 px-4 flex justify-center">
                 <div
-                    style={{ backgroundColor: surfaceColor, borderColor: borderColor }}
-                    className="inline-flex rounded-full p-1 border"
+                    className="inline-flex rounded-full p-1 border bg-[#fdf2f8] dark:bg-[#2d1a2e] border-pink-100 dark:border-[#4a1942]"
                 >
                     {['monthly', 'yearly'].map((period) => (
                         <button
@@ -156,14 +139,16 @@ export default function PricingPage() {
                                 transition={{ duration: 0.5, delay: index * 0.1 }}
                                 viewport={{ once: true }}
                                 style={{
-                                    backgroundColor: plan.featured ? surfaceColor : 'transparent',
-                                    borderColor: plan.featured ? plan.color : borderColor,
+                                    borderColor: plan.featured ? plan.color : undefined,
                                     borderWidth: plan.featured ? 2 : 1,
                                     boxShadow: plan.featured
                                         ? `0 0 30px ${plan.color}20, 0 8px 32px rgba(0,0,0,0.1)`
                                         : 'none',
                                 }}
-                                className="rounded-2xl p-8 border backdrop-blur-sm relative overflow-hidden transition-all duration-300 hover:shadow-xl"
+                                className={`rounded-2xl p-8 border backdrop-blur-sm relative overflow-hidden transition-all duration-300 hover:shadow-xl ${plan.featured
+                                        ? 'bg-[#fdf2f8] dark:bg-[#2d1a2e]'
+                                        : 'bg-transparent border-pink-100 dark:border-[#4a1942]'
+                                    }`}
                             >
                                 {/* Featured Badge */}
                                 {plan.featured && (
@@ -262,8 +247,7 @@ export default function PricingPage() {
 
             {/* FAQ Section */}
             <section
-                className="py-20 px-4 border-t"
-                style={{ borderColor: borderColor }}
+                className="py-20 px-4 border-t border-pink-100 dark:border-[#4a1942]"
             >
                 <div className="max-w-3xl mx-auto">
                     <h2 className="text-4xl md:text-5xl font-bold mb-16 text-center">
@@ -303,11 +287,7 @@ export default function PricingPage() {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.5, delay: index * 0.1 }}
                                 viewport={{ once: true }}
-                                style={{
-                                    backgroundColor: surfaceColor,
-                                    borderColor: borderColor,
-                                }}
-                                className="p-6 rounded-xl border"
+                                className="p-6 rounded-xl border bg-[#fdf2f8] dark:bg-[#2d1a2e] border-pink-100 dark:border-[#4a1942]"
                             >
                                 <h3 className="text-lg font-semibold mb-2">{faq.q}</h3>
                                 <p className="opacity-70 leading-relaxed">{faq.a}</p>
@@ -328,11 +308,7 @@ export default function PricingPage() {
                         <table className="w-full">
                             <thead>
                                 <tr
-                                    style={{
-                                        backgroundColor: surfaceColor,
-                                        borderColor: borderColor,
-                                    }}
-                                    className="border-b"
+                                    className="border-b bg-[#fdf2f8] dark:bg-[#2d1a2e] border-pink-100 dark:border-[#4a1942]"
                                 >
                                     <th className="text-left py-4 px-4 font-semibold">Feature</th>
                                     <th className="text-center py-4 px-4 font-semibold">Free</th>
@@ -353,8 +329,7 @@ export default function PricingPage() {
                                 ].map((row, index) => (
                                     <tr
                                         key={index}
-                                        style={{ borderColor: borderColor }}
-                                        className="border-b"
+                                        className="border-b border-pink-100 dark:border-[#4a1942]"
                                     >
                                         <td className="py-4 px-4 font-medium">{row.feature}</td>
                                         <td className="text-center py-4 px-4">
@@ -426,6 +401,8 @@ export default function PricingPage() {
                     </motion.div>
                 </div>
             </section>
+
+            <Footer />
         </div>
     );
 }

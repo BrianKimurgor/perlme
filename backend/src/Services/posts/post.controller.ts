@@ -1,17 +1,18 @@
 import { Request, Response } from "express";
-import {
-  commentOnPostService,
-  createPostService,
-  deletePostService,
-  getAllPublicPostsService,
-  getPostByIdService,
-  getPostsByUserService,
-  likePostService,
-  unlikePostService,
-  updatePostService,
-} from "./post.service";
-import { ResponseHandler } from "../../utils/responseHandler";
 import { PaginationHandler } from "../../utils/paginationHandler";
+import { ResponseHandler } from "../../utils/responseHandler";
+import {
+    commentOnPostService,
+    createPostService,
+    deletePostService,
+    getAllPublicPostsService,
+    getPostByIdService,
+    getPostsByUserService,
+    likePostService,
+    repostService,
+    unlikePostService,
+    updatePostService,
+} from "./post.service";
 
 export const createPostController = async (req: Request, res: Response) => {
     try {
@@ -22,11 +23,11 @@ export const createPostController = async (req: Request, res: Response) => {
         if (!content?.trim()) return ResponseHandler.badRequest(res, "Post content is required");
 
         const mediaItems = Array.isArray(media)
-        ? media.map((item) => ({
-            url: item.url,
-            type: item.type || "image",
+            ? media.map((item) => ({
+                url: item.url,
+                type: item.type || "image",
             }))
-        : [];
+            : [];
 
         const newPost = await createPostService({ authorId: userId, content: content.trim() }, mediaItems);
         return ResponseHandler.created(res, "Post created successfully", newPost);
@@ -191,6 +192,25 @@ export const commentOnPostController = async (req: Request, res: Response) => {
         return ResponseHandler.created(res, "Comment added successfully", comment);
     } catch (error) {
         console.error("Error adding comment:", error);
+        return ResponseHandler.internal(res, "Internal server error", error);
+    }
+};
+
+export const repostController = async (req: Request, res: Response) => {
+    try {
+        const userId = req.user?.id;
+        const { postId } = req.params;
+
+        if (!userId) return ResponseHandler.unauthorized(res);
+        if (!postId) return ResponseHandler.badRequest(res, "Post ID is required");
+
+        const repost = await repostService(userId, postId);
+        return ResponseHandler.created(res, "Post shared to your feed", repost);
+    } catch (error: any) {
+        console.error("Error reposting:", error);
+        if (error.message === "Original post not found") {
+            return ResponseHandler.notFound(res, error.message);
+        }
         return ResponseHandler.internal(res, "Internal server error", error);
     }
 };

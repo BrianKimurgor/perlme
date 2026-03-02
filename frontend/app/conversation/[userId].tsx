@@ -91,7 +91,7 @@ export default function ConversationScreen() {
             {/* Header */}
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => router.back()}>
-                    <Ionicons name="arrow-back" size={24} color="#111827" />
+                    <Ionicons name="arrow-back" size={24} color="#8e44ad" />
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={styles.userInfo}
@@ -108,7 +108,7 @@ export default function ConversationScreen() {
                     </View>
                 </TouchableOpacity>
                 <TouchableOpacity>
-                    <Ionicons name="ellipsis-vertical" size={20} color="#111827" />
+                    <Ionicons name="ellipsis-vertical" size={20} color="#8e44ad" />
                 </TouchableOpacity>
             </View>
 
@@ -134,16 +134,21 @@ export default function ConversationScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#f9fafb",
+        backgroundColor: "#fdf2f8",
     },
     header: {
         flexDirection: "row",
         alignItems: "center",
         paddingHorizontal: 16,
-        paddingVertical: 12,
+        paddingVertical: 14,
         backgroundColor: "#fff",
-        borderBottomWidth: 0.5,
-        borderBottomColor: "#e5e7eb",
+        borderBottomWidth: 1,
+        borderBottomColor: "#fce4ec",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 3,
+        elevation: 2,
     },
     userInfo: {
         flex: 1,
@@ -156,12 +161,13 @@ const styles = StyleSheet.create({
     },
     username: {
         fontSize: 16,
-        fontWeight: "600",
-        color: "#111827",
+        fontWeight: "700",
+        color: "#1f2937",
     },
     status: {
         fontSize: 12,
         color: "#10b981",
+        fontWeight: "500",
     },
     messagesList: {
         padding: 16,

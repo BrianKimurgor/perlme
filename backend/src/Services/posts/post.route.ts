@@ -1,4 +1,6 @@
 import { Router } from "express";
+import { authMiddleware } from "../../Middlewares/BearAuth";
+import { rateLimiterMiddleware } from "../../Middlewares/rateLimiter";
 import {
     commentOnPostController,
     createPostController,
@@ -9,8 +11,6 @@ import {
     repostController,
     unlikePostController,
 } from "./post.controller";
-import { authMiddleware } from "../../Middlewares/BearAuth";
-import { rateLimiterMiddleware } from "../../Middlewares/rateLimiter";
 
 const postRouter = Router();
 postRouter.use(rateLimiterMiddleware);

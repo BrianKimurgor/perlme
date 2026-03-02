@@ -1,6 +1,6 @@
+import { and, asc, desc, eq, sql } from "drizzle-orm";
 import db from "../../drizzle/db";
-import {posts,likes,comments,media,TSelectPost,TInsertPost,TInsertMedia,} from "../../drizzle/schema";
-import { eq, and, desc, asc, sql } from "drizzle-orm";
+import { comments, likes, media, posts, TInsertMedia, TInsertPost, TSelectPost, } from "../../drizzle/schema";
 import { PaginationHandler } from "../../utils/paginationHandler";
 
 export type TPostAuthor = {
@@ -49,7 +49,7 @@ export type TPostComment = {
 };
 
 export type TCreatePostResult = TSelectPost & {
-  media: TPostMedia[];
+    media: TPostMedia[];
 };
 
 const formatPost = (post: any, currentUserId?: string) => ({
@@ -86,14 +86,14 @@ const fetchPostsBase = async ({
 
     const orderByClause =
         sortOrder === "asc"
-        ? asc((posts as any)[sortBy])
-        : desc((posts as any)[sortBy]);
+            ? asc((posts as any)[sortBy])
+            : desc((posts as any)[sortBy]);
 
     const [totalResult, postsResult] = await Promise.all([
         db
-        .select({ count: sql<number>`count(${posts.id})`.as("count") })
-        .from(posts)
-        .where(whereCondition),
+            .select({ count: sql<number>`count(${posts.id})`.as("count") })
+            .from(posts)
+            .where(whereCondition),
         db.query.posts.findMany({
             where: whereCondition,
             with: {
@@ -115,7 +115,7 @@ const fetchPostsBase = async ({
     return PaginationHandler.createResult(enrichedPosts, totalItems, page, limit);
 };
 
-export const createPostService = async (postData: TInsertPost,mediaItems?: Omit<TInsertMedia, "postId">[]
+export const createPostService = async (postData: TInsertPost, mediaItems?: Omit<TInsertMedia, "postId">[]
 ): Promise<TCreatePostResult> => {
     const [newPost] = await db.insert(posts).values(postData).returning();
 
@@ -124,14 +124,14 @@ export const createPostService = async (postData: TInsertPost,mediaItems?: Omit<
     let insertedMedia: TPostMedia[] = [];
     if (mediaItems && mediaItems.length > 0) {
         const mediaRecords = mediaItems.map((m) => ({
-        ...m,
-        postId: newPost.id,
+            ...m,
+            postId: newPost.id,
         }));
 
         insertedMedia = await db
-        .insert(media)
-        .values(mediaRecords)
-        .returning({ id: media.id, url: media.url, type: media.type });
+            .insert(media)
+            .values(mediaRecords)
+            .returning({ id: media.id, url: media.url, type: media.type });
     }
 
     return {
@@ -148,17 +148,17 @@ export const getAllPublicPostsService = async (
     sortBy = "createdAt",
     sortOrder: "asc" | "desc" = "desc"
 ) => {
-  return fetchPostsBase({
+    return fetchPostsBase({
         currentUserId,
         whereCondition: undefined,
         page,
         limit,
         sortBy,
         sortOrder,
-  });
+    });
 };
 
-export const getPostByIdService = async (postId: string,currentUserId?: string) => {
+export const getPostByIdService = async (postId: string, currentUserId?: string) => {
     const post = await db.query.posts.findFirst({
         where: eq(posts.id, postId),
         with: {
@@ -218,7 +218,7 @@ export const getPostsByUserService = async (
     });
 };
 
-export const updatePostService = async (postId: string,authorId: string,content: string) => {
+export const updatePostService = async (postId: string, authorId: string, content: string) => {
     const [updatedPost] = await db
         .update(posts)
         .set({ content, updatedAt: new Date() })
@@ -228,7 +228,7 @@ export const updatePostService = async (postId: string,authorId: string,content:
     return updatedPost || null;
 };
 
-export const deletePostService = async (postId: string,authorId: string): Promise<boolean> => {
+export const deletePostService = async (postId: string, authorId: string): Promise<boolean> => {
     const result = await db
         .delete(posts)
         .where(and(eq(posts.id, postId), eq(posts.authorId, authorId)))
@@ -257,7 +257,7 @@ export const unlikePostService = async (userId: string, postId: string) => {
     return result.length > 0;
 };
 
-export const commentOnPostService = async (userId: string,postId: string,content: string
+export const commentOnPostService = async (userId: string, postId: string, content: string
 ): Promise<TPostComment | null> => {
     const [inserted] = await db
         .insert(comments)
@@ -267,9 +267,9 @@ export const commentOnPostService = async (userId: string,postId: string,content
     const [commentWithUser] = await db.query.comments.findMany({
         where: eq(comments.id, inserted.id),
         with: {
-        user: {
-            columns: { id: true, username: true, avatarUrl: true },
-        },
+            user: {
+                columns: { id: true, username: true, avatarUrl: true },
+            },
         },
     });
 

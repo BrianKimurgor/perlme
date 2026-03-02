@@ -1,18 +1,18 @@
 import { Request, Response } from "express";
-import {
-  commentOnPostService,
-  createPostService,
-  deletePostService,
-  getAllPublicPostsService,
-  getPostByIdService,
-  getPostsByUserService,
-  likePostService,
-  repostService,
-  unlikePostService,
-  updatePostService,
-} from "./post.service";
-import { ResponseHandler } from "../../utils/responseHandler";
 import { PaginationHandler } from "../../utils/paginationHandler";
+import { ResponseHandler } from "../../utils/responseHandler";
+import {
+    commentOnPostService,
+    createPostService,
+    deletePostService,
+    getAllPublicPostsService,
+    getPostByIdService,
+    getPostsByUserService,
+    likePostService,
+    repostService,
+    unlikePostService,
+    updatePostService,
+} from "./post.service";
 
 export const createPostController = async (req: Request, res: Response) => {
     try {
@@ -23,11 +23,11 @@ export const createPostController = async (req: Request, res: Response) => {
         if (!content?.trim()) return ResponseHandler.badRequest(res, "Post content is required");
 
         const mediaItems = Array.isArray(media)
-        ? media.map((item) => ({
-            url: item.url,
-            type: item.type || "image",
+            ? media.map((item) => ({
+                url: item.url,
+                type: item.type || "image",
             }))
-        : [];
+            : [];
 
         const newPost = await createPostService({ authorId: userId, content: content.trim() }, mediaItems);
         return ResponseHandler.created(res, "Post created successfully", newPost);

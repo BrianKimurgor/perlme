@@ -1,16 +1,28 @@
 
-import { configureStore } from "@reduxjs/toolkit";
-import themeReducer from "./themeSlice";
 import authReducer from "@/src/store/AuthSlice";
-import { persistStore, persistReducer } from "redux-persist";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { configureStore } from "@reduxjs/toolkit";
 import { combineReducers } from "redux";
+import { persistReducer, persistStore } from "redux-persist";
 import { authApi } from "./Apis/AuthApi";
+import { blocksApi } from "./Apis/BlocksApi";
+import { exploreApi } from "./Apis/ExploreApi";
+import { groupsApi } from "./Apis/GroupsApi";
+import { messagesApi } from "./Apis/MessagesApi";
+import { postsApi } from "./Apis/PostsApi";
+import { usersApi } from "./Apis/UsersApi";
+import themeReducer from "./themeSlice";
 
 const rootReducer = combineReducers({
   theme: themeReducer,
- auth: authReducer,
+  auth: authReducer,
   [authApi.reducerPath]: authApi.reducer,
+  [postsApi.reducerPath]: postsApi.reducer,
+  [messagesApi.reducerPath]: messagesApi.reducer,
+  [usersApi.reducerPath]: usersApi.reducer,
+  [exploreApi.reducerPath]: exploreApi.reducer,
+  [blocksApi.reducerPath]: blocksApi.reducer,
+  [groupsApi.reducerPath]: groupsApi.reducer,
 });
 
 const persistConfig = {
@@ -26,7 +38,15 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: false, // important for redux-persist
-    }).concat(authApi.middleware),
+    }).concat(
+      authApi.middleware,
+      postsApi.middleware,
+      messagesApi.middleware,
+      usersApi.middleware,
+      exploreApi.middleware,
+      blocksApi.middleware,
+      groupsApi.middleware
+    ),
 });
 
 export const persistor = persistStore(store);

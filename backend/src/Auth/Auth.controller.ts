@@ -329,7 +329,16 @@ export const refreshAccessToken: RequestHandler = async (req, res) => {
       user.username
     );
 
-    res.status(200).json(tokens);
+    res.status(200).json({
+      ...tokens,
+      user: {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        role: user.role,
+        avatarUrl: user.avatarUrl,
+      },
+    });
   } catch (error: any) {
     res.status(401).json({ error: "Invalid or expired refresh token" });
   }

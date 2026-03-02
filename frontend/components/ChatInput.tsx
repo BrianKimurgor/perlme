@@ -2,11 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { Button, StyleSheet, TextInput, View } from 'react-native';
 
 interface ChatInputProps {
-  onSend: (message: string) => void;
+  onSendMessage: (message: string) => void;
   onTyping?: (isTyping: boolean) => void;
 }
 
-const ChatInput: React.FC<ChatInputProps> = ({ onSend, onTyping }) => {
+const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, onTyping }) => {
   const [text, setText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
 
@@ -24,7 +24,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, onTyping }) => {
 
   const handleTextChange = (newText: string) => {
     setText(newText);
-    
+
     // Send typing indicator
     if (onTyping && !isTyping && newText.length > 0) {
       setIsTyping(true);
@@ -34,9 +34,9 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, onTyping }) => {
 
   const handleSend = () => {
     if (text.trim()) {
-      onSend(text);
+      onSendMessage(text);
       setText('');
-      
+
       // Stop typing indicator
       if (onTyping && isTyping) {
         setIsTyping(false);
@@ -55,8 +55,8 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, onTyping }) => {
         multiline
         maxLength={500}
       />
-      <Button 
-        title="Send" 
+      <Button
+        title="Send"
         onPress={handleSend}
         disabled={!text.trim()}
       />

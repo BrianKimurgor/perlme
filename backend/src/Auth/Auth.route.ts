@@ -1,17 +1,18 @@
 import { Router } from "express";
 import {
-  registerUser,
+  emailVerification,
   loginUser,
   passwordReset,
-  updatePassword,
-  emailVerification,
+  refreshAccessToken,
+  registerUser,
   resendVerificationEmail,
+  updatePassword,
 } from "./Auth.controller";
 
 import {
   authLoginLimiter,
-  authRegistrationLimiter,
   authPasswordResetLimiter,
+  authRegistrationLimiter,
   authVerificationLimiter,
 } from "../Middlewares/rateLimiter";
 
@@ -61,7 +62,7 @@ export const authRouter = Router();
  *       400:
  *         description: Validation error
  */
-authRouter.post("/register",authRegistrationLimiter, registerUser);
+authRouter.post("/register", authRegistrationLimiter, registerUser);
 
 /**
  * @swagger
@@ -91,7 +92,33 @@ authRouter.post("/register",authRegistrationLimiter, registerUser);
  *       401:
  *         description: Invalid credentials
  */
-authRouter.post("/login",authLoginLimiter, loginUser);
+authRouter.post("/login", authLoginLimiter, loginUser);
+
+/**
+ * @swagger
+ * /api/auth/refresh:
+ *   post:
+ *     summary: Refresh access token
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - refreshToken
+ *             properties:
+ *               refreshToken:
+ *                 type: string
+ *                 example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+ *     responses:
+ *       200:
+ *         description: New access token generated
+ *       401:
+ *         description: Invalid or expired refresh token
+ */
+authRouter.post("/refresh", refreshAccessToken);
 
 /**
  * @swagger
@@ -117,7 +144,7 @@ authRouter.post("/login",authLoginLimiter, loginUser);
  *       404:
  *         description: User not found
  */
-authRouter.post("/password-reset",authPasswordResetLimiter, passwordReset);
+authRouter.post("/password-reset", authPasswordResetLimiter, passwordReset);
 
 /**
  * @swagger
@@ -150,7 +177,7 @@ authRouter.post("/password-reset",authPasswordResetLimiter, passwordReset);
  *       400:
  *         description: Invalid or expired token
  */
-authRouter.put("/reset/:token",authPasswordResetLimiter, updatePassword);
+authRouter.put("/reset/:token", authPasswordResetLimiter, updatePassword);
 
 /**
  * @swagger
@@ -180,7 +207,7 @@ authRouter.put("/reset/:token",authPasswordResetLimiter, updatePassword);
  *       400:
  *         description: Invalid verification code
  */
-authRouter.put("/verify-email",authVerificationLimiter, emailVerification);
+authRouter.put("/verify-email", authVerificationLimiter, emailVerification);
 
 /**
  * @swagger
@@ -206,4 +233,4 @@ authRouter.put("/verify-email",authVerificationLimiter, emailVerification);
  *       404:
  *         description: User not found
  */
-authRouter.post("/resend-verification",authVerificationLimiter, resendVerificationEmail);
+authRouter.post("/resend-verification", authVerificationLimiter, resendVerificationEmail);

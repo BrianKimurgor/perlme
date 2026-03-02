@@ -1,6 +1,6 @@
-import db  from "../../drizzle/db";
-import { messages, users, blocks } from "../../drizzle/schema";
-import { eq, and, or, desc, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, or, sql } from "drizzle-orm";
+import db from "../../drizzle/db";
+import { blocks, messages, users } from "../../drizzle/schema";
 import { getSocketService } from "../../socket/socket";
 
 export interface SendMessageDTO {
@@ -64,11 +64,21 @@ export class MessageService {
         // Get socket service
         const socketService = getSocketService();
 
+        // Prepare message with sender info for response
+        const messageWithSender = {
+            ...newMessage,
+            sender: {
+                id: sender[0].id,
+                username: sender[0].username,
+                avatarUrl: sender[0].avatarUrl,
+            },
+        };
+
         // If receiver is online, emit the message and update status to DELIVERED
         if (socketService.isUserOnline(receiverId)) {
             // Emit to receiver
             socketService.emitToUser(receiverId, "new_message", {
-                message: newMessage,
+                message: messageWithSender,
                 sender: {
                     id: sender[0].id,
                     username: sender[0].username,
@@ -89,16 +99,23 @@ export class MessageService {
                 tempId,
             });
 
-            return updatedMessage;
+            return {
+                ...updatedMessage,
+                sender: {
+                    id: sender[0].id,
+                    username: sender[0].username,
+                    avatarUrl: sender[0].avatarUrl,
+                },
+            };
         }
 
         // Notify sender that message was sent
         socketService.emitToUser(senderId, "message_sent", {
-            message: newMessage,
+            message: messageWithSender,
             tempId,
         });
 
-        return newMessage;
+        return messageWithSender;
     }
 
     async updateMessageStatus(data: UpdateMessageStatusDTO) {
@@ -199,12 +216,32 @@ export class MessageService {
             .limit(limit)
             .offset(offset);
 
-        return conversation.reverse(); // Return oldest first
+        // Transform to match frontend Message type with nested sender object
+        const formattedMessages = conversation.map((msg) => ({
+            id: msg.id,
+            senderId: msg.senderId,
+            receiverId: msg.receiverId,
+            content: msg.content,
+            mediaUrl: msg.mediaUrl,
+            mediaType: msg.mediaType,
+            status: msg.status,
+            createdAt: msg.createdAt,
+            sender: {
+                id: msg.senderId,
+                username: msg.senderUsername || "Unknown",
+                avatarUrl: msg.senderAvatar,
+            },
+        }));
+
+        return formattedMessages.reverse(); // Return oldest first
     }
 
     async getConversationList(userId: string) {
-        // Get list of users with recent conversations
-        const conversations = await db
+        console.log("📥 Starting getConversationList for user:", userId);
+
+        // Get list of users with recent conversations using a subquery approach
+        console.log("🔍 Fetching latest messages...");
+        const latestMessages = await db
             .select({
                 otherUserId: sql<string>`CASE 
           WHEN ${messages.senderId} = ${userId} THEN ${messages.receiverId}
@@ -215,43 +252,91 @@ export class MessageService {
                 lastMessageStatus: messages.status,
                 lastMessageTime: messages.createdAt,
                 lastMessageSenderId: messages.senderId,
+            })
+            .from(messages)
+            .where(
+                or(eq(messages.senderId, userId), eq(messages.receiverId, userId))
+            )
+            .orderBy(desc(messages.createdAt));
+
+        console.log("✅ Found", latestMessages.length, "messages");
+
+        // Get unique conversations with latest message for each user
+        const uniqueConversations = new Map<string, typeof latestMessages[number]>();
+
+        for (const msg of latestMessages) {
+            if (!uniqueConversations.has(msg.otherUserId)) {
+                uniqueConversations.set(msg.otherUserId, msg);
+            }
+        }
+
+        console.log("✅ Found", uniqueConversations.size, "unique conversations");
+
+        // Get user details for all conversation partners
+        const otherUserIds = Array.from(uniqueConversations.keys());
+
+        // Return empty array if no conversations
+        if (otherUserIds.length === 0) {
+            console.log("ℹ️ No conversations found");
+            return [];
+        }
+
+        console.log("🔍 Fetching user details for", otherUserIds.length, "users...");
+        const conversationUsers = await db
+            .select({
+                id: users.id,
                 username: users.username,
                 avatarUrl: users.avatarUrl,
                 isVerified: users.isVerified,
             })
-            .from(messages)
-            .leftJoin(
-                users,
-                sql`${users.id} = CASE 
-          WHEN ${messages.senderId} = ${userId} THEN ${messages.receiverId}
-          ELSE ${messages.senderId}
-        END`
-            )
-            .where(
-                or(eq(messages.senderId, userId), eq(messages.receiverId, userId))
-            )
-            .groupBy(
-                sql`CASE 
-          WHEN ${messages.senderId} = ${userId} THEN ${messages.receiverId}
-          ELSE ${messages.senderId}
-        END`,
-                messages.id,
-                users.username,
-                users.avatarUrl,
-                users.isVerified
-            )
-            .orderBy(desc(messages.createdAt));
+            .from(users)
+            .where(inArray(users.id, otherUserIds));
 
-        // Get unique conversations with latest message
-        const uniqueConversations = new Map<string, typeof conversations[number]>();
+        console.log("✅ Found", conversationUsers.length, "users");
 
-        for (const conv of conversations) {
-            if (!uniqueConversations.has(conv.otherUserId)) {
-                uniqueConversations.set(conv.otherUserId, conv);
-            }
-        }
+        // Create user map for quick lookup
+        const userMap = new Map(conversationUsers.map(u => [u.id, u]));
 
-        return Array.from(uniqueConversations.values());
+        console.log("🔍 Calculating unread counts...");
+        // Get unread counts for each conversation
+        const unreadCounts = await Promise.all(
+            Array.from(uniqueConversations.keys()).map(async (otherUserId) => {
+                const count = await this.getUnreadCount(userId, otherUserId);
+                return { otherUserId, count };
+            })
+        );
+
+        const unreadMap = new Map(unreadCounts.map(u => [u.otherUserId, u.count]));
+        console.log("✅ Calculated unread counts");
+
+        // Combine message data with user data in the format expected by frontend
+        const conversations = Array.from(uniqueConversations.entries()).map(([otherUserId, msg]) => {
+            const user = userMap.get(otherUserId);
+            return {
+                otherUser: {
+                    id: otherUserId,
+                    username: user?.username || 'Unknown',
+                    avatarUrl: user?.avatarUrl || null,
+                    isVerified: user?.isVerified || false,
+                },
+                lastMessage: {
+                    content: msg.lastMessage,
+                    createdAt: msg.lastMessageTime,
+                    senderId: msg.lastMessageSenderId,
+                },
+                unreadCount: unreadMap.get(otherUserId) || 0,
+            };
+        });
+
+        // Sort by last message time (most recent first)
+        conversations.sort((a, b) => {
+            const timeA = a.lastMessage?.createdAt ? new Date(a.lastMessage.createdAt).getTime() : 0;
+            const timeB = b.lastMessage?.createdAt ? new Date(b.lastMessage.createdAt).getTime() : 0;
+            return timeB - timeA;
+        });
+
+        console.log("✅ Conversation list ready:", conversations.length, "conversations");
+        return conversations;
     }
 
     async getUnreadCount(userId: string, otherUserId?: string) {

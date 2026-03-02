@@ -1,6 +1,6 @@
+import { and, eq, sql } from "drizzle-orm";
 import db from "../../drizzle/db";
-import { users } from "../../drizzle/schema";
-import { eq } from "drizzle-orm";
+import { follows, users, posts } from "../../drizzle/schema";
 
 import bcrypt from "bcrypt";
 import { TUserValidator, userValidator } from "../../Validators/users.vslidator";
@@ -14,7 +14,33 @@ export const getAllUsers = async () => {
 // ========================== GET USER BY ID ==========================
 export const getUserById = async (id: string) => {
   const [user] = await db.select().from(users).where(eq(users.id, id));
-  return user || null;
+  
+  if (!user) return null;
+
+  // Get counts for followers, following, and posts
+  const [followersCount] = await db
+    .select({ count: sql<number>`cast(count(*) as integer)` })
+    .from(follows)
+    .where(eq(follows.followingId, id));
+
+  const [followingCount] = await db
+    .select({ count: sql<number>`cast(count(*) as integer)` })
+    .from(follows)
+    .where(eq(follows.followerId, id));
+
+  const [postsCount] = await db
+    .select({ count: sql<number>`cast(count(*) as integer)` })
+    .from(posts)
+    .where(eq(posts.authorId, id));
+
+  return {
+    ...user,
+    _count: {
+      followers: followersCount?.count || 0,
+      following: followingCount?.count || 0,
+      posts: postsCount?.count || 0,
+    },
+  };
 };
 
 // ========================== GET USER BY EMAIL ==========================
@@ -91,3 +117,63 @@ export const isUserActive = (user: any): boolean => {
   if (user.suspendedUntil && new Date(user.suspendedUntil) < new Date()) return true;
   return false;
 };
+
+// ========================== FOLLOW USER ==========================
+export const followUser = async (followerId: string, followingId: string) => {
+  // Check if already following
+  const [existing] = await db
+    .select()
+    .from(follows)
+    .where(and(eq(follows.followerId, followerId), eq(follows.followingId, followingId)));
+
+  if (existing) {
+    throw new Error("Already following this user");
+  }
+
+  // Check if both users exist
+  const [follower, following] = await Promise.all([
+    db.select().from(users).where(eq(users.id, followerId)).limit(1),
+    db.select().from(users).where(eq(users.id, followingId)).limit(1),
+  ]);
+
+  if (!follower.length || !following.length) {
+    throw new Error("User not found");
+  }
+
+  // Create follow relationship
+  const [follow] = await db
+    .insert(follows)
+    .values({
+      followerId,
+      followingId,
+    })
+    .returning();
+
+  return follow;
+};
+
+// ========================== UNFOLLOW USER ==========================
+export const unfollowUser = async (followerId: string, followingId: string) => {
+  const [deleted] = await db
+    .delete(follows)
+    .where(and(eq(follows.followerId, followerId), eq(follows.followingId, followingId)))
+    .returning();
+
+  if (!deleted) {
+    throw new Error("Follow relationship not found");
+  }
+
+  return deleted;
+};
+
+// ========================== CHECK IF FOLLOWING ==========================
+export const isFollowing = async (followerId: string, followingId: string): Promise<boolean> => {
+  const [follow] = await db
+    .select()
+    .from(follows)
+    .where(and(eq(follows.followerId, followerId), eq(follows.followingId, followingId)))
+    .limit(1);
+
+  return !!follow;
+};
+

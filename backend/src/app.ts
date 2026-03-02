@@ -1,23 +1,23 @@
 import cors from "cors";
 import express, { Application } from 'express';
-import { applySecurityHeaders, corsOptions } from './Middlewares/securityHeader.middleware';
+import swaggerUi from "swagger-ui-express";
 import { authRouter } from './Auth/Auth.route';
 import { anyAuth } from './Middlewares/BearAuth';
 import { checkUserActive } from './Middlewares/checkUserActivity';
 import { logger } from './Middlewares/Logger';
 import { rateLimiterMiddleware } from './Middlewares/rateLimiter';
 import "./Middlewares/schedule";
+import { corsOptions } from './Middlewares/securityHeader.middleware';
+import healthRoute from "./routes/health.route";
+import metricsRoute from "./routes/metrics.route";
 import blockRouters from './Services/Block/block.routes';
+import { EmailProviderType, EmailServiceFactory } from './Services/email/EmailServiceFactory';
 import exploreRouter from './Services/Explore and Recommendations/exploreAndRecommend.routes';
 import messageRouter from './Services/Messages/message.route';
 import postRouter from './Services/posts/post.route';
 import reportRouters from './Services/Reports/report.route';
 import userRouters from './Services/Users/user.route';
-import swaggerUi from "swagger-ui-express";
 import swaggerSpec from "./swagger";
-import { EmailServiceFactory, EmailProviderType } from './Services/email/EmailServiceFactory';
-import healthRoute from "./routes/health.route";
-import metricsRoute from "./routes/metrics.route";
 
 
 console.log("🟢 Scheduler file loaded");
@@ -107,7 +107,7 @@ app.use(metricsRoute);
 // ============================================================================
 app.use('/api', anyAuth, checkUserActive, userRouters);
 app.use('/api', anyAuth, checkUserActive, postRouter);
-app.use('/api', anyAuth, checkUserActive, messageRouter);
+app.use('/api/messages', anyAuth, checkUserActive, messageRouter);
 app.use('/api', anyAuth, checkUserActive, blockRouters);
 app.use('/api', anyAuth, checkUserActive, reportRouters);
 // ============================================================================

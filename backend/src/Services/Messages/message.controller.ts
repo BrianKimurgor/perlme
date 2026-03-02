@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { MessageService } from "./message.service";
 import { ResponseHandler } from "../../utils/responseHandler";
+import { MessageService } from "./message.service";
 
 export class MessageController {
     private readonly messageService: MessageService;
@@ -12,7 +12,7 @@ export class MessageController {
     sendMessage = async (req: Request, res: Response) => {
         try {
             const { receiverId, content, mediaUrl, mediaType, tempId } = req.body;
-            const senderId = (req as any).user.userId;
+            const senderId = (req as any).user.id;
 
             if (!receiverId || !content) {
                 return res.status(400).json({
@@ -41,7 +41,7 @@ export class MessageController {
         try {
             const { messageId } = req.params;
             const { status } = req.body;
-            const userId = (req as any).user.userId;
+            const userId = (req as any).user.id;
 
             if (!status || !["DELIVERED", "READ"].includes(status)) {
                 return ResponseHandler.badRequest(res, "Invalid status value");
@@ -63,7 +63,7 @@ export class MessageController {
     markConversationAsRead = async (req: Request, res: Response) => {
         try {
             const { otherUserId } = req.params;
-            const userId = (req as any).user.userId;
+            const userId = (req as any).user.id;
 
             const messages = await this.messageService.markConversationAsRead(
                 userId,
@@ -80,7 +80,7 @@ export class MessageController {
     getConversation = async (req: Request, res: Response) => {
         try {
             const { otherUserId } = req.params;
-            const userId = (req as any).user.userId;
+            const userId = (req as any).user.id;
             const limit = Number.parseInt(req.query.limit as string) || 50;
             const offset = Number.parseInt(req.query.offset as string) || 0;
 
@@ -99,21 +99,24 @@ export class MessageController {
     };
 
     getConversationList = async (req: Request, res: Response) => {
+        console.log("🚀 CONTROLLER CALLED - getConversationList");
         try {
-            const userId = (req as any).user.userId;
+            const userId = (req as any).user.id;
+            console.log("🔍 Getting conversation list for user:", userId);
 
             const conversations = await this.messageService.getConversationList(userId);
+            console.log("✅ Found conversations:", conversations.length);
 
             return ResponseHandler.ok(res, "Conversation list retrieved successfully", conversations);
         } catch (error: any) {
-            console.error("Get conversation list error:", error);
+            console.error("❌ Get conversation list error:", error);
             return ResponseHandler.badGateway(res, error.message || "Failed to get conversation list");
         }
     };
 
     getUnreadCount = async (req: Request, res: Response) => {
         try {
-            const userId = (req as any).user.userId;
+            const userId = (req as any).user.id;
             const { otherUserId } = req.query;
 
             const count = await this.messageService.getUnreadCount(
@@ -134,7 +137,7 @@ export class MessageController {
     deleteMessage = async (req: Request, res: Response) => {
         try {
             const { messageId } = req.params;
-            const userId = (req as any).user.userId;
+            const userId = (req as any).user.id;
 
             await this.messageService.deleteMessage(messageId, userId);
 

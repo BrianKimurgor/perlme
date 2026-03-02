@@ -2,6 +2,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { API_BASE_URL } from "../../src/utils/config";
 import { logout, setCredentials } from "./AuthSlice";
 import type { RootState } from "./index";
 
@@ -10,7 +11,7 @@ let isRefreshing = false;
 let refreshSubscribers: ((token: string) => void)[] = [];
 
 const baseQuery = fetchBaseQuery({
-    baseUrl: "http://192.168.88.113:3000/api/",
+    baseUrl: API_BASE_URL,
     prepareHeaders: (headers, { getState }) => {
         const token = (getState() as RootState).auth.token;
         if (token) {
@@ -72,6 +73,7 @@ export const baseQueryWithReauth: BaseQueryFn<
                         api.dispatch(
                             setCredentials({
                                 token: data.accessToken,
+                                refreshToken: data.refreshToken,
                                 user: state.auth.user || data.user,
                             })
                         );

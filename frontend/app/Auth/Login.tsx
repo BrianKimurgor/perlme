@@ -24,7 +24,7 @@ interface User {
   id: string;
   email: string;
   username: string;
-  role: "REGULAR" | "ADMIN";
+  role: "REGULAR" | "CREATOR" | "MODERATOR" | "ADMIN";
   avatarUrl: string | null;
 }
 
@@ -67,11 +67,11 @@ export default function LoginScreen() {
 
       console.log("✅ [FRONTEND] Token received, saving to Redux and AsyncStorage");
 
-      // Clear any old data first
-      await AsyncStorage.clear();
+      // Clear previous auth data only (preserve app preferences)
+      await AsyncStorage.multiRemove(["token", "refreshToken", "user", "userEmail"]);
 
       // Save new credentials to Redux (will be persisted automatically)
-      dispatch(setCredentials({ token, user }));
+      dispatch(setCredentials({ token, user, refreshToken }));
 
       // Save tokens to AsyncStorage as backup
       await AsyncStorage.setItem("token", token);

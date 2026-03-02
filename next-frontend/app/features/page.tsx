@@ -1,11 +1,10 @@
 'use client';
 
+import { Footer } from '@/components/footer';
 import { HeroHeader } from '@/components/header';
-import { THEME_COLORS } from '@/lib/theme';
 import { Globe, Heart, Lock, MessageSquare, Shield, TrendingUp, Users, Zap } from 'lucide-react';
 import { motion } from 'motion/react';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
 
 const features = [
     {
@@ -18,37 +17,37 @@ const features = [
         icon: MessageSquare,
         title: 'Real-Time Messaging',
         description: 'Instant messaging with read receipts, typing indicators, and media sharing. Connect immediately without delays.',
-        color: '#0a7ea4',
+        color: '#9333ea',
     },
     {
         icon: Users,
         title: 'Group Communities',
         description: 'Create or join group chats based on shared interests. Build communities around topics you care about.',
-        color: '#06b6d4',
+        color: '#c026d3',
     },
     {
         icon: Globe,
         title: 'Location-Based Discovery',
         description: 'Find people nearby and explore your local community with privacy-controlled location sharing.',
-        color: '#10b981',
+        color: '#e11d48',
     },
     {
         icon: Lock,
         title: 'Privacy & Security',
         description: 'Your data is encrypted and protected. Control who sees your profile, location, and activity.',
-        color: '#8b5cf6',
+        color: '#a855f7',
     },
     {
         icon: Zap,
         title: 'Lightning Fast',
         description: 'Optimized performance ensures smooth interactions even with thousands of users online.',
-        color: '#f59e0b',
+        color: '#f472b6',
     },
     {
         icon: Shield,
         title: 'Safe Community',
         description: 'Moderation system with reporting, blocking, and verification to keep the community safe.',
-        color: '#ef4444',
+        color: '#be185d',
     },
     {
         icon: TrendingUp,
@@ -59,24 +58,8 @@ const features = [
 ];
 
 export default function FeaturesPage() {
-    const [isDark, setIsDark] = useState(false);
-
-    useEffect(() => {
-        // Check system preference or saved preference
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme) {
-            setIsDark(savedTheme === 'dark');
-        } else {
-            setIsDark(window.matchMedia('(prefers-color-scheme: dark)').matches);
-        }
-    }, []);
-
-    const colors = isDark ? THEME_COLORS.dark : THEME_COLORS.light;
-    const bgColor = isDark ? '#151718' : '#ffffff';
-    const textColor = isDark ? '#ECEDEE' : '#11181C';
-
     return (
-        <div style={{ backgroundColor: bgColor, color: textColor }} className="transition-colors duration-300">
+        <div className="bg-[#fffbfc] dark:bg-[#151718] text-[#11181C] dark:text-[#ECEDEE] transition-colors duration-300">
             <HeroHeader />
 
             {/* Hero Section */}
@@ -111,11 +94,7 @@ export default function FeaturesPage() {
                                     whileInView={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 0.5, delay: index * 0.1 }}
                                     viewport={{ once: true }}
-                                    style={{
-                                        backgroundColor: isDark ? '#1f2023' : '#f5f5f5',
-                                        borderColor: isDark ? '#333333' : '#e0e0e0',
-                                    }}
-                                    className="p-6 rounded-2xl border backdrop-blur-sm hover:shadow-lg transition-all duration-300 group cursor-pointer"
+                                    className="p-6 rounded-2xl border backdrop-blur-sm hover:shadow-lg hover:shadow-pink-100/50 dark:hover:shadow-pink-900/20 transition-all duration-300 group cursor-pointer bg-[#fdf2f8] dark:bg-[#2d1a2e] border-pink-100 dark:border-[#4a1942]"
                                 >
                                     <div
                                         style={{
@@ -136,7 +115,7 @@ export default function FeaturesPage() {
             </section>
 
             {/* Feature Highlights */}
-            <section className="py-20 px-4 border-t" style={{ borderColor: isDark ? '#333333' : '#e0e0e0' }}>
+            <section className="py-20 px-4 border-t border-pink-100 dark:border-[#4a1942]">
                 <div className="max-w-7xl mx-auto">
                     <h2 className="text-4xl md:text-5xl font-bold mb-16 text-center">Why Choose Perlme?</h2>
 
@@ -148,19 +127,13 @@ export default function FeaturesPage() {
                             transition={{ duration: 0.6 }}
                             viewport={{ once: true }}
                         >
-                            <div
-                                style={{
-                                    backgroundColor: isDark ? '#1f2023' : '#f5f5f5',
-                                    borderColor: isDark ? '#333333' : '#e0e0e0',
-                                }}
-                                className="p-8 rounded-2xl border"
-                            >
+                            <div className="p-8 rounded-2xl border bg-[#fdf2f8] dark:bg-[#2d1a2e] border-pink-100 dark:border-[#4a1942]">
                                 <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-pink-400 to-pink-600 flex items-center justify-center mb-4">
                                     <Heart className="text-white" size={24} />
                                 </div>
                                 <h3 className="text-2xl font-semibold mb-3">Authentic Connections</h3>
                                 <p className="opacity-70 leading-relaxed">
-                                    Our verification system and community guidelines ensure you`&apos;`re connecting with real people who share your values and interests.
+                                    Our verification system and community guidelines ensure you&apos;re connecting with real people who share your values and interests.
                                 </p>
                             </div>
                         </motion.div>
@@ -172,14 +145,8 @@ export default function FeaturesPage() {
                             transition={{ duration: 0.6 }}
                             viewport={{ once: true }}
                         >
-                            <div
-                                style={{
-                                    backgroundColor: isDark ? '#1f2023' : '#f5f5f5',
-                                    borderColor: isDark ? '#333333' : '#e0e0e0',
-                                }}
-                                className="p-8 rounded-2xl border"
-                            >
-                                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center mb-4">
+                            <div className="p-8 rounded-2xl border bg-[#fdf2f8] dark:bg-[#2d1a2e] border-pink-100 dark:border-[#4a1942]">
+                                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center mb-4">
                                     <Lock className="text-white" size={24} />
                                 </div>
                                 <h3 className="text-2xl font-semibold mb-3">Complete Privacy Control</h3>
@@ -196,14 +163,8 @@ export default function FeaturesPage() {
                             transition={{ duration: 0.6 }}
                             viewport={{ once: true }}
                         >
-                            <div
-                                style={{
-                                    backgroundColor: isDark ? '#1f2023' : '#f5f5f5',
-                                    borderColor: isDark ? '#333333' : '#e0e0e0',
-                                }}
-                                className="p-8 rounded-2xl border"
-                            >
-                                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center mb-4">
+                            <div className="p-8 rounded-2xl border bg-[#fdf2f8] dark:bg-[#2d1a2e] border-pink-100 dark:border-[#4a1942]">
+                                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-rose-400 to-rose-600 flex items-center justify-center mb-4">
                                     <Zap className="text-white" size={24} />
                                 </div>
                                 <h3 className="text-2xl font-semibold mb-3">Always Lightning Fast</h3>
@@ -220,14 +181,8 @@ export default function FeaturesPage() {
                             transition={{ duration: 0.6 }}
                             viewport={{ once: true }}
                         >
-                            <div
-                                style={{
-                                    backgroundColor: isDark ? '#1f2023' : '#f5f5f5',
-                                    borderColor: isDark ? '#333333' : '#e0e0e0',
-                                }}
-                                className="p-8 rounded-2xl border"
-                            >
-                                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center mb-4">
+                            <div className="p-8 rounded-2xl border bg-[#fdf2f8] dark:bg-[#2d1a2e] border-pink-100 dark:border-[#4a1942]">
+                                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-fuchsia-400 to-fuchsia-600 flex items-center justify-center mb-4">
                                     <Users className="text-white" size={24} />
                                 </div>
                                 <h3 className="text-2xl font-semibold mb-3">Vibrant Communities</h3>
@@ -267,6 +222,8 @@ export default function FeaturesPage() {
                     </motion.div>
                 </div>
             </section>
+
+            <Footer />
         </div>
     );
 }

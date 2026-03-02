@@ -7,6 +7,7 @@ import {
   getPostByIdService,
   getPostsByUserService,
   likePostService,
+  repostService,
   unlikePostService,
   updatePostService,
 } from "./post.service";
@@ -191,6 +192,25 @@ export const commentOnPostController = async (req: Request, res: Response) => {
         return ResponseHandler.created(res, "Comment added successfully", comment);
     } catch (error) {
         console.error("Error adding comment:", error);
+        return ResponseHandler.internal(res, "Internal server error", error);
+    }
+};
+
+export const repostController = async (req: Request, res: Response) => {
+    try {
+        const userId = req.user?.id;
+        const { postId } = req.params;
+
+        if (!userId) return ResponseHandler.unauthorized(res);
+        if (!postId) return ResponseHandler.badRequest(res, "Post ID is required");
+
+        const repost = await repostService(userId, postId);
+        return ResponseHandler.created(res, "Post shared to your feed", repost);
+    } catch (error: any) {
+        console.error("Error reposting:", error);
+        if (error.message === "Original post not found") {
+            return ResponseHandler.notFound(res, error.message);
+        }
         return ResponseHandler.internal(res, "Internal server error", error);
     }
 };

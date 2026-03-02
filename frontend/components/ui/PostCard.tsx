@@ -10,6 +10,7 @@ import {
     View,
 } from "react-native";
 import { Avatar } from "./Avatar";
+import { LikeButton } from "./LikeButton";
 
 const { width } = Dimensions.get("window");
 
@@ -18,6 +19,7 @@ interface PostCardProps {
     onLike: () => void;
     onComment: () => void;
     onUserPress: () => void;
+    onShare?: () => void;
     isLiked?: boolean;
 }
 
@@ -26,6 +28,7 @@ export const PostCard: React.FC<PostCardProps> = ({
     onLike,
     onComment,
     onUserPress,
+    onShare,
     isLiked = false,
 }) => {
     const formatTimeAgo = (dateString: string): string => {
@@ -40,6 +43,11 @@ export const PostCard: React.FC<PostCardProps> = ({
         return date.toLocaleDateString();
     };
 
+    const likeCount =
+        (post as any).likeCount ?? post._count?.likes ?? post.likes?.length ?? 0;
+    const commentCount =
+        (post as any).commentCount ?? post._count?.comments ?? post.comments?.length ?? 0;
+
     return (
         <View style={styles.container}>
             {/* Header */}
@@ -47,12 +55,15 @@ export const PostCard: React.FC<PostCardProps> = ({
                 <Avatar
                     uri={post.author?.avatarUrl}
                     name={post.author?.username}
-                    size={40}
+                    size={42}
                 />
                 <View style={styles.userInfo}>
                     <Text style={styles.username}>{post.author?.username}</Text>
                     <Text style={styles.time}>{formatTimeAgo(post.createdAt)}</Text>
                 </View>
+                <TouchableOpacity style={styles.moreButton}>
+                    <Ionicons name="ellipsis-horizontal" size={20} color="#b0b0b0" />
+                </TouchableOpacity>
             </TouchableOpacity>
 
             {/* Content */}
@@ -61,34 +72,83 @@ export const PostCard: React.FC<PostCardProps> = ({
             {/* Media */}
             {post.media && post.media.length > 0 && (
                 <View style={styles.mediaContainer}>
-                    {post.media[0].type.startsWith("image") && (
+                    {post.media.length === 1 ? (
                         <Image
                             source={{ uri: post.media[0].url }}
-                            style={styles.image}
+                            style={styles.singleImage}
                             resizeMode="cover"
                         />
+                    ) : (
+                        <View style={styles.mediaGrid}>
+                            {post.media.slice(0, 4).map((item, index) => (
+                                <View
+                                    key={item.id}
+                                    style={[
+                                        styles.gridItem,
+                                        post.media!.length === 2 && styles.gridItemHalf,
+                                        post.media!.length >= 3 && styles.gridItemThird,
+                                    ]}
+                                >
+                                    <Image
+                                        source={{ uri: item.url }}
+                                        style={styles.gridImage}
+                                        resizeMode="cover"
+                                    />
+                                    {index === 3 && post.media!.length > 4 && (
+                                        <View style={styles.moreOverlay}>
+                                            <Text style={styles.moreOverlayText}>
+                                                +{post.media!.length - 4}
+                                            </Text>
+                                        </View>
+                                    )}
+                                    {item.type === "video" && (
+                                        <View style={styles.videoIndicator}>
+                                            <Ionicons name="play-circle" size={28} color="#fff" />
+                                        </View>
+                                    )}
+                                </View>
+                            ))}
+                        </View>
+                    )}
+                </View>
+            )}
+
+            {/* Stats Row */}
+            {(likeCount > 0 || commentCount > 0) && (
+                <View style={styles.statsRow}>
+                    {likeCount > 0 && (
+                        <Text style={styles.statsText}>
+                            <Ionicons name="heart" size={13} color="#ff3366" /> {likeCount}{" "}
+                            {likeCount === 1 ? "like" : "likes"}
+                        </Text>
+                    )}
+                    {commentCount > 0 && (
+                        <TouchableOpacity onPress={onComment}>
+                            <Text style={styles.statsText}>
+                                <Ionicons name="chatbubble" size={13} color="#8e44ad" /> {commentCount}{" "}
+                                {commentCount === 1 ? "comment" : "comments"}
+                            </Text>
+                        </TouchableOpacity>
                     )}
                 </View>
             )}
 
             {/* Actions */}
             <View style={styles.actions}>
-                <TouchableOpacity style={styles.actionButton} onPress={onLike}>
-                    <Ionicons
-                        name={isLiked ? "heart" : "heart-outline"}
-                        size={24}
-                        color={isLiked ? "#ff3366" : "#6b7280"}
-                    />
-                    <Text style={styles.actionText}>{post._count?.likes || 0}</Text>
-                </TouchableOpacity>
+                <LikeButton
+                    isLiked={isLiked}
+                    likeCount={likeCount}
+                    onToggle={onLike}
+                />
 
                 <TouchableOpacity style={styles.actionButton} onPress={onComment}>
                     <Ionicons name="chatbubble-outline" size={22} color="#6b7280" />
-                    <Text style={styles.actionText}>{post._count?.comments || 0}</Text>
+                    <Text style={styles.actionLabel}>{commentCount}</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.actionButton}>
-                    <Ionicons name="share-outline" size={24} color="#6b7280" />
+                <TouchableOpacity style={styles.actionButton} onPress={onShare}>
+                    <Ionicons name="share-outline" size={22} color="#6b7280" />
+                    <Text style={styles.actionLabel}>Share</Text>
                 </TouchableOpacity>
             </View>
         </View>
@@ -99,7 +159,9 @@ const styles = StyleSheet.create({
     container: {
         backgroundColor: "#fff",
         marginBottom: 8,
-        paddingVertical: 12,
+        paddingVertical: 14,
+        borderBottomWidth: 1,
+        borderBottomColor: "#fce4ec",
     },
     header: {
         flexDirection: "row",
@@ -112,44 +174,98 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     username: {
-        fontSize: 16,
-        fontWeight: "600",
-        color: "#111827",
+        fontSize: 15,
+        fontWeight: "700",
+        color: "#1f2937",
     },
     time: {
         fontSize: 12,
-        color: "#9ca3af",
+        color: "#8e44ad",
         marginTop: 2,
+        fontWeight: "500",
+    },
+    moreButton: {
+        padding: 4,
     },
     content: {
         fontSize: 15,
         color: "#374151",
-        lineHeight: 20,
+        lineHeight: 21,
         paddingHorizontal: 16,
         marginBottom: 12,
     },
     mediaContainer: {
-        marginBottom: 12,
+        marginBottom: 10,
     },
-    image: {
+    singleImage: {
         width: width,
         height: width * 0.75,
+    },
+    mediaGrid: {
+        flexDirection: "row",
+        flexWrap: "wrap",
+    },
+    gridItem: {
+        position: "relative",
+    },
+    gridItemHalf: {
+        width: width / 2,
+        height: width / 2,
+    },
+    gridItemThird: {
+        width: width / 2,
+        height: width * 0.38,
+    },
+    gridImage: {
+        width: "100%",
+        height: "100%",
+        borderWidth: 1,
+        borderColor: "#fff",
+    },
+    moreOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: "rgba(0,0,0,0.45)",
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    moreOverlayText: {
+        color: "#fff",
+        fontSize: 24,
+        fontWeight: "700",
+    },
+    videoIndicator: {
+        position: "absolute",
+        top: "50%",
+        left: "50%",
+        marginTop: -14,
+        marginLeft: -14,
+    },
+    statsRow: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        paddingHorizontal: 16,
+        paddingBottom: 10,
+    },
+    statsText: {
+        fontSize: 13,
+        color: "#9ca3af",
+        fontWeight: "500",
     },
     actions: {
         flexDirection: "row",
         alignItems: "center",
+        justifyContent: "space-around",
         paddingHorizontal: 16,
-        paddingTop: 8,
+        paddingTop: 10,
         borderTopWidth: 0.5,
-        borderTopColor: "#e5e7eb",
+        borderTopColor: "#fce4ec",
     },
     actionButton: {
         flexDirection: "row",
         alignItems: "center",
-        marginRight: 24,
     },
-    actionText: {
-        fontSize: 14,
+    actionLabel: {
+        fontSize: 13,
         color: "#6b7280",
         marginLeft: 6,
         fontWeight: "500",

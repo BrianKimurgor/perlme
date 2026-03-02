@@ -52,7 +52,14 @@ export interface Comment {
 
 export interface CreatePostRequest {
     content: string;
-    mediaUrls?: string[];
+    media?: { url: string; type: string }[];
+}
+
+export interface UploadedFile {
+    url: string;
+    type: string;
+    originalName: string;
+    size: number;
 }
 
 export interface CreateCommentRequest {
@@ -88,6 +95,16 @@ export const postsApi = createApi({
                 body: payload,
             }),
             invalidatesTags: ["Posts"],
+            transformResponse: (response: any) => response.data,
+        }),
+
+        // Upload media files
+        uploadMedia: builder.mutation<UploadedFile[], FormData>({
+            query: (formData) => ({
+                url: "upload",
+                method: "POST",
+                body: formData,
+            }),
             transformResponse: (response: any) => response.data,
         }),
 
@@ -143,6 +160,16 @@ export const postsApi = createApi({
             ],
             transformResponse: (response: any) => response.data,
         }),
+
+        // Repost to own feed
+        repost: builder.mutation<Post, string>({
+            query: (postId) => ({
+                url: `posts/${postId}/repost`,
+                method: "POST",
+            }),
+            invalidatesTags: ["Posts"],
+            transformResponse: (response: any) => response.data,
+        }),
     }),
 });
 
@@ -155,4 +182,6 @@ export const {
     useLikePostMutation,
     useUnlikePostMutation,
     useCommentOnPostMutation,
+    useUploadMediaMutation,
+    useRepostMutation,
 } = postsApi;

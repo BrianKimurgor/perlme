@@ -119,7 +119,7 @@ export default function ChatsScreen() {
       <View style={styles.headerContainer}>
         <Text style={styles.headerTitle}>Messages</Text>
         <TouchableOpacity>
-          <Ionicons name="create-outline" size={28} color="#ff3366" />
+          <Ionicons name="create-outline" size={28} color="#8e44ad" />
         </TouchableOpacity>
       </View>
       <FlatList
@@ -159,13 +159,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 12,
-    borderBottomWidth: 0.5,
-    borderBottomColor: "#e5e7eb",
+    borderBottomWidth: 1,
+    borderBottomColor: "#fce4ec",
   },
   headerTitle: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#111827",
+    fontSize: 26,
+    fontWeight: "800",
+    color: "#8e44ad",
   },
   listContent: {
     paddingVertical: 8,
@@ -174,9 +174,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 14,
     borderBottomWidth: 0.5,
-    borderBottomColor: "#f3f4f6",
+    borderBottomColor: "#fce4ec",
   },
   conversationInfo: {
     flex: 1,
@@ -190,12 +190,13 @@ const styles = StyleSheet.create({
   },
   username: {
     fontSize: 16,
-    fontWeight: "600",
-    color: "#111827",
+    fontWeight: "700",
+    color: "#1f2937",
   },
   time: {
     fontSize: 12,
-    color: "#9ca3af",
+    color: "#8e44ad",
+    fontWeight: "500",
   },
   lastMessage: {
     fontSize: 14,
@@ -226,13 +227,13 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 18,
-    fontWeight: "600",
-    color: "#6b7280",
+    fontWeight: "700",
+    color: "#8e44ad",
     marginTop: 16,
   },
   emptySubtext: {
     fontSize: 14,
-    color: "#9ca3af",
+    color: "#b0b0b0",
     marginTop: 8,
   },
   errorContainer: {
@@ -258,7 +259,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#ff3366",
     paddingHorizontal: 24,
     paddingVertical: 12,
-    borderRadius: 8,
+    borderRadius: 24,
+    shadowColor: "#ff3366",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 5,
+    elevation: 4,
   },
   retryButtonText: {
     color: "#FFF",

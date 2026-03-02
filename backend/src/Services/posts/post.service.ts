@@ -1,6 +1,6 @@
 import db from "../../drizzle/db";
 import {posts,likes,comments,media,TSelectPost,TInsertPost,TInsertMedia,} from "../../drizzle/schema";
-import { eq, and, desc, lt, asc, sql } from "drizzle-orm";
+import { eq, and, desc, asc, sql } from "drizzle-orm";
 import { PaginationHandler } from "../../utils/paginationHandler";
 
 export type TPostAuthor = {
@@ -24,6 +24,7 @@ export type TPostSummary = {
     author: TPostAuthor;
     media: TPostMedia[];
     likeCount: number;
+    commentCount: number;
     isLikedByCurrentUser: boolean;
 };
 
@@ -60,6 +61,7 @@ const formatPost = (post: any, currentUserId?: string) => ({
     author: post.author ?? { id: "", username: "Unknown", avatarUrl: null },
     media: post.media ?? [],
     likeCount: post.likes?.length ?? 0,
+    commentCount: post.comments?.length ?? 0,
     isLikedByCurrentUser: !!post.likes?.some((like: any) => like.userId === currentUserId),
 });
 
@@ -98,6 +100,7 @@ const fetchPostsBase = async ({
                 author: { columns: { id: true, username: true, avatarUrl: true } },
                 media: { columns: { id: true, url: true, type: true } },
                 likes: { columns: { id: true, userId: true } },
+                comments: { columns: { id: true } },
             },
             orderBy: orderByClause,
             limit,
@@ -182,6 +185,7 @@ export const getPostByIdService = async (postId: string,currentUserId?: string) 
     if (!post) return null;
 
     const likeCount = post.likes?.length || 0;
+    const commentCount = post.comments?.length || 0;
     const isLikedByCurrentUser = !!post.likes?.some(
         (like) => like.userId === currentUserId
     );
@@ -191,6 +195,7 @@ export const getPostByIdService = async (postId: string,currentUserId?: string) 
     return {
         ...rest,
         likeCount,
+        commentCount,
         isLikedByCurrentUser,
     };
 };
@@ -269,4 +274,50 @@ export const commentOnPostService = async (userId: string,postId: string,content
     });
 
     return commentWithUser;
+};
+
+export const repostService = async (userId: string, postId: string) => {
+    // Get the original post
+    const original = await db.query.posts.findFirst({
+        where: eq(posts.id, postId),
+        with: {
+            author: { columns: { id: true, username: true } },
+            media: { columns: { id: true, url: true, type: true } },
+        },
+    });
+
+    if (!original) throw new Error("Original post not found");
+
+    // Create a new post with repost attribution
+    const repostContent = `🔁 Reposted from @${original.author.username}:\n\n${original.content}`;
+
+    const [newPost] = await db
+        .insert(posts)
+        .values({
+            authorId: userId,
+            content: repostContent,
+        })
+        .returning();
+
+    if (!newPost) throw new Error("Failed to repost");
+
+    // Copy media references if any
+    let repostMedia: { id: string; url: string; type: string }[] = [];
+    if (original.media && original.media.length > 0) {
+        const mediaRecords = original.media.map((m) => ({
+            postId: newPost.id,
+            url: m.url,
+            type: m.type,
+        }));
+        repostMedia = await db
+            .insert(media)
+            .values(mediaRecords)
+            .returning({ id: media.id, url: media.url, type: media.type });
+    }
+
+    return {
+        ...newPost,
+        media: repostMedia,
+        originalPostId: postId,
+    };
 };

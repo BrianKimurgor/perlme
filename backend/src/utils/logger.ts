@@ -55,9 +55,9 @@ function makeLogMethod(fn: pino.LogFn) {
 }
 
 export const logger = {
-    info:  makeLogMethod(pinoLogger.info.bind(pinoLogger)),
+    info: makeLogMethod(pinoLogger.info.bind(pinoLogger)),
     error: makeLogMethod(pinoLogger.error.bind(pinoLogger)),
-    warn:  makeLogMethod(pinoLogger.warn.bind(pinoLogger)),
+    warn: makeLogMethod(pinoLogger.warn.bind(pinoLogger)),
     debug: makeLogMethod(pinoLogger.debug.bind(pinoLogger)),
     fatal: makeLogMethod(pinoLogger.fatal.bind(pinoLogger)),
     trace: makeLogMethod(pinoLogger.trace.bind(pinoLogger)),

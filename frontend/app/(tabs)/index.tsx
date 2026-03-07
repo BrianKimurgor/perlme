@@ -1,9 +1,12 @@
 import { CommentsSheet, Loading, PostCard, ShareSheet } from "@/components/ui";
+import { useAppTheme } from "@/src/hooks/useAppTheme";
 import { RootState } from "@/src/store";
 import { Post, useGetAllPostsQuery, useLikePostMutation, useUnlikePostMutation } from "@/src/store/Apis/PostsApi";
+import { expoLogger as logger } from "@/src/utils/logger";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   FlatList,
   RefreshControl,
@@ -21,12 +24,36 @@ export default function HomeScreen() {
   const [unlikePost] = useUnlikePostMutation();
   const [refreshing, setRefreshing] = useState(false);
   const currentUserId = useSelector((state: RootState) => state.auth.user?.id);
+  const { colors, accent } = useAppTheme();
 
   // ─── Comments Sheet State ───────────────────────────────────
   const [commentsPostId, setCommentsPostId] = useState<string | null>(null);
 
   // ─── Share Sheet State ──────────────────────────────────────
   const [sharePost, setSharePost] = useState<Post | null>(null);
+
+  // ─── Saved Posts State ─────────────────────────────────────
+  const SAVED_KEY = "@saved_posts";
+  const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    AsyncStorage.getItem(SAVED_KEY).then((val) => {
+      if (val) setSavedIds(new Set(JSON.parse(val)));
+    });
+  }, []);
+
+  const handleSave = useCallback(async (postId: string) => {
+    setSavedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(postId)) {
+        next.delete(postId);
+      } else {
+        next.add(postId);
+      }
+      AsyncStorage.setItem(SAVED_KEY, JSON.stringify([...next]));
+      return next;
+    });
+  }, []);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -42,7 +69,7 @@ export default function HomeScreen() {
         await likePost(postId).unwrap();
       }
     } catch (error) {
-      console.error("Failed to toggle like:", error);
+      logger.error("Failed to toggle like:", error);
     }
   }, [likePost, unlikePost]);
 
@@ -62,18 +89,20 @@ export default function HomeScreen() {
     <PostCard
       post={item}
       isLiked={checkIfLiked(item)}
+      isSaved={savedIds.has(item.id)}
       onLike={() => handleLike(item.id, checkIfLiked(item))}
       onComment={() => setCommentsPostId(item.id)}
       onShare={() => setSharePost(item)}
+      onSave={() => handleSave(item.id)}
       onUserPress={() => router.push(`/user/${item.authorId}`)}
     />
   );
 
   const renderHeader = () => (
-    <View style={styles.header}>
-      <Text style={styles.headerTitle}>Feed</Text>
+    <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+      <Text style={[styles.headerTitle, { color: accent }]}>Feed</Text>
       <TouchableOpacity onPress={() => router.push("/create-post")}>
-        <Ionicons name="add-circle" size={32} color="#ff3366" />
+        <Ionicons name="add-circle" size={32} color={accent} />
       </TouchableOpacity>
     </View>
   );
@@ -83,7 +112,7 @@ export default function HomeScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.surface2 }]}>
       {renderHeader()}
       <FlatList
         data={posts || []}
@@ -94,14 +123,14 @@ export default function HomeScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor="#ff3366"
+            tintColor={accent}
           />
         }
         ListEmptyComponent={
           <View style={styles.empty}>
             <Ionicons name="documents-outline" size={64} color="#e5c6f5" />
-            <Text style={styles.emptyText}>No posts yet</Text>
-            <Text style={styles.emptySubtext}>
+            <Text style={[styles.emptyText, { color: accent }]}>No posts yet</Text>
+            <Text style={[styles.emptySubtext, { color: colors.subtext }]}>
               Follow some users to see their posts
             </Text>
           </View>
@@ -173,3 +202,4 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
 });
+

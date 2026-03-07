@@ -1,3 +1,4 @@
+import { logger } from "../../utils/logger";
 import { and, desc, eq, inArray, or, sql } from "drizzle-orm";
 import db from "../../drizzle/db";
 import { blocks, messages, users } from "../../drizzle/schema";
@@ -237,10 +238,10 @@ export class MessageService {
     }
 
     async getConversationList(userId: string) {
-        console.log("📥 Starting getConversationList for user:", userId);
+        logger.info("📥 Starting getConversationList for user:", userId);
 
         // Get list of users with recent conversations using a subquery approach
-        console.log("🔍 Fetching latest messages...");
+        logger.info("🔍 Fetching latest messages...");
         const latestMessages = await db
             .select({
                 otherUserId: sql<string>`CASE 
@@ -259,7 +260,7 @@ export class MessageService {
             )
             .orderBy(desc(messages.createdAt));
 
-        console.log("✅ Found", latestMessages.length, "messages");
+        logger.info("✅ Found", latestMessages.length, "messages");
 
         // Get unique conversations with latest message for each user
         const uniqueConversations = new Map<string, typeof latestMessages[number]>();
@@ -270,18 +271,18 @@ export class MessageService {
             }
         }
 
-        console.log("✅ Found", uniqueConversations.size, "unique conversations");
+        logger.info("✅ Found", uniqueConversations.size, "unique conversations");
 
         // Get user details for all conversation partners
         const otherUserIds = Array.from(uniqueConversations.keys());
 
         // Return empty array if no conversations
         if (otherUserIds.length === 0) {
-            console.log("ℹ️ No conversations found");
+            logger.info("ℹ️ No conversations found");
             return [];
         }
 
-        console.log("🔍 Fetching user details for", otherUserIds.length, "users...");
+        logger.info("🔍 Fetching user details for", otherUserIds.length, "users...");
         const conversationUsers = await db
             .select({
                 id: users.id,
@@ -292,12 +293,12 @@ export class MessageService {
             .from(users)
             .where(inArray(users.id, otherUserIds));
 
-        console.log("✅ Found", conversationUsers.length, "users");
+        logger.info("✅ Found", conversationUsers.length, "users");
 
         // Create user map for quick lookup
         const userMap = new Map(conversationUsers.map(u => [u.id, u]));
 
-        console.log("🔍 Calculating unread counts...");
+        logger.info("🔍 Calculating unread counts...");
         // Get unread counts for each conversation
         const unreadCounts = await Promise.all(
             Array.from(uniqueConversations.keys()).map(async (otherUserId) => {
@@ -307,7 +308,7 @@ export class MessageService {
         );
 
         const unreadMap = new Map(unreadCounts.map(u => [u.otherUserId, u.count]));
-        console.log("✅ Calculated unread counts");
+        logger.info("✅ Calculated unread counts");
 
         // Combine message data with user data in the format expected by frontend
         const conversations = Array.from(uniqueConversations.entries()).map(([otherUserId, msg]) => {
@@ -335,7 +336,7 @@ export class MessageService {
             return timeB - timeA;
         });
 
-        console.log("✅ Conversation list ready:", conversations.length, "conversations");
+        logger.info("✅ Conversation list ready:", conversations.length, "conversations");
         return conversations;
     }
 
@@ -388,3 +389,4 @@ export class MessageService {
         return { success: true };
     }
 }
+

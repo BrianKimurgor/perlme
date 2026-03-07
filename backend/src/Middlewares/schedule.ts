@@ -1,3 +1,4 @@
+import { logger } from "../utils/logger";
 // scheduler.ts
 import cron from "node-cron";
 import { getAllUsers, unsuspendUser } from "../Services/Users/users.service";
@@ -11,7 +12,7 @@ dotenv.config();
 // ---------------------------- Cron Job ----------------------------
 // Runs every minute. Adjust schedule as needed.
 cron.schedule("* * * * *", async () => {
-  console.log("⏱️ Cron job running: checking suspended users...");
+  logger.info("⏱️ Cron job running: checking suspended users...");
 
   try {
     // Fetch all users
@@ -21,7 +22,7 @@ cron.schedule("* * * * *", async () => {
     for (const user of users) {
       // Check if user is suspended and suspension has expired
       if (user.isSuspended && user.suspendedUntil && new Date(user.suspendedUntil) <= now) {
-        console.log(`🔓 Unsuspending user: ${user.username} (id: ${user.id})`);
+        logger.info(`🔓 Unsuspending user: ${user.username} (id: ${user.id})`);
 
         try {
           // Unsuspend the user
@@ -67,17 +68,18 @@ cron.schedule("* * * * *", async () => {
                 message,
                 "unsuspension"
               );
-              console.log(`✅ Unsuspension email sent to ${updatedUser.email}`);
+              logger.info(`✅ Unsuspension email sent to ${updatedUser.email}`);
             } catch (emailError) {
-              console.error(`❌ Failed to send unsuspension email to ${updatedUser.email}`, emailError);
+              logger.error(`❌ Failed to send unsuspension email to ${updatedUser.email}`, emailError);
             }
           }
         } catch (unsuspendError) {
-          console.error(`❌ Failed to unsuspend user ${user.username} (id: ${user.id})`, unsuspendError);
+          logger.error(`❌ Failed to unsuspend user ${user.username} (id: ${user.id})`, unsuspendError);
         }
       }
     }
   } catch (error) {
-    console.error("💥 Cron job error:", error);
+    logger.error("💥 Cron job error:", error);
   }
 });
+

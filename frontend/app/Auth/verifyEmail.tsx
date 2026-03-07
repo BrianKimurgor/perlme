@@ -16,6 +16,7 @@ import {
   View,
 } from "react-native";
 import Toast from "react-native-toast-message";
+import { expoLogger as logger } from "@/src/utils/logger";
 
 export default function VerifyEmailScreen() {
   const router = useRouter();
@@ -36,10 +37,10 @@ export default function VerifyEmailScreen() {
     const loadEmail = async () => {
       // First try to get from route params
       const routeEmail = params.email as string;
-      console.log("🔍 [FRONTEND] Route params email:", routeEmail);
+      logger.info("🔍 [FRONTEND] Route params email:", routeEmail);
 
       if (routeEmail) {
-        console.log("✅ [FRONTEND] Email found in route params:", routeEmail);
+        logger.info("✅ [FRONTEND] Email found in route params:", routeEmail);
         setEmail(routeEmail);
         // Save to AsyncStorage for future use
         await AsyncStorage.setItem("userEmail", routeEmail);
@@ -49,7 +50,7 @@ export default function VerifyEmailScreen() {
 
       // Fall back to AsyncStorage
       const storedEmail = await AsyncStorage.getItem("userEmail");
-      console.log("🔍 [FRONTEND] AsyncStorage email:", storedEmail);
+      logger.info("🔍 [FRONTEND] AsyncStorage email:", storedEmail);
       setEmail(storedEmail);
       setLoadingEmail(false);
     };
@@ -98,24 +99,24 @@ export default function VerifyEmailScreen() {
   };
 
   const handleVerify = async (confirmationCode: string) => {
-    console.log("🔍 [FRONTEND] Attempting to verify email:", email);
-    console.log("🔍 [FRONTEND] Confirmation code:", confirmationCode);
+    logger.info("🔍 [FRONTEND] Attempting to verify email:", email);
+    logger.info("🔍 [FRONTEND] Confirmation code:", confirmationCode);
 
     if (!email) {
-      console.error("❌ [FRONTEND] Email is null or undefined");
+      logger.error("❌ [FRONTEND] Email is null or undefined");
       Toast.show({ type: "error", text1: "Email not found" });
       return;
     }
 
     try {
-      console.log("📤 [FRONTEND] Sending verification request...");
+      logger.info("📤 [FRONTEND] Sending verification request...");
       await verifyEmail({ email, confirmationCode }).unwrap();
-      console.log("✅ [FRONTEND] Email verified successfully!");
+      logger.info("✅ [FRONTEND] Email verified successfully!");
       Toast.show({ type: "success", text1: "✅ Email verified! Please log in." });
       setIsSuccess(true);
       setTimeout(() => router.replace("/Auth/Login"), 1500);
     } catch (err: any) {
-      console.error("❌ [FRONTEND] Verification failed:", err);
+      logger.error("❌ [FRONTEND] Verification failed:", err);
       Toast.show({
         type: "error",
         text1: err?.data?.error || "❌ Invalid or expired code.",
@@ -271,3 +272,4 @@ const styles = StyleSheet.create({
   backButton: { marginTop: 5 },
   backText: { color: "#8e44ad", fontWeight: "600", textDecorationLine: "underline" },
 });
+

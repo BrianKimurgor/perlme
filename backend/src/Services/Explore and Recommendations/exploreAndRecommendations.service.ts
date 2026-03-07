@@ -1,3 +1,4 @@
+import { logger } from "../../utils/logger";
 import db from "../../drizzle/db";
 import { ExploreAndRecommendParams } from "../../Validators/Explore.validator";
 
@@ -76,7 +77,7 @@ export const recommendationService = async (params: ExploreAndRecommendParams) =
   const userLon = userLocation?.longitude ?? null;
 
   if (userLat == null || userLon == null) {
-    console.warn("User location not set — distance filter skipped.");
+    logger.warn("User location not set — distance filter skipped.");
   }
 
   // --- Fetch potential matches ---
@@ -142,3 +143,4 @@ export const recommendationService = async (params: ExploreAndRecommendParams) =
 
   return filtered;
 };
+

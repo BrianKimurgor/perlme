@@ -5,9 +5,12 @@
  * API base URL for all backend requests.
  * Change this value when switching between environments.
  */
-export const API_BASE_URL = "http://192.168.100.19:3000/api/";
+const rawApiBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL || "http://192.168.100.19:3000/api";
+const trimmedApiBaseUrl = rawApiBaseUrl.replace(/\/+$/, "");
+export const API_BASE_URL = `${trimmedApiBaseUrl}/`;
 
 /**
  * Socket server URL (without /api/ path).
  */
-export const SOCKET_SERVER_URL = "http://192.168.100.19:3000";
+export const SOCKET_SERVER_URL =
+	process.env.EXPO_PUBLIC_SOCKET_URL || trimmedApiBaseUrl.replace(/\/api$/, "");

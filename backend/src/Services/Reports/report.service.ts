@@ -1,3 +1,4 @@
+import { logger } from "../../utils/logger";
 import db from "../../drizzle/db";
 import {
   reports,
@@ -103,7 +104,7 @@ export const createReport = async (data: TCreateReport) => {
       .where(eq(users.id, validated.reportedUserId))
       .returning();
 
-    console.warn(
+    logger.warn(
       `🚨 User ${validated.reportedUserId} auto-suspended for 7 days after ${activeReports} reports.`
     );
 
@@ -146,19 +147,19 @@ export const updateReportStatus = async (id: string, data: TUpdateReport) => {
   if ((validated as any).action === "REMOVE_CONTENT") {
     if (existing.postId) {
       await db.delete(posts).where(eq(posts.id, existing.postId));
-      console.log(`🗑️ Post ${existing.postId} removed due to report ${id}`);
+      logger.info(`🗑️ Post ${existing.postId} removed due to report ${id}`);
     }
     if (existing.commentId) {
       await db.delete(comments).where(eq(comments.id, existing.commentId));
-      console.log(`🗑️ Comment ${existing.commentId} removed due to report ${id}`);
+      logger.info(`🗑️ Comment ${existing.commentId} removed due to report ${id}`);
     }
     if (existing.messageId) {
       await db.delete(messages).where(eq(messages.id, existing.messageId));
-      console.log(`🗑️ Message ${existing.messageId} removed due to report ${id}`);
+      logger.info(`🗑️ Message ${existing.messageId} removed due to report ${id}`);
     }
     if (existing.groupMessageId) {
       await db.delete(groupMessages).where(eq(groupMessages.id, existing.groupMessageId));
-      console.log(`🗑️ Group message ${existing.groupMessageId} removed due to report ${id}`);
+      logger.info(`🗑️ Group message ${existing.groupMessageId} removed due to report ${id}`);
     }
   }
 
@@ -200,3 +201,4 @@ export const deleteReport = async (id: string) => {
   const [deleted] = await db.delete(reports).where(eq(reports.id, id)).returning();
   return deleted;
 };
+

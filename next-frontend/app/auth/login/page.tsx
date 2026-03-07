@@ -5,7 +5,6 @@ import { LogoIcon } from '@/components/logo'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { THEME_COLORS } from '@/lib/theme'
 import Link from 'next/link'
 import { motion } from 'motion/react'
 import { useEffect, useState } from 'react'
@@ -16,12 +15,13 @@ import { loginSchema, LoginFormValues } from '@/lib/validators/auth'
 import { useRouter } from 'next/navigation'
 import { useAppDispatch } from '@/store/hooks'
 import { setCredentials } from '@/store/slices/authSlice'
+import { webLogger as logger } from "@/lib/logger";
 
 
 export default function LoginPage() {
     const [isDark, setIsDark] = useState(false);
     const router = useRouter()
-    const [login, { isLoading, error }] = useLoginMutation()
+    const [login, { isLoading }] = useLoginMutation()
     const dispatch = useAppDispatch()
 
     const {register,handleSubmit,formState: { errors, isSubmitting },} = useForm<LoginFormValues>({resolver: zodResolver(loginSchema),})
@@ -32,12 +32,14 @@ export default function LoginPage() {
         if (savedTheme) {
             setIsDark(savedTheme === 'dark');
         } else {
-            setIsDark(window.matchMedia('(prefers-color-scheme: dark)').matches);
+            setIsDark(globalThis.matchMedia('(prefers-color-scheme: dark)').matches);
         }
     }, []);
 
-    const bgColor = isDark ? '#151718' : '#ffffff';
-    const textColor = isDark ? '#ECEDEE' : '#11181C';
+    const themeClasses = isDark
+        ? 'bg-[#151718] text-[#ECEDEE]'
+        : 'bg-[#ffffff] text-[#11181C]';
+    const formBackgroundClass = isDark ? 'bg-[#151718]' : 'bg-[#ffffff]';
 
     const onSubmit = async (data: LoginFormValues) => {
         try {
@@ -46,19 +48,19 @@ export default function LoginPage() {
             dispatch(
                 setCredentials({
                     user: res.user,
-                    refreshToken: res.accessToken,
+                    accessToken: res.accessToken,
                     userType: res.user.role,
                 })
             );
 
             router.push('/dashboard')
         } catch(error) {
-            console.error('There is an error',error);
+            logger.error('There is an error',error);
         }
     }
 
     return (
-        <div style={{ backgroundColor: bgColor, color: textColor }} className="transition-colors duration-300">
+        <div className={`transition-colors duration-300 ${themeClasses}`}>
             <HeroHeader />
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -68,10 +70,8 @@ export default function LoginPage() {
                 <section className="flex min-h-screen px-4 py-16 md:py-32">
                     <form
                     onSubmit={handleSubmit(onSubmit)}
-
-                    style={{ backgroundColor: bgColor}}
                         action=""
-                        className="bg-card m-auto h-fit w-full max-w-sm rounded-[calc(var(--radius)+.125rem)] border p-0.5 shadow-md dark:[--color-muted:var(--color-zinc-900)]">
+                        className={`bg-card m-auto h-fit w-full max-w-sm rounded-[calc(var(--radius)+.125rem)] border p-0.5 shadow-md dark:[--color-muted:var(--color-zinc-900)] ${formBackgroundClass}`}>
                         <div className="p-8 pb-6">
                             <div>
                                 <Link
@@ -131,3 +131,4 @@ export default function LoginPage() {
         </div>
     )
 }
+

@@ -84,7 +84,7 @@ export const groupsApi = createApi({
         // Create group
         createGroup: builder.mutation<Group, CreateGroupRequest>({
             query: (payload) => ({
-                url: "",
+                url: "groups",
                 method: "POST",
                 body: payload,
             }),
@@ -93,13 +93,13 @@ export const groupsApi = createApi({
 
         // Get all groups
         getAllGroups: builder.query<Group[], void>({
-            query: () => "",
+            query: () => "groups",
             providesTags: ["Groups"],
         }),
 
         // Get group by ID
         getGroupById: builder.query<Group, string>({
-            query: (groupId) => groupId,
+            query: (groupId) => `groups/${groupId}`,
             providesTags: (_result, _error, groupId) => [
                 { type: "Group", id: groupId },
             ],
@@ -111,7 +111,7 @@ export const groupsApi = createApi({
             { groupId: string; data: UpdateGroupRequest }
         >({
             query: ({ groupId, data }) => ({
-                url: groupId,
+                url: `groups/${groupId}`,
                 method: "PATCH",
                 body: data,
             }),
@@ -124,7 +124,7 @@ export const groupsApi = createApi({
         // Delete group
         deleteGroup: builder.mutation<{ message: string }, string>({
             query: (groupId) => ({
-                url: groupId,
+                url: `groups/${groupId}`,
                 method: "DELETE",
             }),
             invalidatesTags: ["Groups"],
@@ -136,7 +136,7 @@ export const groupsApi = createApi({
             { groupId: string; data: AddMemberRequest }
         >({
             query: ({ groupId, data }) => ({
-                url: `${groupId}/members`,
+                url: `groups/${groupId}/members`,
                 method: "POST",
                 body: data,
             }),
@@ -152,7 +152,7 @@ export const groupsApi = createApi({
             { groupId: string; memberId: string }
         >({
             query: ({ groupId, memberId }) => ({
-                url: `${groupId}/members/${memberId}`,
+                url: `groups/${groupId}/members/${memberId}`,
                 method: "DELETE",
             }),
             invalidatesTags: (_result, _error, { groupId }) => [
@@ -167,7 +167,7 @@ export const groupsApi = createApi({
             { groupId: string; memberId: string; data: UpdateMemberRoleRequest }
         >({
             query: ({ groupId, memberId, data }) => ({
-                url: `${groupId}/members/${memberId}/role`,
+                url: `groups/${groupId}/members/${memberId}/role`,
                 method: "PATCH",
                 body: data,
             }),
@@ -178,7 +178,7 @@ export const groupsApi = createApi({
 
         // Get group members
         getGroupMembers: builder.query<GroupMember[], string>({
-            query: (groupId) => `${groupId}/members`,
+            query: (groupId) => `groups/${groupId}/members`,
             providesTags: (_result, _error, groupId) => [
                 { type: "GroupMembers", id: groupId },
             ],
@@ -190,7 +190,7 @@ export const groupsApi = createApi({
             { groupId: string; data: SendGroupMessageRequest }
         >({
             query: ({ groupId, data }) => ({
-                url: `${groupId}/messages`,
+                url: `groups/${groupId}/messages`,
                 method: "POST",
                 body: data,
             }),
@@ -201,7 +201,7 @@ export const groupsApi = createApi({
 
         // Get group messages
         getGroupMessages: builder.query<GroupMessage[], string>({
-            query: (groupId) => `${groupId}/messages`,
+            query: (groupId) => `groups/${groupId}/messages`,
             providesTags: (_result, _error, groupId) => [
                 { type: "GroupMessages", id: groupId },
             ],

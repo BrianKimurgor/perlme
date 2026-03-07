@@ -1,14 +1,18 @@
 import dotenv from "dotenv";
 import path from "node:path";
+import { logger } from "./utils/logger";
 
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
-// Don't need dotenv.config() twice - remove the duplicate
 
 // Debug - verify environment loaded
-console.log("🔍 Environment loaded:");
-console.log("   NODE_ENV:", process.env.NODE_ENV || "development");
-console.log("   PORT:", process.env.PORT);
-console.log("   JWT_SECRET exists:", !!process.env.JWT_SECRET);
+logger.info(
+    {
+        nodeEnv: process.env.NODE_ENV || "development",
+        port: process.env.PORT,
+        jwtSecretExists: !!process.env.JWT_SECRET,
+    },
+    "Environment loaded"
+);
 
 // NOW import app (after environment is loaded)
 import app from "./app";
@@ -21,34 +25,34 @@ const server = http.createServer(app);
 // Initialize Socket.IO
 initializeSocketService(server);
 
-const PORT = Number.parseInt(process.env.PORT || "5000", 10);
+const PORT = Number.parseInt(process.env.PORT || "3000", 10);
 
 if (Number.isNaN(PORT)) {
     throw new TypeError("Invalid PORT environment variable");
 }
 
 server.listen(PORT, "0.0.0.0", () => {
-    console.log(`🚀 PerlMe API running on http://0.0.0.0:${PORT}`);
-    console.log(`📊 Environment: ${process.env.NODE_ENV || "development"}`);
+    logger.info({ port: PORT }, "PerlMe API running");
+    logger.info({ environment: process.env.NODE_ENV || "development" }, "Environment");
 
     if (process.env.NODE_ENV !== "production") {
-        console.log(`📚 Swagger docs: http://0.0.0.0:${PORT}/api/docs`);
+        logger.info({ docsUrl: `http://0.0.0.0:${PORT}/api/docs` }, "Swagger docs");
     }
 });
 
 // Graceful shutdown
 process.on("SIGTERM", () => {
-    console.log("SIGTERM signal received: closing HTTP server");
+    logger.warn("SIGTERM signal received: closing HTTP server");
     server.close(() => {
-        console.log("HTTP server closed");
+        logger.info("HTTP server closed");
         process.exit(0);
     });
 });
 
 process.on("SIGINT", () => {
-    console.log("SIGINT signal received: closing HTTP server");
+    logger.warn("SIGINT signal received: closing HTTP server");
     server.close(() => {
-        console.log("HTTP server closed");
+        logger.info("HTTP server closed");
         process.exit(0);
     });
 });

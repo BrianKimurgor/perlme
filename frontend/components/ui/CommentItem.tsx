@@ -1,4 +1,5 @@
 import { Comment } from "@/src/store/Apis/PostsApi";
+import { useAppTheme } from "@/src/hooks/useAppTheme";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Avatar } from "./Avatar";
@@ -24,6 +25,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
     comment,
     onUserPress,
 }) => {
+    const { colors } = useAppTheme();
     return (
         <View style={styles.container}>
             <TouchableOpacity
@@ -37,7 +39,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
                 />
             </TouchableOpacity>
 
-            <View style={styles.bubble}>
+            <View style={[styles.bubble, { backgroundColor: colors.input }]}>
                 <View style={styles.header}>
                     <TouchableOpacity
                         onPress={() => onUserPress?.(comment.userId)}
@@ -47,9 +49,9 @@ export const CommentItem: React.FC<CommentItemProps> = ({
                             {comment.user?.username || "User"}
                         </Text>
                     </TouchableOpacity>
-                    <Text style={styles.time}>{formatTimeAgo(comment.createdAt)}</Text>
+                    <Text style={[styles.time, { color: colors.subtext }]}>{formatTimeAgo(comment.createdAt)}</Text>
                 </View>
-                <Text style={styles.content}>{comment.content}</Text>
+                <Text style={[styles.content, { color: colors.text }]}>{comment.content}</Text>
             </View>
         </View>
     );

@@ -5,6 +5,7 @@ import { fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { API_BASE_URL } from "../../src/utils/config";
 import { logout, setCredentials } from "./AuthSlice";
 import type { RootState } from "./index";
+import { expoLogger as logger } from "@/src/utils/logger";
 
 // Simple flag to prevent multiple refresh attempts
 let isRefreshing = false;
@@ -38,7 +39,7 @@ export const baseQueryWithReauth: BaseQueryFn<
     let result = await baseQuery(args, api, extraOptions);
 
     if (result.error && result.error.status === 401) {
-        console.log("🔄 Token expired, attempting refresh...");
+        logger.info("🔄 Token expired, attempting refresh...");
 
         if (!isRefreshing) {
             isRefreshing = true;
@@ -47,7 +48,7 @@ export const baseQueryWithReauth: BaseQueryFn<
                 const refreshToken = await AsyncStorage.getItem("refreshToken");
 
                 if (refreshToken) {
-                    console.log("📤 Sending refresh token request...");
+                    logger.info("📤 Sending refresh token request...");
 
                     const refreshResult = await baseQuery(
                         {
@@ -66,7 +67,7 @@ export const baseQueryWithReauth: BaseQueryFn<
                             user: any;
                         };
 
-                        console.log("✅ Token refreshed successfully");
+                        logger.info("✅ Token refreshed successfully");
 
                         // Store the new tokens
                         const state = api.getState() as RootState;
@@ -87,12 +88,12 @@ export const baseQueryWithReauth: BaseQueryFn<
                         // Retry the original request with new token
                         result = await baseQuery(args, api, extraOptions);
                     } else {
-                        console.error("❌ Token refresh failed, logging out");
+                        logger.error("❌ Token refresh failed, logging out");
                         api.dispatch(logout());
                         await AsyncStorage.clear();
                     }
                 } else {
-                    console.error("❌ No refresh token available, logging out");
+                    logger.error("❌ No refresh token available, logging out");
                     api.dispatch(logout());
                     await AsyncStorage.clear();
                 }
@@ -114,3 +115,4 @@ export const baseQueryWithReauth: BaseQueryFn<
 
     return result;
 };
+

@@ -34,7 +34,7 @@ export const blocksApi = createApi({
         // Block a user
         blockUser: builder.mutation<{ message: string }, BlockRequest>({
             query: (payload) => ({
-                url: "",
+                url: "blocks",
                 method: "POST",
                 body: payload,
             }),
@@ -44,7 +44,7 @@ export const blocksApi = createApi({
         // Unblock a user
         unblockUser: builder.mutation<{ message: string }, BlockRequest>({
             query: (payload) => ({
-                url: "",
+                url: "blocks",
                 method: "DELETE",
                 body: payload,
             }),
@@ -53,7 +53,7 @@ export const blocksApi = createApi({
 
         // Check block status with specific user
         checkBlockStatus: builder.query<BlockStatus, string>({
-            query: (targetUserId) => `status/${targetUserId}`,
+            query: (targetUserId) => `blocks/status/${targetUserId}`,
             providesTags: (_result, _error, targetUserId) => [
                 { type: "BlockStatus", id: targetUserId },
             ],
@@ -61,13 +61,13 @@ export const blocksApi = createApi({
 
         // Get list of users I blocked
         getBlockedUsers: builder.query<BlockedUser[], void>({
-            query: () => "",
+            query: () => "blocks/me/blocked",
             providesTags: ["Blocks"],
         }),
 
         // Get list of users who blocked me
         getBlockedBy: builder.query<BlockedUser[], void>({
-            query: () => "blocked-by",
+            query: () => "blocks/me/blocked-by",
             providesTags: ["Blocks"],
         }),
     }),

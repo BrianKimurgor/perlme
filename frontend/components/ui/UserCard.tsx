@@ -1,3 +1,4 @@
+import { useAppTheme } from "@/src/hooks/useAppTheme";
 import React from "react";
 import {
     StyleSheet,
@@ -35,20 +36,21 @@ export const UserCard: React.FC<UserCardProps> = ({
     showFollowButton = true,
     style,
 }) => {
+    const { colors } = useAppTheme();
     return (
-        <TouchableOpacity style={[styles.container, style]} onPress={onPress}>
+        <TouchableOpacity style={[styles.container, style, { backgroundColor: colors.surface }]} onPress={onPress}>
             <Avatar uri={avatarUrl} name={username} size={60} />
             <View style={styles.info}>
-                <Text style={styles.username}>{username}</Text>
-                {bio && <Text style={styles.bio} numberOfLines={2}>{bio}</Text>}
+                <Text style={[styles.username, { color: colors.text }]}>{username}</Text>
+                {bio && <Text style={[styles.bio, { color: colors.subtext }]} numberOfLines={2}>{bio}</Text>}
                 <View style={styles.stats}>
                     {postsCount !== undefined && (
-                        <Text style={styles.statText}>{postsCount} posts</Text>
+                        <Text style={[styles.statText, { color: colors.subtext }]}>{postsCount} posts</Text>
                     )}
                     {followersCount !== undefined && (
                         <>
-                            <Text style={styles.separator}>•</Text>
-                            <Text style={styles.statText}>{followersCount} followers</Text>
+                            <Text style={[styles.separator, { color: colors.subtext }]}>•</Text>
+                            <Text style={[styles.statText, { color: colors.subtext }]}>{followersCount} followers</Text>
                         </>
                     )}
                 </View>

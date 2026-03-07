@@ -1,3 +1,4 @@
+import { useAppTheme } from "@/src/hooks/useAppTheme";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
@@ -19,6 +20,7 @@ export const CommentInput: React.FC<CommentInputProps> = ({
     placeholder = "Add a comment...",
 }) => {
     const [text, setText] = useState("");
+    const { colors, accent } = useAppTheme();
 
     const canSend = text.trim().length > 0 && !isSubmitting;
 
@@ -30,11 +32,11 @@ export const CommentInput: React.FC<CommentInputProps> = ({
     };
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: colors.surface, borderTopColor: colors.border }]}>
             <TextInput
-                style={styles.input}
+                style={[styles.input, { backgroundColor: colors.input, color: colors.text, borderColor: colors.border }]}
                 placeholder={placeholder}
-                placeholderTextColor="#b0b0b0"
+                placeholderTextColor={colors.subtext}
                 value={text}
                 onChangeText={setText}
                 multiline
@@ -42,7 +44,7 @@ export const CommentInput: React.FC<CommentInputProps> = ({
                 editable={!isSubmitting}
             />
             <TouchableOpacity
-                style={[styles.sendButton, canSend && styles.sendButtonActive]}
+                style={[styles.sendButton, { backgroundColor: colors.surface2 }, canSend && styles.sendButtonActive]}
                 onPress={handleSend}
                 disabled={!canSend}
                 activeOpacity={0.7}

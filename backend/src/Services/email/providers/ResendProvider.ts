@@ -1,3 +1,4 @@
+import { logger } from "../../../utils/logger";
 import { Resend } from 'resend';
 import { EmailProvider, EmailParams, EmailResponse } from '../EmailService.interface';
 
@@ -24,7 +25,7 @@ export class ResendProvider implements EmailProvider {
             });
 
             if (error) {
-                console.error('❌ Resend error:', error);
+                logger.error('❌ Resend error:', error);
                 return {
                     success: false,
                     error: error.message || 'Failed to send email',
@@ -36,7 +37,7 @@ export class ResendProvider implements EmailProvider {
                 messageId: data?.id,
             };
         } catch (error: any) {
-            console.error('❌ Resend exception:', error);
+            logger.error('❌ Resend exception:', error);
             return {
                 success: false,
                 error: error.message || 'Email sending failed',
@@ -44,3 +45,4 @@ export class ResendProvider implements EmailProvider {
         }
     }
 }
+

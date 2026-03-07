@@ -20,6 +20,7 @@ import { LogoIcon } from '@/components/logo'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { webLogger as logger } from "@/lib/logger";
 
 // Define step schemas separately
 const step1Schema = z.object({
@@ -245,7 +246,7 @@ export default function RegisterPage() {
       localStorage.setItem('pendingVerificationEmail', formData.email)
       router.push('/auth/email-verification')
     } catch (err) {
-      console.error('Registration error:', err)
+      logger.error('Registration error:', err)
     }
   }
 

@@ -1,3 +1,4 @@
+import { logger } from "../../utils/logger";
 import { Request, Response } from "express";
 import { PaginationHandler } from "../../utils/paginationHandler";
 import { ResponseHandler } from "../../utils/responseHandler";
@@ -32,7 +33,7 @@ export const createPostController = async (req: Request, res: Response) => {
         const newPost = await createPostService({ authorId: userId, content: content.trim() }, mediaItems);
         return ResponseHandler.created(res, "Post created successfully", newPost);
     } catch (error) {
-        console.error("Error creating post:", error);
+        logger.error("Error creating post:", error);
         return ResponseHandler.internal(res, "Internal server error", error);
     }
 };
@@ -53,7 +54,7 @@ export const getAllPublicPostsController = async (req: Request, res: Response) =
 
         return PaginationHandler.send(res, posts, meta.totalItems, page, limit);
     } catch (error) {
-        console.error("Error fetching posts:", error);
+        logger.error("Error fetching posts:", error);
         return ResponseHandler.internal(res, "Internal server error", error);
     }
 };
@@ -70,7 +71,7 @@ export const getPostByIdController = async (req: Request, res: Response) => {
 
         return ResponseHandler.ok(res, "Post fetched successfully", post);
     } catch (error) {
-        console.error("Error fetching post:", error);
+        logger.error("Error fetching post:", error);
         return ResponseHandler.internal(res, "Internal server error", error);
     }
 };
@@ -102,7 +103,7 @@ export const getPostsByUserController = async (req: Request, res: Response) => {
             "User posts fetched successfully"
         );
     } catch (error) {
-        console.error("Error fetching user posts:", error);
+        logger.error("Error fetching user posts:", error);
         return ResponseHandler.internal(res, "Internal server error", error);
     }
 };
@@ -123,7 +124,7 @@ export const updatePostController = async (req: Request, res: Response) => {
 
         return ResponseHandler.ok(res, "Post updated successfully", updatedPost);
     } catch (error) {
-        console.error("Error updating post:", error);
+        logger.error("Error updating post:", error);
         return ResponseHandler.internal(res, "Internal server error", error);
     }
 };
@@ -141,7 +142,7 @@ export const deletePostController = async (req: Request, res: Response) => {
 
         return ResponseHandler.ok(res, "Post deleted successfully");
     } catch (error) {
-        console.error("Error deleting post:", error);
+        logger.error("Error deleting post:", error);
         return ResponseHandler.internal(res, "Internal server error", error);
     }
 };
@@ -157,7 +158,7 @@ export const likePostController = async (req: Request, res: Response) => {
         await likePostService(userId, postId);
         return ResponseHandler.ok(res, "Post liked successfully");
     } catch (error) {
-        console.error("Error liking post:", error);
+        logger.error("Error liking post:", error);
         return ResponseHandler.internal(res, "Internal server error", error);
     }
 };
@@ -173,7 +174,7 @@ export const unlikePostController = async (req: Request, res: Response) => {
         await unlikePostService(userId, postId);
         return ResponseHandler.ok(res, "Post unliked successfully");
     } catch (error) {
-        console.error("Error unliking post:", error);
+        logger.error("Error unliking post:", error);
         return ResponseHandler.internal(res, "Internal server error", error);
     }
 };
@@ -191,7 +192,7 @@ export const commentOnPostController = async (req: Request, res: Response) => {
         const comment = await commentOnPostService(userId, postId, content.trim());
         return ResponseHandler.created(res, "Comment added successfully", comment);
     } catch (error) {
-        console.error("Error adding comment:", error);
+        logger.error("Error adding comment:", error);
         return ResponseHandler.internal(res, "Internal server error", error);
     }
 };
@@ -207,10 +208,11 @@ export const repostController = async (req: Request, res: Response) => {
         const repost = await repostService(userId, postId);
         return ResponseHandler.created(res, "Post shared to your feed", repost);
     } catch (error: any) {
-        console.error("Error reposting:", error);
+        logger.error("Error reposting:", error);
         if (error.message === "Original post not found") {
             return ResponseHandler.notFound(res, error.message);
         }
         return ResponseHandler.internal(res, "Internal server error", error);
     }
 };
+

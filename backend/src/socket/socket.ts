@@ -1,3 +1,4 @@
+import { logger } from "../utils/logger";
 import { Server as SocketIOServer } from "socket.io";
 import { Server as HTTPServer } from "node:http";
 import { SocketResponseHandler } from "../utils/socketResponseHandler";
@@ -92,7 +93,7 @@ export class SocketService {
     private setupConnectionHandlers() {
         this.io.on("connection", (socket) => {
             const userId = socket.data.userId;
-            console.log(`User connected: ${userId} (socket: ${socket.id})`);
+            logger.info(`User connected: ${userId} (socket: ${socket.id})`);
 
             // Track user's socket connections (users can have multiple tabs/devices)
             if (!this.userSockets.has(userId)) {
@@ -138,7 +139,7 @@ export class SocketService {
 
             // Handle errors
             socket.on("error", (error) => {
-                console.error(`Socket error for user ${userId}:`, error);
+                logger.error(`Socket error for user ${userId}:`, error);
             });
         });
     }
@@ -152,13 +153,13 @@ export class SocketService {
     private async handleMessageDelivered(socket: any, data: { messageId: string }) {
         // Will be implemented in message service
         const userId = socket.data.userId;
-        console.log(`Message ${data.messageId} delivered to user ${userId}`);
+        logger.info(`Message ${data.messageId} delivered to user ${userId}`);
     }
 
     private async handleMessageRead(socket: any, data: { messageId: string }) {
         // Will be implemented in message service
         const userId = socket.data.userId;
-        console.log(`Message ${data.messageId} read by user ${userId}`);
+        logger.info(`Message ${data.messageId} read by user ${userId}`);
     }
 
     private handleTyping(socket: any, data: { receiverId: string }) {
@@ -177,7 +178,7 @@ export class SocketService {
     }
 
     private handleDisconnect(socket: any, userId: string) {
-        console.log(`User disconnected: ${userId} (socket: ${socket.id})`);
+        logger.info(`User disconnected: ${userId} (socket: ${socket.id})`);
 
         // Remove this socket from user's connections
         const sockets = this.userSockets.get(userId) || [];
@@ -242,3 +243,4 @@ export const getSocketService = (): SocketService => {
     }
     return socketService;
 };
+

@@ -1,6 +1,9 @@
 import ChatInput from "@/components/ChatInput";
 import MessageBubble from "@/components/MessageBubble";
 import { Avatar, Loading } from "@/components/ui";
+// eslint-disable-next-line import/no-named-as-default
+import socketService from "@/services/socketService";
+import { useAppTheme } from "@/src/hooks/useAppTheme";
 import { RootState } from "@/src/store";
 import {
     Message,
@@ -9,6 +12,7 @@ import {
     useSendMessageMutation,
 } from "@/src/store/Apis/MessagesApi";
 import { useGetUserByIdQuery } from "@/src/store/Apis/UsersApi";
+import { expoLogger as logger } from "@/src/utils/logger";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useRef } from "react";
@@ -28,10 +32,11 @@ export default function ConversationScreen() {
     const router = useRouter();
     const flatListRef = useRef<FlatList>(null);
     const currentUserId = useSelector((state: RootState) => state.auth.user?.id);
+    const token = useSelector((state: RootState) => state.auth.token);
+    const { colors, accent } = useAppTheme();
 
-    const { data: messages, isLoading } = useGetConversationQuery(userId || "", {
+    const { data: messages, isLoading, refetch } = useGetConversationQuery(userId || "", {
         skip: !userId,
-        pollingInterval: 3000, // Poll every 3 seconds for new messages
     });
 
     const { data: otherUser } = useGetUserByIdQuery(userId || "", {
@@ -47,6 +52,31 @@ export default function ConversationScreen() {
         }
     }, [userId, markAsRead]);
 
+    useEffect(() => {
+        if (!token || !userId) return;
+
+        socketService.connect(token);
+
+        const handleRealtimeUpdate = () => {
+            refetch();
+        };
+
+        socketService.on("new_message", handleRealtimeUpdate);
+        socketService.on("message_sent", handleRealtimeUpdate);
+        socketService.on("message_delivered", handleRealtimeUpdate);
+        socketService.on("message_read", handleRealtimeUpdate);
+        socketService.on("messages_read", handleRealtimeUpdate);
+
+        return () => {
+            socketService.off("new_message", handleRealtimeUpdate);
+            socketService.off("message_sent", handleRealtimeUpdate);
+            socketService.off("message_delivered", handleRealtimeUpdate);
+            socketService.off("message_read", handleRealtimeUpdate);
+            socketService.off("messages_read", handleRealtimeUpdate);
+            socketService.disconnect();
+        };
+    }, [token, userId, refetch]);
+
     const handleSendMessage = async (text: string) => {
         if (!text.trim() || !userId) return;
 
@@ -61,7 +91,7 @@ export default function ConversationScreen() {
                 flatListRef.current?.scrollToEnd({ animated: true });
             }, 100);
         } catch (error) {
-            console.error("Failed to send message:", error);
+            logger.error("Failed to send message:", error);
         }
     };
 
@@ -84,14 +114,14 @@ export default function ConversationScreen() {
 
     return (
         <KeyboardAvoidingView
-            style={styles.container}
+            style={[styles.container, { backgroundColor: colors.bg }]}
             behavior={Platform.OS === "ios" ? "padding" : undefined}
             keyboardVerticalOffset={100}
         >
             {/* Header */}
-            <View style={styles.header}>
+            <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
                 <TouchableOpacity onPress={() => router.back()}>
-                    <Ionicons name="arrow-back" size={24} color="#8e44ad" />
+                    <Ionicons name="arrow-back" size={24} color={accent} />
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={styles.userInfo}
@@ -103,12 +133,12 @@ export default function ConversationScreen() {
                         size={36}
                     />
                     <View style={styles.userDetails}>
-                        <Text style={styles.username}>{otherUser?.username}</Text>
+                        <Text style={[styles.username, { color: colors.text }]}>{otherUser?.username}</Text>
                         <Text style={styles.status}>Active</Text>
                     </View>
                 </TouchableOpacity>
                 <TouchableOpacity>
-                    <Ionicons name="ellipsis-vertical" size={20} color="#8e44ad" />
+                    <Ionicons name="ellipsis-vertical" size={20} color={accent} />
                 </TouchableOpacity>
             </View>
 
@@ -126,7 +156,17 @@ export default function ConversationScreen() {
             />
 
             {/* Input */}
-            <ChatInput onSendMessage={handleSendMessage} />
+            <ChatInput
+                onSendMessage={handleSendMessage}
+                onTyping={(isTyping) => {
+                    if (!userId) return;
+                    if (isTyping) {
+                        socketService.emitTyping(userId);
+                        return;
+                    }
+                    socketService.emitStopTyping(userId);
+                }}
+            />
         </KeyboardAvoidingView>
     );
 }

@@ -1,6 +1,6 @@
-import { useEffect } from "react";
 import { useRouter } from "expo-router";
-import { View, ActivityIndicator, Text, StyleSheet } from "react-native";
+import { useEffect } from "react";
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
 export default function Index() {
   const router = useRouter();
@@ -10,7 +10,7 @@ export default function Index() {
       router.replace("/splashScreen");
     }, 100);
     return () => clearTimeout(timeout);
-  }, []);
+  }, [router]);
 
   return (
     <View style={styles.container}>

@@ -1,5 +1,6 @@
 import { Avatar, CommentInput, CommentItem, LikeButton, Loading, ShareSheet } from "@/components/ui";
 import { RootState } from "@/src/store";
+import { expoLogger as logger } from "@/src/utils/logger";
 import {
     Comment,
     useCommentOnPostMutation,
@@ -51,7 +52,7 @@ export default function PostDetailScreen() {
                 await likePost(postId).unwrap();
             }
         } catch (error: any) {
-            console.error("Failed to toggle like:", error);
+            logger.error("Failed to toggle like:", error);
         }
     };
 

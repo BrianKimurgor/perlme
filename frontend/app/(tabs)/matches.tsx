@@ -1,10 +1,12 @@
 import { Loading, UserCard } from "@/components/ui";
+import { useAppTheme } from "@/src/hooks/useAppTheme";
 import { ExploreUser, useGetRecommendationsQuery } from "@/src/store/Apis/ExploreApi";
 import {
   useCheckIfFollowingQuery,
   useFollowUserMutation,
   useUnfollowUserMutation
 } from "@/src/store/Apis/UsersApi";
+import { expoLogger as logger } from "@/src/utils/logger";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
@@ -33,10 +35,10 @@ const UserCardWithFollow: React.FC<{
     try {
       if (isFollowing) {
         await unfollowUser(item.id).unwrap();
-        console.log("Unfollowed user:", item.id);
+        logger.info("Unfollowed user:", item.id);
       } else {
         await followUser(item.id).unwrap();
-        console.log("Followed user:", item.id);
+        logger.info("Followed user:", item.id);
       }
       // Refetch follow status to update the button
       await refetchFollowStatus();
@@ -45,15 +47,15 @@ const UserCardWithFollow: React.FC<{
     } catch (error: any) {
       // Handle "not following" error gracefully - might be stale data
       if (error?.status === 404 && error?.data?.message === "Follow relationship not found") {
-        console.log("Already unfollowed, refreshing status...");
+        logger.info("Already unfollowed, refreshing status...");
         await refetchFollowStatus();
         onRefetch();
       } else if (error?.status === 400 && error?.data?.message === "Already following this user") {
-        console.log("Already following, refreshing status...");
+        logger.info("Already following, refreshing status...");
         await refetchFollowStatus();
         onRefetch();
       } else {
-        console.error("Failed to toggle follow:", error);
+        logger.error("Failed to toggle follow:", error);
       }
     }
   };
@@ -77,16 +79,17 @@ const UserCardWithFollow: React.FC<{
 export default function MatchesScreen() {
   const { data, isLoading, error, refetch } = useGetRecommendationsQuery();
   const [refreshing, setRefreshing] = useState(false);
+  const { colors, accent } = useAppTheme();
 
   // Debug logging
   React.useEffect(() => {
-    console.log("=== MATCHES DEBUG ===");
-    console.log("Recommendations data:", JSON.stringify(data, null, 2));
-    console.log("Users array:", data?.users);
-    console.log("Users count:", data?.users?.length);
-    console.log("Loading:", isLoading);
-    console.log("Error:", JSON.stringify(error, null, 2));
-    console.log("===================");
+    logger.info("=== MATCHES DEBUG ===");
+    logger.info("Recommendations data:", JSON.stringify(data, null, 2));
+    logger.info("Users array:", data?.users);
+    logger.info("Users count:", data?.users?.length);
+    logger.info("Loading:", isLoading);
+    logger.info("Error:", JSON.stringify(error, null, 2));
+    logger.info("===================");
   }, [data, isLoading, error]);
 
   const onRefresh = async () => {
@@ -104,11 +107,11 @@ export default function MatchesScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Discover</Text>
+    <View style={[styles.container, { backgroundColor: colors.surface2 }]}>
+      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Discover</Text>
         <TouchableOpacity>
-          <Ionicons name="filter" size={24} color="#ff3366" />
+          <Ionicons name="filter" size={24} color={accent} />
         </TouchableOpacity>
       </View>
       <FlatList
@@ -126,8 +129,8 @@ export default function MatchesScreen() {
         ListEmptyComponent={
           <View style={styles.empty}>
             <Ionicons name="people-outline" size={64} color="#d1d5db" />
-            <Text style={styles.emptyText}>No recommendations yet</Text>
-            <Text style={styles.emptySubtext}>
+            <Text style={[styles.emptyText, { color: colors.subtext }]}>No recommendations yet</Text>
+            <Text style={[styles.emptySubtext, { color: colors.subtext }]}>
               Update your profile to get better matches
             </Text>
           </View>
@@ -177,3 +180,4 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
 });
+

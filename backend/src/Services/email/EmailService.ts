@@ -1,3 +1,4 @@
+import { logger } from "../../utils/logger";
 import { EmailServiceFactory } from './EmailServiceFactory';
 import { EmailParams } from './EmailService.interface';
 
@@ -6,7 +7,7 @@ export const sendEmail = async (params: EmailParams): Promise<boolean> => {
     const result = await provider.sendEmail(params);
 
     if (!result.success) {
-        console.error('Failed to send email:', result.error);
+        logger.error('Failed to send email:', result.error);
         // You might want to implement retry logic here
     }
 
@@ -22,3 +23,4 @@ export const sendNotificationEmailV2 = async (
 ): Promise<boolean> => {
     return sendEmail({ to, subject, html, from });
 };
+

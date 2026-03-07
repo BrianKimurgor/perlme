@@ -1,6 +1,8 @@
 import { Avatar, Button, Loading, PostCard } from "@/components/ui";
+import { API_BASE_URL } from "@/src/utils/config";
+import { expoLogger as logger } from "@/src/utils/logger";
 import { RootState } from "@/src/store";
-import { useBlockUserMutation, useUnblockUserMutation } from "@/src/store/Apis/BlocksApi";
+import { useBlockUserMutation } from "@/src/store/Apis/BlocksApi";
 import { useGetAllPostsQuery } from "@/src/store/Apis/PostsApi";
 import {
     useCheckIfFollowingQuery,
@@ -26,6 +28,7 @@ export default function UserProfileScreen() {
     const { userId } = useLocalSearchParams<{ userId: string }>();
     const router = useRouter();
     const currentUserId = useSelector((state: RootState) => state.auth.user?.id);
+    const token = useSelector((state: RootState) => state.auth.token);
 
     const { data: userProfile, isLoading } = useGetUserByIdQuery(userId || "", {
         skip: !userId,
@@ -37,7 +40,6 @@ export default function UserProfileScreen() {
 
     const { data: allPosts } = useGetAllPostsQuery();
     const [blockUser] = useBlockUserMutation();
-    const [unblockUser] = useUnblockUserMutation();
     const [followUser] = useFollowUserMutation();
     const [unfollowUser] = useUnfollowUserMutation();
 
@@ -70,10 +72,10 @@ export default function UserProfileScreen() {
         } catch (error: any) {
             // Handle "not following" error gracefully - might be stale data
             if (error?.status === 404 && error?.data?.message === "Follow relationship not found") {
-                console.log("Already unfollowed, refreshing status...");
+                logger.info("Already unfollowed, refreshing status...");
                 await refetchFollowStatus();
             } else if (error?.status === 400 && error?.data?.message === "Already following this user") {
-                console.log("Already following, refreshing status...");
+                logger.info("Already following, refreshing status...");
                 await refetchFollowStatus();
             } else {
                 Toast.show({
@@ -94,9 +96,43 @@ export default function UserProfileScreen() {
             });
             router.back();
         } catch (error) {
+            logger.error("Failed to block user", error);
             Toast.show({
                 type: "error",
                 text1: "Failed to block user",
+            });
+        }
+    };
+
+    const handleReport = async () => {
+        if (!userId || !token) return;
+        try {
+            const response = await fetch(`${API_BASE_URL}reports`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    reportedUserId: userId,
+                    reason: "User profile reported",
+                    description: "Reported from profile screen",
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to submit report");
+            }
+
+            Toast.show({
+                type: "success",
+                text1: "Report submitted",
+            });
+        } catch (error) {
+            logger.error("Failed to report user", error);
+            Toast.show({
+                type: "error",
+                text1: "Failed to report user",
             });
         }
     };
@@ -228,7 +264,7 @@ export default function UserProfileScreen() {
                     <Ionicons name="ban-outline" size={20} color="#ef4444" />
                     <Text style={styles.dangerText}>Block User</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.dangerButton}>
+                <TouchableOpacity style={styles.dangerButton} onPress={handleReport}>
                     <Ionicons name="flag-outline" size={20} color="#ef4444" />
                     <Text style={styles.dangerText}>Report User</Text>
                 </TouchableOpacity>

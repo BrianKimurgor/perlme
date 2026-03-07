@@ -1,3 +1,4 @@
+import { useAppTheme } from "@/src/hooks/useAppTheme";
 import { Post } from "@/src/store/Apis/PostsApi";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
@@ -11,7 +12,6 @@ import {
 } from "react-native";
 import { Avatar } from "./Avatar";
 import { LikeButton } from "./LikeButton";
-import { useAppTheme } from "@/src/hooks/useAppTheme";
 
 const { width } = Dimensions.get("window");
 

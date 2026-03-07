@@ -1,5 +1,5 @@
-import { Comment } from "@/src/store/Apis/PostsApi";
 import { useAppTheme } from "@/src/hooks/useAppTheme";
+import { Comment } from "@/src/store/Apis/PostsApi";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Avatar } from "./Avatar";

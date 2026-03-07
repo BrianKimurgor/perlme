@@ -2,13 +2,13 @@ import bcrypt from "bcrypt";
 import { RequestHandler } from "express";
 import jwt from "jsonwebtoken";
 import crypto from "node:crypto";
-import { logger } from "../utils/logger";
 import { sendEmail } from "../Services/email/EmailService";
 import {
   loginUserValidator,
   registerUserValidator,
 } from "../Validators/Auth.validator";
 import { TInsertUser } from "../drizzle/schema";
+import { logger } from "../utils/logger";
 import {
   generateAndSetNewConfirmationCode,
   getUserByEmailService,

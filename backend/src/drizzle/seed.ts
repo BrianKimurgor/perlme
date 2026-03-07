@@ -1,4 +1,4 @@
-import { logger } from "../../utils/logger";
+import { logger } from "../utils/logger";
 import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
 import db from "./db"; // your Drizzle DB instance

@@ -1,8 +1,8 @@
 import pinoHttp from "pino-http";
-import { logger } from "../utils/logger";
+import { pinoLogger } from "../utils/logger";
 
 export const httpLogger = pinoHttp({
-    logger,
+    logger: pinoLogger,
     customProps: (req) => ({
         requestId: (req as any).requestId,
     }),

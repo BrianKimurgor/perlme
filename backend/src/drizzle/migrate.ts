@@ -1,4 +1,4 @@
-import { logger } from "../../utils/logger";
+import { logger } from "../utils/logger";
 import "dotenv/config"
 import { migrate } from "drizzle-orm/node-postgres/migrator"
 import db from "./db"

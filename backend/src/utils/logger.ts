@@ -14,7 +14,7 @@ const destination = pino.destination({
     sync: false,
 });
 
-export const logger = pino(
+export const pinoLogger = pino(
     {
         level: process.env.LOG_LEVEL || "info",
         base: {
@@ -25,6 +25,43 @@ export const logger = pino(
     },
     destination
 );
+
+// Supports both pino styles:
+//   logger.info("msg", value)          → structured: { data: value }
+//   logger.info({ key: val }, "msg")   → passed through directly
+function makeLogMethod(fn: pino.LogFn) {
+    return (msgOrObj: string | object, ...args: unknown[]) => {
+        if (typeof msgOrObj === "object") {
+            // Pino structured style: (obj, msg?)
+            const msg = args[0] as string | undefined;
+            if (msg !== undefined) {
+                (fn as (obj: object, msg: string) => void).call(pinoLogger, msgOrObj, msg);
+            } else {
+                (fn as (obj: object) => void).call(pinoLogger, msgOrObj);
+            }
+        } else {
+            // Simple string style: (msg, ...extras)
+            if (args.length === 0) {
+                fn.call(pinoLogger, msgOrObj);
+            } else {
+                (fn as (obj: object, msg: string) => void).call(
+                    pinoLogger,
+                    { data: args.length === 1 ? args[0] : args },
+                    msgOrObj
+                );
+            }
+        }
+    };
+}
+
+export const logger = {
+    info:  makeLogMethod(pinoLogger.info.bind(pinoLogger)),
+    error: makeLogMethod(pinoLogger.error.bind(pinoLogger)),
+    warn:  makeLogMethod(pinoLogger.warn.bind(pinoLogger)),
+    debug: makeLogMethod(pinoLogger.debug.bind(pinoLogger)),
+    fatal: makeLogMethod(pinoLogger.fatal.bind(pinoLogger)),
+    trace: makeLogMethod(pinoLogger.trace.bind(pinoLogger)),
+};
 
 export const logFiles = {
     logsDir,

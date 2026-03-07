@@ -22,7 +22,7 @@ import {
 } from "./Auth.service";
 
 // --------------------------- CONSTANTS ---------------------------
-const BCRYPT_ROUNDS = 12;
+const BCRYPT_ROUNDS = 10;
 const JWT_ACCESS_EXPIRY = "15m";
 const JWT_REFRESH_EXPIRY = "7d";
 const MAX_LOGIN_ATTEMPTS = 5;
@@ -191,11 +191,12 @@ export const registerUser: RequestHandler = async (req, res) => {
     `;
     const html = baseEmailTemplate("Welcome to PerlMe 💌", message);
 
-    await sendEmail({
+    // Fire and forget — don't block the response waiting for the email
+    sendEmail({
       to: userData.email,
       subject: "💜 Welcome to PerlMe — Verify Your Email!",
       html,
-    });
+    }).catch((err) => logger.error("Failed to send registration email:", err));
 
     res.status(201).json({
       message: `User registered successfully. Please check your email for verification code 💌`,

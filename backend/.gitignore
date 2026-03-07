@@ -58,3 +58,5 @@ temp/
 *.swo
 *.bak
 *.old
+
+./logs

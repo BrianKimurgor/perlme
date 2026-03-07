@@ -1,3 +1,4 @@
+import { logger } from "../../../utils/logger";
 import { EmailProvider, EmailParams, EmailResponse } from '../EmailService.interface';
 import { sendNotificationEmail } from '../../../Middlewares/GoogleMailer';
 
@@ -18,7 +19,7 @@ export class GoogleMailerProvider implements EmailProvider {
                 success: true,
             };
         } catch (error: any) {
-            console.error('❌ GoogleMailer error:', error);
+            logger.error('❌ GoogleMailer error:', error);
             return {
                 success: false,
                 error: error.message || 'Email sending failed',
@@ -26,3 +27,4 @@ export class GoogleMailerProvider implements EmailProvider {
         }
     }
 }
+

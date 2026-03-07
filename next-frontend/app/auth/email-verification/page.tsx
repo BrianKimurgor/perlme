@@ -22,6 +22,7 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp"
 import { VerifyEmailFormValues, verifyEmailSchema } from '@/lib/validators/auth'
+import { webLogger as logger } from "@/lib/logger";
 
 // Zod schema for email verification
 
@@ -91,7 +92,7 @@ export default function VerifyEmailPage() {
         confirmationCode: data.code
       }).unwrap()
 
-      console.log(res)
+      logger.info(res)
 
       // Clear pending email
       localStorage.removeItem('pendingVerificationEmail')
@@ -99,7 +100,7 @@ export default function VerifyEmailPage() {
       setSuccess(true)
     router.push('/auth/login')
     } catch (err: any) {
-      console.log('Verification error:', err)
+      logger.info('Verification error:', err)
       setError(err?.data?.message || 'Verification failed. Please try again.')
     } finally {
       setIsLoading(false)

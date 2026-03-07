@@ -1,3 +1,4 @@
+import { logger } from "../utils/logger";
 import { Request, Response, NextFunction } from "express";
 import { getUserById, isUserActive } from '../Services/Users/users.service';
 
@@ -25,7 +26,8 @@ export const checkUserActive = async (req: Request, res: Response, next: NextFun
 
     next();
   } catch (error) {
-    console.error("Error checking user suspension:", error);
+    logger.error("Error checking user suspension:", error);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
+

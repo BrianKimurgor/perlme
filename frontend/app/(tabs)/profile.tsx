@@ -8,7 +8,9 @@ import { messagesApi } from "@/src/store/Apis/MessagesApi";
 import { postsApi } from "@/src/store/Apis/PostsApi";
 import { useGetUserByIdQuery, usersApi } from "@/src/store/Apis/UsersApi";
 
+import { useAppTheme } from "@/src/hooks/useAppTheme";
 import { logout } from "@/src/store/AuthSlice";
+import { expoLogger as logger } from "@/src/utils/logger";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
@@ -27,6 +29,7 @@ export default function ProfileScreen() {
   const router = useRouter();
   const dispatch = useDispatch();
   const currentUser = useSelector((state: RootState) => state.auth.user);
+  const { colors, accent } = useAppTheme();
   const { data: userProfile, isLoading } = useGetUserByIdQuery(
     currentUser?.id || "",
     { skip: !currentUser?.id }
@@ -34,7 +37,7 @@ export default function ProfileScreen() {
 
   const handleLogout = async () => {
     try {
-      console.log("🚪 Starting logout process...");
+      logger.info("🚪 Starting logout process...");
 
       // 1. Dispatch logout action first to clear Redux state
       dispatch(logout());
@@ -55,12 +58,12 @@ export default function ProfileScreen() {
       // 4. Clear all AsyncStorage
       await AsyncStorage.clear();
 
-      console.log("✅ Logout completed successfully");
+      logger.info("✅ Logout completed successfully");
 
       // 5. Navigate to login screen
       router.replace("/Auth/Login");
     } catch (error) {
-      console.error("❌ Logout error:", error);
+      logger.error("❌ Logout error:", error);
     }
   };
 
@@ -71,12 +74,12 @@ export default function ProfileScreen() {
   const profile = userProfile || currentUser;
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={[styles.container, { backgroundColor: colors.surface2 }]}>
       {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Profile</Text>
-        <TouchableOpacity onPress={() => router.push("/settings/profile")}>
-          <Ionicons name="settings-outline" size={24} color="#ff3366" />
+      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Profile</Text>
+        <TouchableOpacity onPress={() => router.push("/settings/manage")}>
+          <Ionicons name="settings-outline" size={24} color={accent} />
         </TouchableOpacity>
       </View>
 
@@ -91,7 +94,7 @@ export default function ProfileScreen() {
       )}
 
       {/* Profile Info */}
-      <View style={styles.profileInfo}>
+      <View style={[styles.profileInfo, { backgroundColor: colors.surface }]}>
         <View style={styles.avatarContainer}>
           <Avatar
             uri={profile?.avatarUrl}
@@ -105,27 +108,27 @@ export default function ProfileScreen() {
           )}
         </View>
 
-        <Text style={styles.username}>{profile?.username}</Text>
-        {profile?.bio && <Text style={styles.bio}>{profile.bio}</Text>}
+        <Text style={[styles.username, { color: colors.text }]}>{profile?.username}</Text>
+        {profile?.bio && <Text style={[styles.bio, { color: colors.subtext }]}>{profile.bio}</Text>}
 
         {/* Stats */}
         <View style={styles.stats}>
           <View style={styles.statItem}>
-            <Text style={styles.statValue}>
+            <Text style={[styles.statValue, { color: colors.text }]}>
               {profile?._count?.posts || 0}
             </Text>
             <Text style={styles.statLabel}>Posts</Text>
           </View>
-          <View style={styles.statDivider} />
+          <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
           <View style={styles.statItem}>
-            <Text style={styles.statValue}>
+            <Text style={[styles.statValue, { color: colors.text }]}>
               {profile?._count?.followers || 0}
             </Text>
             <Text style={styles.statLabel}>Followers</Text>
           </View>
-          <View style={styles.statDivider} />
+          <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
           <View style={styles.statItem}>
-            <Text style={styles.statValue}>
+            <Text style={[styles.statValue, { color: colors.text }]}>
               {profile?._count?.following || 0}
             </Text>
             <Text style={styles.statLabel}>Following</Text>
@@ -136,7 +139,7 @@ export default function ProfileScreen() {
         <View style={styles.actions}>
           <Button
             title="Edit Profile"
-            onPress={() => router.push("/settings/edit-profile")}
+            onPress={() => router.push("/settings/manage")}
             variant="outline"
             style={styles.actionButton}
           />
@@ -144,28 +147,28 @@ export default function ProfileScreen() {
       </View>
 
       {/* Menu Items */}
-      <View style={styles.menu}>
-        <TouchableOpacity style={styles.menuItem}>
-          <Ionicons name="bookmark-outline" size={24} color="#6b7280" />
-          <Text style={styles.menuText}>Saved Posts</Text>
+      <View style={[styles.menu, { backgroundColor: colors.surface }]}>
+        <TouchableOpacity style={[styles.menuItem, { borderBottomColor: colors.border }]} onPress={() => router.push("/saved-posts")}>
+          <Ionicons name="bookmark-outline" size={24} color={colors.subtext} />
+          <Text style={[styles.menuText, { color: colors.text }]}>Saved Posts</Text>
           <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuItem}>
-          <Ionicons name="ban-outline" size={24} color="#6b7280" />
-          <Text style={styles.menuText}>Blocked Users</Text>
+        <TouchableOpacity style={[styles.menuItem, { borderBottomColor: colors.border }]} onPress={() => router.push("/blocked")}>
+          <Ionicons name="ban-outline" size={24} color={colors.subtext} />
+          <Text style={[styles.menuText, { color: colors.text }]}>Blocked Users</Text>
           <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuItem}>
-          <Ionicons name="shield-checkmark-outline" size={24} color="#6b7280" />
-          <Text style={styles.menuText}>Privacy</Text>
+        <TouchableOpacity style={[styles.menuItem, { borderBottomColor: colors.border }]} onPress={() => router.push("/privacy")}>
+          <Ionicons name="shield-checkmark-outline" size={24} color={colors.subtext} />
+          <Text style={[styles.menuText, { color: colors.text }]}>Privacy</Text>
           <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuItem}>
-          <Ionicons name="help-circle-outline" size={24} color="#6b7280" />
-          <Text style={styles.menuText}>Help & Support</Text>
+        <TouchableOpacity style={[styles.menuItem, { borderBottomColor: colors.border }]} onPress={() => router.push("/help")}>
+          <Ionicons name="help-circle-outline" size={24} color={colors.subtext} />
+          <Text style={[styles.menuText, { color: colors.text }]}>Help & Support</Text>
           <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
         </TouchableOpacity>
 
@@ -298,3 +301,4 @@ const styles = StyleSheet.create({
     color: "#ef4444",
   },
 });
+

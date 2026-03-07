@@ -1,3 +1,4 @@
+import { useAppTheme } from "@/src/hooks/useAppTheme";
 import {
     Comment,
     useCommentOnPostMutation,
@@ -36,6 +37,7 @@ export const CommentsSheet: React.FC<CommentsSheetProps> = ({
     });
     const [commentOnPost, { isLoading: isCommenting }] =
         useCommentOnPostMutation();
+    const { colors, accent } = useAppTheme();
 
     const comments: Comment[] = post?.comments || [];
 
@@ -62,12 +64,12 @@ export const CommentsSheet: React.FC<CommentsSheetProps> = ({
             presentationStyle="pageSheet"
             onRequestClose={onClose}
         >
-            <View style={styles.container}>
+            <View style={[styles.container, { backgroundColor: colors.surface }]}>
                 {/* Header */}
-                <View style={styles.header}>
-                    <View style={styles.handle} />
+                <View style={[styles.header, { borderBottomColor: colors.border }]}>
+                    <View style={[styles.handle, { backgroundColor: colors.border }]} />
                     <View style={styles.headerRow}>
-                        <Text style={styles.title}>
+                        <Text style={[styles.title, { color: colors.text }]}>
                             Comments{" "}
                             <Text style={styles.commentCount}>
                                 ({comments.length})
@@ -82,8 +84,8 @@ export const CommentsSheet: React.FC<CommentsSheetProps> = ({
                 {/* Comments List */}
                 {isLoading ? (
                     <View style={styles.loadingContainer}>
-                        <ActivityIndicator size="large" color="#ff3366" />
-                        <Text style={styles.loadingText}>Loading comments...</Text>
+                        <ActivityIndicator size="large" color={accent} />
+                        <Text style={[styles.loadingText, { color: accent }]}>Loading comments...</Text>
                     </View>
                 ) : (
                     <FlatList
@@ -98,8 +100,8 @@ export const CommentsSheet: React.FC<CommentsSheetProps> = ({
                                     size={48}
                                     color="#e5c6f5"
                                 />
-                                <Text style={styles.emptyTitle}>No comments yet</Text>
-                                <Text style={styles.emptySubtext}>
+                                <Text style={[styles.emptyTitle, { color: colors.text }]}>No comments yet</Text>
+                                <Text style={[styles.emptySubtext, { color: colors.subtext }]}>
                                     Be the first to share your thoughts!
                                 </Text>
                             </View>

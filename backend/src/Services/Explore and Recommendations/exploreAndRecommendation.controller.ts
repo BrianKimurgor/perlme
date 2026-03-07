@@ -1,3 +1,4 @@
+import { logger } from "../../utils/logger";
 import { Request, Response } from "express";
 import { exploreAndRecommendValidator } from "../../Validators/Explore.validator";
 import { exploreService, recommendationService } from "./exploreAndRecommendations.service";
@@ -27,7 +28,7 @@ export const exploreController = async (req: Request, res: Response) => {
       data,
     });
   } catch (error: any) {
-    console.error("❌ Explore Controller Error:", error);
+    logger.error("❌ Explore Controller Error:", error);
     return res.status(500).json({
       error: error.message || "Failed to fetch explore feed.",
     });
@@ -62,9 +63,10 @@ export const recommendationController = async (req: Request, res: Response) => {
       data: recommendations,
     });
   } catch (error: any) {
-    console.error("❌ Recommendation Controller Error:", error);
+    logger.error("❌ Recommendation Controller Error:", error);
     return res.status(500).json({
       error: error.message || "Failed to fetch recommendations.",
     });
   }
 };
+

@@ -9,9 +9,8 @@ scrape_configs:
     metrics_path: '/metrics'
     scheme: 'http'
     static_configs:
-      - targets: ['127.0.0.1:3000']  # your backend on VPS
+      - targets: ['127.0.0.1:3000']
     honor_labels: true
-    # Add the internal token header
     authorization:
-      type: "Bearer"
+      type: Bearer
       credentials: "OWI0LTIxNmIyYTM1NDQ4YSIsImVtYWlsIjoiZ2FrZW55ZWRlc2lnbnNAZ21haWwuY29tIiwicm9sZSI6IlJFR1VMQVIiLCJ1c2VybmFtZSI6IlVzZXJHYWtlbnllIiwiaWF0IjoxNzYxMzk4MjYzLCJleHAiOjE3NjE0MDE4NjN9.wuTH6bBLGYHKYdrIGcU_v7Wr_vbzeXUfNkY4wNDmMck"

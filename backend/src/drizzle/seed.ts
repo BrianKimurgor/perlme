@@ -1,3 +1,4 @@
+import { logger } from "../../utils/logger";
 import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
 import db from "./db"; // your Drizzle DB instance
@@ -29,11 +30,11 @@ async function hashPassword(password: string): Promise<string> {
 
 export async function seed() {
   try {
-    console.log("🌱 Seeding started...");
-    console.log("⚠️  This will create comprehensive test data for all screens\n");
+    logger.info("🌱 Seeding started...");
+    logger.info("⚠️  This will create comprehensive test data for all screens\n");
 
     // ========================== CLEANUP EXISTING DATA ==========================
-    console.log("🧹 Cleaning up existing data...");
+    logger.info("🧹 Cleaning up existing data...");
 
     // Delete in reverse order of foreign key dependencies
     await db.delete(postTags);
@@ -59,10 +60,10 @@ export async function seed() {
     await db.delete(interests);
     await db.delete(users);
 
-    console.log("✅ Existing data cleared!\n");
+    logger.info("✅ Existing data cleared!\n");
 
     // ========================== USERS ==========================
-    console.log("👥 Inserting users...");
+    logger.info("👥 Inserting users...");
     const defaultPassword = await hashPassword("Password123!");
 
     // Main test users
@@ -245,10 +246,10 @@ export async function seed() {
         role: "REGULAR",
       },
     ]);
-    console.log("✅ Users inserted! (11 users)");
+    logger.info("✅ Users inserted! (11 users)");
 
     // ========================== INTERESTS ==========================
-    console.log("🎯 Inserting interests...");
+    logger.info("🎯 Inserting interests...");
     const musicId = uuidv4();
     const sportsId = uuidv4();
     const artId = uuidv4();
@@ -296,10 +297,10 @@ export async function seed() {
       { userId: user9Id, interestId: artId },
       { userId: user10Id, interestId: musicId },
     ]);
-    console.log("✅ Interests inserted! (10 interests)");
+    logger.info("✅ Interests inserted! (10 interests)");
 
     // ========================== FOLLOWS ==========================
-    console.log("🤝 Inserting follows...");
+    logger.info("🤝 Inserting follows...");
     await db.insert(follows).values([
       // testuser follows
       { followerId: testUserId, followingId: user1Id },
@@ -332,18 +333,18 @@ export async function seed() {
       { followerId: user8Id, followingId: user4Id },
       { followerId: user10Id, followingId: user5Id },
     ]);
-    console.log("✅ Follows inserted! (23 relationships)");
+    logger.info("✅ Follows inserted! (23 relationships)");
 
     // ========================== BLOCKS ==========================
-    console.log("🚫 Inserting blocks...");
+    logger.info("🚫 Inserting blocks...");
     await db.insert(blocks).values([
       { blockerId: testUserId, blockedId: user4Id },
       { blockerId: user6Id, blockedId: user9Id },
     ]);
-    console.log("✅ Blocks inserted! (2 blocks)");
+    logger.info("✅ Blocks inserted! (2 blocks)");
 
     // ========================== LOCATIONS ==========================
-    console.log("📍 Inserting locations...");
+    logger.info("📍 Inserting locations...");
     await db.insert(locations).values([
       { userId: testUserId, country: "USA", city: "Los Angeles", latitude: 34.0522, longitude: -118.2437 },
       { userId: user1Id, country: "USA", city: "New York", latitude: 40.7128, longitude: -74.006 },
@@ -357,10 +358,10 @@ export async function seed() {
       { userId: user9Id, country: "France", city: "Paris", latitude: 48.8566, longitude: 2.3522 },
       { userId: user10Id, country: "USA", city: "Chicago", latitude: 41.8781, longitude: -87.6298 },
     ]);
-    console.log("✅ Locations inserted! (11 locations)");
+    logger.info("✅ Locations inserted! (11 locations)");
 
     // ========================== USER PREFERENCES ==========================
-    console.log("⚙️ Inserting user preferences...");
+    logger.info("⚙️ Inserting user preferences...");
     await db.insert(userPreferences).values([
       { userId: testUserId, type: "AGE", value: "25-35" },
       { userId: testUserId, type: "DISTANCE", value: "50" },
@@ -369,10 +370,10 @@ export async function seed() {
       { userId: user3Id, type: "AGE", value: "22-32" },
       { userId: user5Id, type: "GENDER", value: "FEMALE" },
     ]);
-    console.log("✅ User preferences inserted! (6 preferences)");
+    logger.info("✅ User preferences inserted! (6 preferences)");
 
     // ========================== MESSAGES ==========================
-    console.log("💬 Inserting messages...");
+    logger.info("💬 Inserting messages...");
     const now = new Date();
 
     // Conversation: testuser <-> user1 (sarah_smith)
@@ -420,10 +421,10 @@ export async function seed() {
       { senderId: user6Id, receiverId: user7Id, content: "Thanks for the recommendation", createdAt: new Date(now.getTime() - 3600000 * 20) },
     ]);
 
-    console.log("✅ Messages inserted! (24 messages across 8 conversations)");
+    logger.info("✅ Messages inserted! (24 messages across 8 conversations)");
 
     // ========================== POSTS ==========================
-    console.log("📝 Inserting posts...");
+    logger.info("📝 Inserting posts...");
 
     // Posts by testuser
     const testPost1Id = uuidv4();
@@ -574,10 +575,10 @@ export async function seed() {
         createdAt: new Date(now.getTime() - 3600000 * 24),
       },
     ]);
-    console.log("✅ Posts inserted! (18 posts)");
+    logger.info("✅ Posts inserted! (18 posts)");
 
     // ========================== MEDIA ==========================
-    console.log("🖼️ Inserting media...");
+    logger.info("🖼️ Inserting media...");
     await db.insert(media).values([
       // testuser posts media
       { postId: testPost1Id, url: "https://picsum.photos/800/600?random=100", type: "image" },
@@ -620,10 +621,10 @@ export async function seed() {
       // chris_taylor posts media
       { postId: post15Id, url: "https://picsum.photos/800/600?random=122", type: "image" },
     ]);
-    console.log("✅ Media inserted! (25 media files)");
+    logger.info("✅ Media inserted! (25 media files)");
 
     // ========================== LIKES ==========================
-    console.log("❤️ Inserting likes...");
+    logger.info("❤️ Inserting likes...");
     await db.insert(likes).values([
       // Likes on testuser posts
       { postId: testPost1Id, userId: user1Id },
@@ -659,10 +660,10 @@ export async function seed() {
       { postId: post13Id, userId: user5Id },
       { postId: post15Id, userId: user4Id },
     ]);
-    console.log("✅ Likes inserted! (28 likes)");
+    logger.info("✅ Likes inserted! (28 likes)");
 
     // ========================== COMMENTS ==========================
-    console.log("💬 Inserting comments...");
+    logger.info("💬 Inserting comments...");
     await db.insert(comments).values([
       // Comments on testuser posts
       { postId: testPost1Id, userId: user1Id, content: "Stunning shot! 😍" },
@@ -693,10 +694,10 @@ export async function seed() {
       { postId: post13Id, userId: user5Id, content: "So peaceful 🧘‍♀️" },
       { postId: post15Id, userId: user4Id, content: "Taking notes! 🍜" },
     ]);
-    console.log("✅ Comments inserted! (23 comments)");
+    logger.info("✅ Comments inserted! (23 comments)");
 
     // ========================== TAGS & POST TAGS ==========================
-    console.log("🏷️ Inserting tags and post tags...");
+    logger.info("🏷️ Inserting tags and post tags...");
     const photographyTag = uuidv4();
     const artTag = uuidv4();
     const fitnessTag = uuidv4();
@@ -743,10 +744,10 @@ export async function seed() {
       { postId: post14Id, tagId: yogaTag },
       { postId: post15Id, tagId: foodTag },
     ]);
-    console.log("✅ Tags and post tags inserted! (10 tags)");
+    logger.info("✅ Tags and post tags inserted! (10 tags)");
 
     // ========================== GROUP CHATS ==========================
-    console.log("👥 Inserting group chats...");
+    logger.info("👥 Inserting group chats...");
     const group1Id = uuidv4();
     const group2Id = uuidv4();
     const group3Id = uuidv4();
@@ -777,10 +778,10 @@ export async function seed() {
         avatarUrl: "https://picsum.photos/200/200?random=202",
       },
     ]);
-    console.log("✅ Group chats inserted! (3 groups)");
+    logger.info("✅ Group chats inserted! (3 groups)");
 
     // ========================== GROUP MEMBERS ==========================
-    console.log("👤 Inserting group members...");
+    logger.info("👤 Inserting group members...");
     await db.insert(groupMembers).values([
       // Photography Enthusiasts group
       { groupId: group1Id, userId: testUserId, role: "GROUP_ADMIN" },
@@ -799,10 +800,10 @@ export async function seed() {
       { groupId: group3Id, userId: testUserId, role: "GROUP_MEMBER" },
       { groupId: group3Id, userId: user6Id, role: "GROUP_MEMBER" },
     ]);
-    console.log("✅ Group members inserted!");
+    logger.info("✅ Group members inserted!");
 
     // ========================== GROUP MESSAGES ==========================
-    console.log("💬 Inserting group messages...");
+    logger.info("💬 Inserting group messages...");
     await db.insert(groupMessages).values([
       // Photography Enthusiasts messages
       { groupId: group1Id, senderId: testUserId, content: "Welcome to Photography Enthusiasts! Share your best work here 📸" },
@@ -822,19 +823,19 @@ export async function seed() {
       { groupId: group3Id, senderId: testUserId, content: "Yes! The server components are game changing" },
       { groupId: group3Id, senderId: user6Id, content: "Still learning the basics but excited to try!" },
     ]);
-    console.log("✅ Group messages inserted! (12 messages)");
+    logger.info("✅ Group messages inserted! (12 messages)");
 
     // ========================== GROUP TAGS ==========================
-    console.log("🏷️ Inserting group tags...");
+    logger.info("🏷️ Inserting group tags...");
     await db.insert(groupTags).values([
       { groupId: group1Id, tagId: photographyTag },
       { groupId: group2Id, tagId: fitnessTag },
       { groupId: group3Id, tagId: techTag },
     ]);
-    console.log("✅ Group tags inserted!");
+    logger.info("✅ Group tags inserted!");
 
     // ========================== REPORTS ==========================
-    console.log("🚨 Inserting reports...");
+    logger.info("🚨 Inserting reports...");
     await db.insert(reports).values([
       {
         reporterId: user6Id,
@@ -850,10 +851,10 @@ export async function seed() {
         status: "REVIEWED",
       },
     ]);
-    console.log("✅ Reports inserted! (2 reports)");
+    logger.info("✅ Reports inserted! (2 reports)");
 
     // ========================== POST METRICS ==========================
-    console.log("📊 Inserting post metrics...");
+    logger.info("📊 Inserting post metrics...");
     await db.insert(postMetrics).values([
       { postId: testPost1Id, likeCount: 4, commentCount: 3, shareCount: 0, viewCount: 45, score: 15 },
       { postId: testPost2Id, likeCount: 2, commentCount: 2, shareCount: 0, viewCount: 30, score: 10 },
@@ -874,10 +875,10 @@ export async function seed() {
       { postId: post14Id, likeCount: 0, commentCount: 0, shareCount: 0, viewCount: 28, score: 0 },
       { postId: post15Id, likeCount: 1, commentCount: 1, shareCount: 0, viewCount: 32, score: 6 },
     ]);
-    console.log("✅ Post metrics inserted! (18 posts)");
+    logger.info("✅ Post metrics inserted! (18 posts)");
 
     // ========================== USER METRICS ==========================
-    console.log("📈 Inserting user metrics...");
+    logger.info("📈 Inserting user metrics...");
     await db.insert(userMetrics).values([
       { userId: testUserId, followersCount: 3, followingCount: 5, postsCount: 3, likesReceived: 7, engagementScore: 30 },
       { userId: user1Id, followersCount: 3, followingCount: 2, postsCount: 3, likesReceived: 7, engagementScore: 33 },
@@ -891,10 +892,10 @@ export async function seed() {
       { userId: user9Id, followersCount: 1, followingCount: 1, postsCount: 0, likesReceived: 0, engagementScore: 0 },
       { userId: user10Id, followersCount: 1, followingCount: 2, postsCount: 0, likesReceived: 0, engagementScore: 0 },
     ]);
-    console.log("✅ User metrics inserted! (11 users)");
+    logger.info("✅ User metrics inserted! (11 users)");
 
     // ========================== INTERACTIONS ==========================
-    console.log("🔄 Inserting interactions...");
+    logger.info("🔄 Inserting interactions...");
     await db.insert(interactions).values([
       { userId: testUserId, targetUserId: user1Id, type: "VIEW" },
       { userId: testUserId, targetUserId: user2Id, type: "VIEW" },
@@ -907,41 +908,42 @@ export async function seed() {
       { userId: user5Id, targetUserId: testUserId, type: "VIEW" },
       { userId: user5Id, targetUserId: user6Id, type: "VIEW" },
     ]);
-    console.log("✅ Interactions inserted! (10 interactions)");
+    logger.info("✅ Interactions inserted! (10 interactions)");
 
-    console.log("\n🎉 ================================");
-    console.log("✅ SEED DATA COMPLETED SUCCESSFULLY!");
-    console.log("================================");
-    console.log("\n📊 Summary:");
-    console.log("  - 11 users (with profiles, bios, avatars)");
-    console.log("  - 10 interests");
-    console.log("  - 23 follow relationships");
-    console.log("  - 2 blocks");
-    console.log("  - 11 locations");
-    console.log("  - 6 user preferences");
-    console.log("  - 24 direct messages across 8 conversations");
-    console.log("  - 18 posts with rich content");
-    console.log("  - 25 media files");
-    console.log("  - 28 likes");
-    console.log("  - 23 comments");
-    console.log("  - 10 tags");
-    console.log("  - 3 group chats");
-    console.log("  - 11 group members");
-    console.log("  - 12 group messages");
-    console.log("  - 2 reports");
-    console.log("  - 18 post metrics");
-    console.log("  - 11 user metrics");
-    console.log("  - 10 interactions");
-    console.log("\n🔐 Test User Credentials:");
-    console.log("  Email: test@perlme.com");
-    console.log("  Password: Password123!");
-    console.log("\n🚀 All screens should now have realistic data for testing!");
+    logger.info("\n🎉 ================================");
+    logger.info("✅ SEED DATA COMPLETED SUCCESSFULLY!");
+    logger.info("================================");
+    logger.info("\n📊 Summary:");
+    logger.info("  - 11 users (with profiles, bios, avatars)");
+    logger.info("  - 10 interests");
+    logger.info("  - 23 follow relationships");
+    logger.info("  - 2 blocks");
+    logger.info("  - 11 locations");
+    logger.info("  - 6 user preferences");
+    logger.info("  - 24 direct messages across 8 conversations");
+    logger.info("  - 18 posts with rich content");
+    logger.info("  - 25 media files");
+    logger.info("  - 28 likes");
+    logger.info("  - 23 comments");
+    logger.info("  - 10 tags");
+    logger.info("  - 3 group chats");
+    logger.info("  - 11 group members");
+    logger.info("  - 12 group messages");
+    logger.info("  - 2 reports");
+    logger.info("  - 18 post metrics");
+    logger.info("  - 11 user metrics");
+    logger.info("  - 10 interactions");
+    logger.info("\n🔐 Test User Credentials:");
+    logger.info("  Email: test@perlme.com");
+    logger.info("  Password: Password123!");
+    logger.info("\n🚀 All screens should now have realistic data for testing!");
   } catch (err) {
-    console.error("Seeding failed:", err);
+    logger.error("Seeding failed:", err);
     process.exit(1);
   }
 }
 
 // Run the seed function
 void seed();
+
 

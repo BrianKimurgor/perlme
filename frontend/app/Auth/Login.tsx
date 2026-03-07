@@ -1,6 +1,7 @@
 // app/auth/login.tsx
 import { AuthResponse, useLoginMutation } from "@/src/store/Apis/AuthApi";
 import { setCredentials } from "@/src/store/AuthSlice";
+import { expoLogger as logger } from "@/src/utils/logger";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LinearGradient } from "expo-linear-gradient";
@@ -19,15 +20,6 @@ import {
 import Toast from "react-native-toast-message";
 import { useDispatch } from "react-redux";
 
-// Types
-interface User {
-  id: string;
-  email: string;
-  username: string;
-  role: "REGULAR" | "CREATOR" | "MODERATOR" | "ADMIN";
-  avatarUrl: string | null;
-}
-
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -42,12 +34,12 @@ export default function LoginScreen() {
       return;
     }
 
-    console.log("📤 [FRONTEND] Initiating login for email:", email);
+    logger.info("📤 [FRONTEND] Initiating login for email:", email);
 
     try {
       const apiRes: AuthResponse = await login({ email, password }).unwrap();
 
-      console.log("📥 [FRONTEND] Login response:", apiRes);
+      logger.info("📥 [FRONTEND] Login response:", apiRes);
 
       // Handle optional token/message
       const token = apiRes.accessToken || "";
@@ -56,7 +48,7 @@ export default function LoginScreen() {
       const user = apiRes.user;
 
       if (!token) {
-        console.error("❌ [FRONTEND] No accessToken in response");
+        logger.error("❌ [FRONTEND] No accessToken in response");
         Toast.show({
           type: "error",
           text1: "Login Failed",
@@ -65,7 +57,7 @@ export default function LoginScreen() {
         return;
       }
 
-      console.log("✅ [FRONTEND] Token received, saving to Redux and AsyncStorage");
+      logger.info("✅ [FRONTEND] Token received, saving to Redux and AsyncStorage");
 
       // Clear previous auth data only (preserve app preferences)
       await AsyncStorage.multiRemove(["token", "refreshToken", "user", "userEmail"]);
@@ -78,7 +70,7 @@ export default function LoginScreen() {
       await AsyncStorage.setItem("refreshToken", refreshToken);
       await AsyncStorage.setItem("user", JSON.stringify(user));
 
-      console.log("💾 New session saved successfully");
+      logger.info("💾 New session saved successfully");
 
       // Show message from backend
       Toast.show({ type: "success", text1: message });
@@ -86,7 +78,7 @@ export default function LoginScreen() {
       // Navigate to main tabs
       router.replace("/(tabs)");
     } catch (err: any) {
-      console.error("Login failed:", err);
+      logger.error("Login failed:", err);
       Toast.show({
         type: "error",
         text1: "Login Failed",
@@ -142,7 +134,7 @@ export default function LoginScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity style={{ marginTop: 20 }} onPress={() => router.push("/Auth/Register")}>
-          <Text style={styles.registerLink}>Don't have an account? Register</Text>
+          <Text style={styles.registerLink}>{"Don't have an account? Register"}</Text>
         </TouchableOpacity>
 
         <Toast />
@@ -180,3 +172,4 @@ const styles = StyleSheet.create({
   buttonText: { color: "#1abc9c", fontWeight: "700", fontSize: 18 },
   registerLink: { color: "#fff", textAlign: "center", textDecorationLine: "underline", fontWeight: "500", fontSize: 16 },
 });
+

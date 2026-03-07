@@ -1,3 +1,4 @@
+import { useAppTheme } from "@/src/hooks/useAppTheme";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useCallback, useRef } from "react";
 import {
@@ -29,6 +30,7 @@ export const LikeButton: React.FC<LikeButtonProps> = ({
     showCount = true,
 }) => {
     const scaleAnim = useRef(new Animated.Value(1)).current;
+    const { colors } = useAppTheme();
 
     const handlePress = useCallback(() => {
         // Bounce animation
@@ -60,14 +62,14 @@ export const LikeButton: React.FC<LikeButtonProps> = ({
                 <Ionicons
                     name={isLiked ? "heart" : "heart-outline"}
                     size={icon}
-                    color={isLiked ? "#ff3366" : "#6b7280"}
+                    color={isLiked ? "#ff3366" : colors.subtext}
                 />
             </Animated.View>
             {showCount && (
                 <Text
                     style={[
                         styles.count,
-                        { fontSize: text },
+                        { fontSize: text, color: colors.subtext },
                         isLiked && styles.countLiked,
                     ]}
                 >

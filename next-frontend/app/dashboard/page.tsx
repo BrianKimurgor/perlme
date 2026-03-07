@@ -7,6 +7,7 @@ import FiltersSheet from '@/components/discover/FiltersSheet'
 import { Heart, MountainSnowIcon } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useGetDiscoverProfilesQuery, useLikeUserMutation, useRejectUserMutation } from '@/services/userApi'
+import { webLogger as logger } from "@/lib/logger";
 
 export default function DiscoverPage() {
     const [currentIndex, setCurrentIndex] = useState(0)
@@ -47,7 +48,7 @@ export default function DiscoverPage() {
             await rejectUser(profile.id).unwrap()
         }
         } catch (error) {
-            console.error('Swipe action failed:', error)
+            logger.error('Swipe action failed:', error)
         }
         
         // Update local state

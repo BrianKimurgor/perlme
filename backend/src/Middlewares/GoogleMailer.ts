@@ -1,3 +1,4 @@
+import { logger } from "../utils/logger";
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 dotenv.config();
@@ -124,17 +125,18 @@ export const sendNotificationEmail = async (
     const info = await transporter.sendMail(mailOptions);
 
     if (info.accepted?.length) {
-      console.log(`✅ Email sent to ${email}`);
+      logger.info(`✅ Email sent to ${email}`);
       return "Notification email sent successfully";
     } else if (info.rejected?.length) {
-      console.warn(`⚠️ Email rejected: ${info.rejected}`);
+      logger.warn(`⚠️ Email rejected: ${info.rejected}`);
       return "Notification email not sent, please try again";
     } else {
-      console.error("❌ Unknown email server response", info);
+      logger.error("❌ Unknown email server response", info);
       return "Email server error";
     }
   } catch (error: any) {
-    console.error("💥 Email sending error:", error);
+    logger.error("💥 Email sending error:", error);
     return `Email server error: ${error.message || error}`;
   }
 };
+

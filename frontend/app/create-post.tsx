@@ -19,6 +19,7 @@ import {
     View,
 } from "react-native";
 import Toast from "react-native-toast-message";
+import { expoLogger as logger } from "@/src/utils/logger";
 
 type LocalMedia = {
     uri: string;
@@ -149,7 +150,7 @@ export default function CreatePostScreen() {
             });
             router.back();
         } catch (error: any) {
-            console.error("Post creation error:", error);
+            logger.error("Post creation error:", error);
             Toast.show({
                 type: "error",
                 text1: "Failed to create post",
@@ -396,3 +397,4 @@ const styles = StyleSheet.create({
         color: "#ff3366",
     },
 });
+

@@ -1,3 +1,4 @@
+import { logger } from "../../utils/logger";
 import "dotenv/config"
 import { migrate } from "drizzle-orm/node-postgres/migrator"
 import db from "./db"
@@ -5,10 +6,10 @@ import {client} from "./db"
 
 // Creating our migrations
 async function migration(){
-    console.log("-----Migration Started SuccessFully!------");
+    logger.info("-----Migration Started SuccessFully!------");
     await migrate(db, {migrationsFolder: __dirname + "/migrations"});
     await client.end();
-    console.log("-----Migration ended SuccessFully!-------");
+    logger.info("-----Migration ended SuccessFully!-------");
     process.exit(0);
 }
 

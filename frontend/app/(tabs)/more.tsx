@@ -1,3 +1,4 @@
+import { useAppTheme } from "@/src/hooks/useAppTheme";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useRef } from "react";
@@ -13,6 +14,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function MoreScreen() {
   const router = useRouter();
+  const { colors, accent } = useAppTheme();
 
   const sections = [
     {
@@ -72,10 +74,11 @@ export default function MoreScreen() {
         })
       )
     ).start();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.bg }]}>
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
         {sections.map((section, sIndex) => (
           <Animated.View
@@ -83,21 +86,22 @@ export default function MoreScreen() {
             style={{ opacity: fadeAnims[sIndex], transform: [{ scale: fadeAnims[sIndex].interpolate({ inputRange: [0, 1], outputRange: [0.97, 1] }) }] }}
           >
             <View style={styles.section}>
-              {section.title && <Text style={styles.sectionTitle}>{section.title}</Text>}
+              {section.title && <Text style={[styles.sectionTitle, { color: colors.sectionLabel }]}>{section.title}</Text>}
               {section.items.map((item, index) => (
                 <Pressable
                   key={index}
                   style={({ pressed }) => [
                     styles.item,
-                    pressed && { backgroundColor: "#ffe6eb", transform: [{ scale: 0.97 }] },
+                    { backgroundColor: pressed ? colors.pressed : colors.surface },
+                    pressed && { transform: [{ scale: 0.97 }] },
                   ]}
                   onPress={() => router.push(item.path as any)}
                 >
                   <View style={styles.itemContent}>
-                    <Ionicons name={item.icon as any} size={22} color="#ff3366" />
-                    <Text style={styles.itemText}>{item.title}</Text>
+                    <Ionicons name={item.icon as any} size={22} color={accent} />
+                    <Text style={[styles.itemText, { color: colors.text }]}>{item.title}</Text>
                   </View>
-                  <Ionicons name="chevron-forward" size={18} color="#aaa" />
+                  <Ionicons name="chevron-forward" size={18} color={colors.subtext} />
                 </Pressable>
               ))}
             </View>

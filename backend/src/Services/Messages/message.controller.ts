@@ -1,3 +1,4 @@
+import { logger } from "../../utils/logger";
 import { Request, Response } from "express";
 import { ResponseHandler } from "../../utils/responseHandler";
 import { MessageService } from "./message.service";
@@ -32,7 +33,7 @@ export class MessageController {
 
             return ResponseHandler.created(res, "Message sent successfully", message);
         } catch (error: any) {
-            console.error("Send message error:", error);
+            logger.error("Send message error:", error);
             return ResponseHandler.badGateway(res, error.message || "Failed to send message");
         }
     };
@@ -55,7 +56,7 @@ export class MessageController {
 
             return ResponseHandler.ok(res, "Message status updated successfully", message);
         } catch (error: any) {
-            console.error("Update message status error:", error);
+            logger.error("Update message status error:", error);
             return ResponseHandler.badGateway(res, error.message || "Failed to update message status");
         }
     };
@@ -72,7 +73,7 @@ export class MessageController {
 
             return ResponseHandler.ok(res, "Conversation marked as read", messages);
         } catch (error: any) {
-            console.error("Mark conversation as read error:", error);
+            logger.error("Mark conversation as read error:", error);
             return ResponseHandler.badGateway(res, error.message || "Failed to mark conversation as read");
         }
     };
@@ -93,23 +94,23 @@ export class MessageController {
 
             return ResponseHandler.ok(res, "Conversation retrieved successfully", conversation);
         } catch (error: any) {
-            console.error("Get conversation error:", error);
+            logger.error("Get conversation error:", error);
             return ResponseHandler.badGateway(res, error.message || "Failed to get conversation");
         }
     };
 
     getConversationList = async (req: Request, res: Response) => {
-        console.log("🚀 CONTROLLER CALLED - getConversationList");
+        logger.info("🚀 CONTROLLER CALLED - getConversationList");
         try {
             const userId = (req as any).user.id;
-            console.log("🔍 Getting conversation list for user:", userId);
+            logger.info("🔍 Getting conversation list for user:", userId);
 
             const conversations = await this.messageService.getConversationList(userId);
-            console.log("✅ Found conversations:", conversations.length);
+            logger.info("✅ Found conversations:", conversations.length);
 
             return ResponseHandler.ok(res, "Conversation list retrieved successfully", conversations);
         } catch (error: any) {
-            console.error("❌ Get conversation list error:", error);
+            logger.error("❌ Get conversation list error:", error);
             return ResponseHandler.badGateway(res, error.message || "Failed to get conversation list");
         }
     };
@@ -129,7 +130,7 @@ export class MessageController {
                 data: { count },
             });
         } catch (error: any) {
-            console.error("Get unread count error:", error);
+            logger.error("Get unread count error:", error);
             return ResponseHandler.internal(res, error.message || "Failed to get unread count");
         }
     };
@@ -143,8 +144,9 @@ export class MessageController {
 
             return ResponseHandler.ok(res, "Message deleted successfully");
         } catch (error: any) {
-            console.error("Delete message error:", error);
+            logger.error("Delete message error:", error);
             return ResponseHandler.badGateway(res, error.message || "Failed to delete message");
         }
     };
 }
+

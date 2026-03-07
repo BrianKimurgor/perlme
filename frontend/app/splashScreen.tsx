@@ -1,9 +1,9 @@
-import React, { useEffect, useRef } from "react";
-import { View, Text, Animated, StyleSheet, Dimensions } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
+import React, { useEffect, useRef } from "react";
+import { Animated, Dimensions, StyleSheet, View } from "react-native";
 import { useSelector } from "react-redux";
 import { RootState } from "../src/store"; // adjust path to your store
-import { LinearGradient } from "expo-linear-gradient";
 
 const { height, width } = Dimensions.get("window");
 
@@ -77,6 +77,7 @@ export default function SplashScreen() {
         ])
       ).start();
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
   const bgColor = bgAnim.interpolate({

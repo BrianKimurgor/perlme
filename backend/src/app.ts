@@ -5,24 +5,27 @@ import swaggerUi from "swagger-ui-express";
 import { authRouter } from './Auth/Auth.route';
 import { anyAuth } from './Middlewares/BearAuth';
 import { checkUserActive } from './Middlewares/checkUserActivity';
-import { logger } from './Middlewares/Logger';
+import { requestLogger } from './Middlewares/Logger';
+import { metricsMiddleware } from './Middlewares/metrics.middleware';
 import { rateLimiterMiddleware } from './Middlewares/rateLimiter';
 import "./Middlewares/schedule";
 import { corsOptions } from './Middlewares/securityHeader.middleware';
+import clientLogsRoute from "./routes/clientLogs.route";
 import healthRoute from "./routes/health.route";
 import metricsRoute from "./routes/metrics.route";
 import blockRouters from './Services/Block/block.routes';
 import { EmailProviderType, EmailServiceFactory } from './Services/email/EmailServiceFactory';
 import exploreRouter from './Services/Explore and Recommendations/exploreAndRecommend.routes';
+import groupRouters from './Services/Groups/group.route';
 import messageRouter from './Services/Messages/message.route';
 import postRouter from './Services/posts/post.route';
 import reportRouters from './Services/Reports/report.route';
 import uploadRouter from './Services/upload/upload.route';
 import userRouters from './Services/Users/user.route';
 import swaggerSpec from "./swagger";
+import { logger } from "./utils/logger";
 
-
-console.log("🟢 Scheduler file loaded");
+logger.info("Scheduler file loaded");
 
 const app: Application = express();
 
@@ -43,9 +46,9 @@ const emailProvider = (process.env.EMAIL_PROVIDER as EmailProviderType) || 'rese
 
 try {
     EmailServiceFactory.initialize(emailProvider);
-    console.log(`✅ Email service initialized with provider: ${emailProvider}`);
+    logger.info({ emailProvider }, "Email service initialized");
 } catch (error) {
-    console.error('❌ Failed to initialize email service:', error);
+    logger.error({ error }, "Failed to initialize email service");
     process.exit(1);
 }
 
@@ -75,7 +78,8 @@ app.set("trust proxy", true);
 // ============================================================================
 // 📝 LOGGING
 // ============================================================================
-app.use(logger);
+app.use(requestLogger);
+app.use(metricsMiddleware);
 
 // ============================================================================
 // 🔧 TRUST PROXY (if behind nginx/load balancer/cloudflare)
@@ -104,6 +108,7 @@ if (process.env.NODE_ENV !== "production") {
 // ============================================================================
 app.use('/api/auth', authRouter);
 app.use('/api/discover', exploreRouter);
+app.use('/api', clientLogsRoute);
 
 // Health and Metrics routes
 app.use(healthRoute);
@@ -115,6 +120,7 @@ app.use(metricsRoute);
 app.use('/api', anyAuth, checkUserActive, userRouters);
 app.use('/api', anyAuth, checkUserActive, postRouter);
 app.use('/api/messages', anyAuth, checkUserActive, messageRouter);
+app.use('/api', anyAuth, checkUserActive, groupRouters);
 app.use('/api', anyAuth, checkUserActive, blockRouters);
 app.use('/api', anyAuth, checkUserActive, reportRouters);
 app.use('/api', anyAuth, checkUserActive, uploadRouter);
@@ -129,7 +135,7 @@ app.use((req, res) => {
 // 🚨 GLOBAL ERROR HANDLER
 // ============================================================================
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-    console.error("Unhandled error:", err);
+    logger.error({ err }, "Unhandled error");
 
     // Don't expose internal error details in production
     const message = process.env.NODE_ENV === "production"

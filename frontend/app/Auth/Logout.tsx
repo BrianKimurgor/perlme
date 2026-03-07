@@ -21,6 +21,7 @@ import {
 } from "react-native";
 import Toast from "react-native-toast-message";
 import { useDispatch, useSelector } from "react-redux";
+import { expoLogger as logger } from "@/src/utils/logger";
 
 export default function LogoutScreen() {
     const router = useRouter();
@@ -31,7 +32,7 @@ export default function LogoutScreen() {
     const handleLogout = async () => {
         setIsLoggingOut(true);
         try {
-            console.log("🚪 Starting logout process...");
+            logger.info("🚪 Starting logout process...");
 
             // 1. Dispatch logout action to clear Redux state
             dispatch(logout());
@@ -52,14 +53,14 @@ export default function LogoutScreen() {
             // 4. Clear all AsyncStorage
             await AsyncStorage.clear();
 
-            console.log("✅ Logout completed successfully");
+            logger.info("✅ Logout completed successfully");
 
             Toast.show({ type: "success", text1: "Logged out successfully 👋" });
 
             // 5. Navigate to login screen
             router.replace("/Auth/Login");
         } catch (error) {
-            console.error("❌ Logout error:", error);
+            logger.error("❌ Logout error:", error);
             Toast.show({ type: "error", text1: "Logout failed. Please try again." });
             setIsLoggingOut(false);
         }
@@ -164,3 +165,4 @@ const styles = StyleSheet.create({
         fontSize: 16,
     },
 });
+

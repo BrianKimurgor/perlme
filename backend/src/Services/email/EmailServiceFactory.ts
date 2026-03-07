@@ -1,3 +1,4 @@
+import { logger } from "../../utils/logger";
 // src/services/email/EmailServiceFactory.ts
 import { EmailProvider } from './EmailService.interface';
 import { ResendProvider } from './providers/ResendProvider';
@@ -19,12 +20,12 @@ export class EmailServiceFactory {
                 }
 
                 this.provider = new ResendProvider(resendApiKey, fromEmail);
-                console.log('✅ Email service initialized with Resend');
+                logger.info('✅ Email service initialized with Resend');
                 break;
 
             case 'google':
                 this.provider = new GoogleMailerProvider();
-                console.log('✅ Email service initialized with Google Mailer');
+                logger.info('✅ Email service initialized with Google Mailer');
                 break;
 
             default:
@@ -41,3 +42,4 @@ export class EmailServiceFactory {
         return this.provider;
     }
 }
+

@@ -1,3 +1,4 @@
+import { useAppTheme } from "@/src/hooks/useAppTheme";
 import { Post } from "@/src/store/Apis/PostsApi";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
@@ -20,7 +21,9 @@ interface PostCardProps {
     onComment: () => void;
     onUserPress: () => void;
     onShare?: () => void;
+    onSave?: () => void;
     isLiked?: boolean;
+    isSaved?: boolean;
 }
 
 export const PostCard: React.FC<PostCardProps> = ({
@@ -29,7 +32,9 @@ export const PostCard: React.FC<PostCardProps> = ({
     onComment,
     onUserPress,
     onShare,
+    onSave,
     isLiked = false,
+    isSaved = false,
 }) => {
     const formatTimeAgo = (dateString: string): string => {
         const date = new Date(dateString);
@@ -47,9 +52,10 @@ export const PostCard: React.FC<PostCardProps> = ({
         (post as any).likeCount ?? post._count?.likes ?? post.likes?.length ?? 0;
     const commentCount =
         (post as any).commentCount ?? post._count?.comments ?? post.comments?.length ?? 0;
+    const { colors, accent } = useAppTheme();
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
             {/* Header */}
             <TouchableOpacity style={styles.header} onPress={onUserPress}>
                 <Avatar
@@ -58,16 +64,16 @@ export const PostCard: React.FC<PostCardProps> = ({
                     size={42}
                 />
                 <View style={styles.userInfo}>
-                    <Text style={styles.username}>{post.author?.username}</Text>
-                    <Text style={styles.time}>{formatTimeAgo(post.createdAt)}</Text>
+                    <Text style={[styles.username, { color: colors.text }]}>{post.author?.username}</Text>
+                    <Text style={[styles.time, { color: accent }]}>{formatTimeAgo(post.createdAt)}</Text>
                 </View>
                 <TouchableOpacity style={styles.moreButton}>
-                    <Ionicons name="ellipsis-horizontal" size={20} color="#b0b0b0" />
+                    <Ionicons name="ellipsis-horizontal" size={20} color={colors.subtext} />
                 </TouchableOpacity>
             </TouchableOpacity>
 
             {/* Content */}
-            <Text style={styles.content}>{post.content}</Text>
+            <Text style={[styles.content, { color: colors.text }]}>{post.content}</Text>
 
             {/* Media */}
             {post.media && post.media.length > 0 && (
@@ -117,15 +123,15 @@ export const PostCard: React.FC<PostCardProps> = ({
             {(likeCount > 0 || commentCount > 0) && (
                 <View style={styles.statsRow}>
                     {likeCount > 0 && (
-                        <Text style={styles.statsText}>
+                        <Text style={[styles.statsText, { color: colors.subtext }]}>
                             <Ionicons name="heart" size={13} color="#ff3366" /> {likeCount}{" "}
                             {likeCount === 1 ? "like" : "likes"}
                         </Text>
                     )}
                     {commentCount > 0 && (
                         <TouchableOpacity onPress={onComment}>
-                            <Text style={styles.statsText}>
-                                <Ionicons name="chatbubble" size={13} color="#8e44ad" /> {commentCount}{" "}
+                            <Text style={[styles.statsText, { color: colors.subtext }]}>
+                                <Ionicons name="chatbubble" size={13} color={accent} /> {commentCount}{" "}
                                 {commentCount === 1 ? "comment" : "comments"}
                             </Text>
                         </TouchableOpacity>
@@ -134,7 +140,7 @@ export const PostCard: React.FC<PostCardProps> = ({
             )}
 
             {/* Actions */}
-            <View style={styles.actions}>
+            <View style={[styles.actions, { borderTopColor: colors.border }]}>
                 <LikeButton
                     isLiked={isLiked}
                     likeCount={likeCount}
@@ -142,13 +148,21 @@ export const PostCard: React.FC<PostCardProps> = ({
                 />
 
                 <TouchableOpacity style={styles.actionButton} onPress={onComment}>
-                    <Ionicons name="chatbubble-outline" size={22} color="#6b7280" />
-                    <Text style={styles.actionLabel}>{commentCount}</Text>
+                    <Ionicons name="chatbubble-outline" size={22} color={colors.subtext} />
+                    <Text style={[styles.actionLabel, { color: colors.subtext }]}>{commentCount}</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.actionButton} onPress={onShare}>
-                    <Ionicons name="share-outline" size={22} color="#6b7280" />
-                    <Text style={styles.actionLabel}>Share</Text>
+                    <Ionicons name="share-outline" size={22} color={colors.subtext} />
+                    <Text style={[styles.actionLabel, { color: colors.subtext }]}>Share</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.actionButton} onPress={onSave}>
+                    <Ionicons
+                        name={isSaved ? "bookmark" : "bookmark-outline"}
+                        size={22}
+                        color={isSaved ? "#ff3366" : colors.subtext}
+                    />
                 </TouchableOpacity>
             </View>
         </View>

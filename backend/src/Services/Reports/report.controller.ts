@@ -1,3 +1,4 @@
+import { logger } from "../../utils/logger";
 import { Request, Response } from "express";
 import {
   createReport,
@@ -190,7 +191,7 @@ const existingReport = await db
         ),
       ]);
 
-      console.log(
+      logger.info(
         `📧 Suspension emails sent to ${updatedUser.email} and admins: ${adminEmails.join(
           ", "
         )}`
@@ -206,7 +207,7 @@ const existingReport = await db
       }),
     });
   } catch (error: any) {
-    console.error("❌ Error creating report:", error);
+    logger.error("❌ Error creating report:", error);
     return res.status(500).json({
       error: error.message || "Failed to create report",
     });
@@ -377,3 +378,4 @@ export const deleteReportController = async (req: Request, res: Response) => {
     });
   }
 };
+

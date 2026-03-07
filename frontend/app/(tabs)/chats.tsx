@@ -1,5 +1,7 @@
 import { Avatar, Loading } from "@/components/ui";
+import { useAppTheme } from "@/src/hooks/useAppTheme";
 import { Conversation, useGetConversationListQuery } from "@/src/store/Apis/MessagesApi";
+import { expoLogger as logger } from "@/src/utils/logger";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
@@ -16,17 +18,18 @@ export default function ChatsScreen() {
   const router = useRouter();
   const { data: conversations, isLoading, error, refetch } = useGetConversationListQuery();
   const [refreshing, setRefreshing] = useState(false);
+  const { colors, accent } = useAppTheme();
 
   // Debug logging
   React.useEffect(() => {
-    console.log("=== CHATS DEBUG ===");
-    console.log("Conversations data:", JSON.stringify(conversations, null, 2));
-    console.log("Conversations type:", typeof conversations);
-    console.log("Conversations is array:", Array.isArray(conversations));
-    console.log("Conversations length:", conversations?.length);
-    console.log("Loading:", isLoading);
-    console.log("Error:", JSON.stringify(error, null, 2));
-    console.log("===================");
+    logger.info("=== CHATS DEBUG ===");
+    logger.info("Conversations data:", JSON.stringify(conversations, null, 2));
+    logger.info("Conversations type:", typeof conversations);
+    logger.info("Conversations is array:", Array.isArray(conversations));
+    logger.info("Conversations length:", conversations?.length);
+    logger.info("Loading:", isLoading);
+    logger.info("Error:", JSON.stringify(error, null, 2));
+    logger.info("===================");
   }, [conversations, isLoading, error]);
 
   const onRefresh = async () => {
@@ -49,7 +52,7 @@ export default function ChatsScreen() {
 
   const renderConversation = ({ item }: { item: Conversation }) => (
     <TouchableOpacity
-      style={styles.conversationItem}
+      style={[styles.conversationItem, { borderBottomColor: colors.border }]}
       onPress={() => router.push(`/conversation/${item.otherUser.id}`)}
     >
       <Avatar
@@ -61,7 +64,7 @@ export default function ChatsScreen() {
       />
       <View style={styles.conversationInfo}>
         <View style={styles.header}>
-          <Text style={styles.username}>{item.otherUser.username}</Text>
+          <Text style={[styles.username, { color: colors.text }]}>{item.otherUser.username}</Text>
           {item.lastMessage && (
             <Text style={styles.time}>
               {formatTimeAgo(item.lastMessage.createdAt)}
@@ -72,7 +75,7 @@ export default function ChatsScreen() {
           <Text
             style={[
               styles.lastMessage,
-              item.unreadCount > 0 && styles.unreadMessage,
+              { color: item.unreadCount > 0 ? colors.text : colors.subtext },
             ]}
             numberOfLines={1}
           >
@@ -96,14 +99,14 @@ export default function ChatsScreen() {
 
   if (error) {
     return (
-      <View style={styles.container}>
-        <View style={styles.headerContainer}>
-          <Text style={styles.headerTitle}>Messages</Text>
+      <View style={[styles.container, { backgroundColor: colors.surface }]}>
+        <View style={[styles.headerContainer, { borderBottomColor: colors.border }]}>
+          <Text style={[styles.headerTitle, { color: accent }]}>Messages</Text>
         </View>
         <View style={styles.errorContainer}>
           <Ionicons name="alert-circle-outline" size={48} color="#FF3B30" />
-          <Text style={styles.errorTitle}>Failed to load conversations</Text>
-          <Text style={styles.errorMessage}>
+          <Text style={[styles.errorTitle, { color: colors.text }]}>Failed to load conversations</Text>
+          <Text style={[styles.errorMessage, { color: colors.subtext }]}>
             {(error as any)?.data?.message || (error as any)?.error || "Network error. Is the backend running?"}
           </Text>
           <TouchableOpacity style={styles.retryButton} onPress={() => refetch()}>
@@ -115,11 +118,11 @@ export default function ChatsScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.headerContainer}>
-        <Text style={styles.headerTitle}>Messages</Text>
+    <View style={[styles.container, { backgroundColor: colors.surface }]}>
+      <View style={[styles.headerContainer, { borderBottomColor: colors.border }]}>
+        <Text style={[styles.headerTitle, { color: accent }]}>Messages</Text>
         <TouchableOpacity>
-          <Ionicons name="create-outline" size={28} color="#8e44ad" />
+          <Ionicons name="create-outline" size={28} color={accent} />
         </TouchableOpacity>
       </View>
       <FlatList
@@ -137,8 +140,8 @@ export default function ChatsScreen() {
         ListEmptyComponent={
           <View style={styles.empty}>
             <Ionicons name="chatbubbles-outline" size={64} color="#d1d5db" />
-            <Text style={styles.emptyText}>No messages yet</Text>
-            <Text style={styles.emptySubtext}>
+            <Text style={[styles.emptyText, { color: accent }]}>No messages yet</Text>
+            <Text style={[styles.emptySubtext, { color: colors.subtext }]}>
               Start a conversation with someone
             </Text>
           </View>
@@ -272,3 +275,4 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 });
+

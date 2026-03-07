@@ -19,6 +19,7 @@ import {
 } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
 import Toast from "react-native-toast-message";
+import { expoLogger as logger } from "@/src/utils/logger";
 
 export const orientationEnum = [
   "STRAIGHT",
@@ -64,10 +65,10 @@ export default function RegisterScreen() {
         ...(bio && { bio }),
       };
 
-      console.log("📤 [FRONTEND] Sending registration payload:", JSON.stringify(payload, null, 2));
+      logger.info("📤 [FRONTEND] Sending registration payload:", JSON.stringify(payload, null, 2));
 
       const res = await register(payload).unwrap();
-      console.log("✅ [FRONTEND] Registration response:", res);
+      logger.info("✅ [FRONTEND] Registration response:", res);
 
       Toast.show({ type: "success", text1: res.message || "Registration Successful!" });
 
@@ -81,8 +82,8 @@ export default function RegisterScreen() {
       });
 
     } catch (err: any) {
-      console.error("❌ [FRONTEND] Registration error:", err);
-      console.error("❌ [FRONTEND] Error data:", err?.data);
+      logger.error("❌ [FRONTEND] Registration error:", err);
+      logger.error("❌ [FRONTEND] Error data:", err?.data);
       Toast.show({
         type: "error",
         text1: "Registration Failed",
@@ -277,3 +278,4 @@ const styles = StyleSheet.create({
   buttonText: { color: "#8e44ad", fontWeight: "700", fontSize: 18 },
   registerLink: { color: "#fff", textAlign: "center", textDecorationLine: "underline", fontWeight: "500", fontSize: 16 },
 });
+

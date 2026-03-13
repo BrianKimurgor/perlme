@@ -1,7 +1,10 @@
 import ThemedWrapper from "@/src/components/ThemedWrapper";
 import { RootState } from "@/src/store";
+import { useGetMyProfileQuery } from "@/src/store/Apis/ProfileApi";
 import { AntDesign, Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import Tabs from "expo-router/tabs";
+import { useEffect } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
 
@@ -14,6 +17,19 @@ type TabBarIconProps = {
 export default function TabsLayout() {
   const { mode: theme, accent } = useSelector((state: RootState) => state.theme);
   const insets = useSafeAreaInsets();
+  const router = useRouter();
+
+  const token = useSelector((state: RootState) => state.auth.token);
+  const { data: profile, isSuccess } = useGetMyProfileQuery(undefined, {
+    skip: !token,
+  });
+
+  // Redirect to profile completion if not yet completed
+  useEffect(() => {
+    if (isSuccess && profile && !profile.profileCompletedAt) {
+      router.replace("/Auth/complete-profile" as any);
+    }
+  }, [isSuccess, profile]);
 
   const inactiveColor = theme === "dark" ? "#aaa" : "#444";
   const backgroundColor = theme === "dark" ? "#000" : "#fff";

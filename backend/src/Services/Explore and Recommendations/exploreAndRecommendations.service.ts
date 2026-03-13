@@ -1,5 +1,5 @@
-import { logger } from "../../utils/logger";
 import db from "../../drizzle/db";
+import { logger } from "../../utils/logger";
 import { ExploreAndRecommendParams } from "../../Validators/Explore.validator";
 
 // ===============================
@@ -62,6 +62,13 @@ export const recommendationService = async (params: ExploreAndRecommendParams) =
     interests,
     minAge,
     maxAge,
+    relationshipIntention,
+    smoking,
+    drinking,
+    fitnessLevel,
+    educationLevel,
+    hasChildren,
+    wantsChildren,
     limit = 20,
     offset = 0,
   } = params;
@@ -69,8 +76,8 @@ export const recommendationService = async (params: ExploreAndRecommendParams) =
   // --- Get current user's location ---
   const userLocation = userId
     ? await db.query.locations.findFirst({
-        where: (table, { eq }) => eq(table.userId, userId),
-      })
+      where: (table, { eq }) => eq(table.userId, userId),
+    })
     : null;
 
   const userLat = userLocation?.latitude ?? null;
@@ -86,6 +93,7 @@ export const recommendationService = async (params: ExploreAndRecommendParams) =
       location: true,
       interests: { with: { interest: true } },
       preferences: true,
+      interestedIn: true,
     },
     limit,
     offset,
@@ -140,6 +148,26 @@ export const recommendationService = async (params: ExploreAndRecommendParams) =
       return distance <= distanceKm;
     });
   }
+
+  // --- Filter by relationship intention ---
+  if (relationshipIntention) {
+    filtered = filtered.filter((u) => (u as any).relationshipIntention === relationshipIntention);
+  }
+
+  // --- Filter by lifestyle ---
+  if (smoking) filtered = filtered.filter((u) => (u as any).smoking === smoking);
+  if (drinking) filtered = filtered.filter((u) => (u as any).drinking === drinking);
+  if (fitnessLevel) filtered = filtered.filter((u) => (u as any).fitnessLevel === fitnessLevel);
+
+  // --- Filter by education ---
+  if (educationLevel) filtered = filtered.filter((u) => (u as any).educationLevel === educationLevel);
+
+  // --- Filter by children preferences ---
+  if (hasChildren) filtered = filtered.filter((u) => (u as any).hasChildren === hasChildren);
+  if (wantsChildren) filtered = filtered.filter((u) => (u as any).wantsChildren === wantsChildren);
+
+  // --- Exclude the requesting user from results ---
+  if (userId) filtered = filtered.filter((u) => u.id !== userId);
 
   return filtered;
 };

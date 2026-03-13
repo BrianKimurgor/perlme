@@ -7,6 +7,15 @@ export interface User {
   username: string;
   role: "REGULAR" | "CREATOR" | "MODERATOR" | "ADMIN";
   avatarUrl: string | null;
+  // Optional extended fields populated from full profile queries
+  bio?: string | null;
+  coverPhotoUrl?: string | null;
+  isVerified?: boolean;
+  _count?: {
+    posts: number;
+    followers: number;
+    following: number;
+  };
 }
 
 interface AuthState {

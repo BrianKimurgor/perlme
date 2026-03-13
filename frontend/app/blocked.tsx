@@ -33,6 +33,7 @@ function BlockedUserRow({
     onUnblock: (id: string) => void;
     unblocking: boolean;
 }>) {
+    const { colors, accent } = useAppTheme();
     const user = item.blocked;
     const displayName = user?.username ?? "Unknown User";
     const avatarUri = user?.avatarUrl ?? null;

@@ -79,10 +79,19 @@ export default function LoginScreen() {
       router.replace("/(tabs)");
     } catch (err: any) {
       logger.error("Login failed:", err);
+      // err.status === 'FETCH_ERROR' = network/connection issue
+      // err.data?.error = server returned an error response
+      const errorMessage =
+        err?.data?.error ||
+        err?.data?.message ||
+        (err?.status === "FETCH_ERROR" ? `Network error: ${err?.error}` : null) ||
+        (err?.status === "PARSING_ERROR" ? `Parse error: ${err?.error}` : null) ||
+        `Error ${err?.status ?? "unknown"}`;
+      logger.error("Login error detail:", errorMessage);
       Toast.show({
         type: "error",
         text1: "Login Failed",
-        text2: err?.data?.error || "Unknown error",
+        text2: errorMessage,
       });
     }
   };

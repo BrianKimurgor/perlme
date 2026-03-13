@@ -5,7 +5,7 @@
  * API base URL for all backend requests.
  * Change this value when switching between environments.
  */
-const rawApiBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL || "http://192.168.100.19:3000/api";
+const rawApiBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL || "http://10.4.20.210:3000/api";
 const trimmedApiBaseUrl = rawApiBaseUrl.replace(/\/+$/, "");
 export const API_BASE_URL = `${trimmedApiBaseUrl}/`;
 

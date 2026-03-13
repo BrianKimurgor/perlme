@@ -1,6 +1,5 @@
 import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
-import { logger } from "../utils/logger";
 import db from "./db"; // your Drizzle DB instance
 import {
   blocks,
@@ -9,19 +8,29 @@ import {
   groupChats, groupMembers, groupMessages, groupTags,
   interactions,
   interests,
+  languages,
   likes,
   locations,
   media,
   messages,
+  personalityTraits,
   postMetrics,
   posts,
   postTags, reports,
   tags,
+  userDiscoveryPreferences,
+  userInterestedIn,
   userInterests,
+  userLanguages,
   userMetrics,
+  userPersonalityTraits,
   userPreferences,
   users,
 } from "./schema";
+
+// Use console for seed output since logger writes to file only
+const log = (msg: string) => console.log(msg);
+const logError = (msg: string, err?: unknown) => console.error(msg, err ?? "");
 
 // Helper to create password hash
 async function hashPassword(password: string): Promise<string> {
@@ -30,11 +39,11 @@ async function hashPassword(password: string): Promise<string> {
 
 export async function seed() {
   try {
-    logger.info("🌱 Seeding started...");
-    logger.info("⚠️  This will create comprehensive test data for all screens\n");
+    log("🌱 Seeding started...");
+    log("⚠️  This will create comprehensive test data for all screens\n");
 
     // ========================== CLEANUP EXISTING DATA ==========================
-    logger.info("🧹 Cleaning up existing data...");
+    log("🧹 Cleaning up existing data...");
 
     // Delete in reverse order of foreign key dependencies
     await db.delete(postTags);
@@ -51,6 +60,10 @@ export async function seed() {
     await db.delete(media);
     await db.delete(userPreferences);
     await db.delete(userInterests);
+    await db.delete(userDiscoveryPreferences);
+    await db.delete(userInterestedIn);
+    await db.delete(userLanguages);
+    await db.delete(userPersonalityTraits);
     await db.delete(locations);
     await db.delete(messages);
     await db.delete(follows);
@@ -58,12 +71,66 @@ export async function seed() {
     await db.delete(posts);
     await db.delete(tags);
     await db.delete(interests);
+    await db.delete(personalityTraits);
+    await db.delete(languages);
     await db.delete(users);
 
-    logger.info("✅ Existing data cleared!\n");
+    log("✅ Existing data cleared!\n");
+
+    // ========================== LANGUAGES ==========================
+    log("🌐 Seeding languages...");
+    await db.insert(languages).values([
+      { name: "English", code: "en" },
+      { name: "French", code: "fr" },
+      { name: "Spanish", code: "es" },
+      { name: "Portuguese", code: "pt" },
+      { name: "Swahili", code: "sw" },
+      { name: "Arabic", code: "ar" },
+      { name: "Hindi", code: "hi" },
+      { name: "Mandarin", code: "zh" },
+      { name: "German", code: "de" },
+      { name: "Italian", code: "it" },
+      { name: "Japanese", code: "ja" },
+      { name: "Korean", code: "ko" },
+      { name: "Russian", code: "ru" },
+      { name: "Turkish", code: "tr" },
+      { name: "Amharic", code: "am" },
+      { name: "Yoruba", code: "yo" },
+      { name: "Igbo", code: "ig" },
+      { name: "Hausa", code: "ha" },
+      { name: "Zulu", code: "zu" },
+      { name: "Afrikaans", code: "af" },
+    ]);
+    log("✅ Languages seeded!\n");
+
+    // ========================== PERSONALITY TRAITS ==========================
+    log("🧠 Seeding personality traits...");
+    await db.insert(personalityTraits).values([
+      { name: "Adventurous" },
+      { name: "Ambitious" },
+      { name: "Artistic" },
+      { name: "Calm" },
+      { name: "Caring" },
+      { name: "Confident" },
+      { name: "Creative" },
+      { name: "Empathetic" },
+      { name: "Extrovert" },
+      { name: "Foodie" },
+      { name: "Funny" },
+      { name: "Gentle" },
+      { name: "Intellectual" },
+      { name: "Introvert" },
+      { name: "Kind" },
+      { name: "Loyal" },
+      { name: "Optimistic" },
+      { name: "Passionate" },
+      { name: "Romantic" },
+      { name: "Spiritual" },
+    ]);
+    log("✅ Personality traits seeded!\n");
 
     // ========================== USERS ==========================
-    logger.info("👥 Inserting users...");
+    log("👥 Inserting users...");
     const defaultPassword = await hashPassword("Password123!");
 
     // Main test users
@@ -246,10 +313,10 @@ export async function seed() {
         role: "REGULAR",
       },
     ]);
-    logger.info("✅ Users inserted! (11 users)");
+    log("✅ Users inserted! (11 users)");
 
     // ========================== INTERESTS ==========================
-    logger.info("🎯 Inserting interests...");
+    log("🎯 Inserting interests...");
     const musicId = uuidv4();
     const sportsId = uuidv4();
     const artId = uuidv4();
@@ -297,10 +364,10 @@ export async function seed() {
       { userId: user9Id, interestId: artId },
       { userId: user10Id, interestId: musicId },
     ]);
-    logger.info("✅ Interests inserted! (10 interests)");
+    log("✅ Interests inserted! (10 interests)");
 
     // ========================== FOLLOWS ==========================
-    logger.info("🤝 Inserting follows...");
+    log("🤝 Inserting follows...");
     await db.insert(follows).values([
       // testuser follows
       { followerId: testUserId, followingId: user1Id },
@@ -333,18 +400,18 @@ export async function seed() {
       { followerId: user8Id, followingId: user4Id },
       { followerId: user10Id, followingId: user5Id },
     ]);
-    logger.info("✅ Follows inserted! (23 relationships)");
+    log("✅ Follows inserted! (23 relationships)");
 
     // ========================== BLOCKS ==========================
-    logger.info("🚫 Inserting blocks...");
+    log("🚫 Inserting blocks...");
     await db.insert(blocks).values([
       { blockerId: testUserId, blockedId: user4Id },
       { blockerId: user6Id, blockedId: user9Id },
     ]);
-    logger.info("✅ Blocks inserted! (2 blocks)");
+    log("✅ Blocks inserted! (2 blocks)");
 
     // ========================== LOCATIONS ==========================
-    logger.info("📍 Inserting locations...");
+    log("📍 Inserting locations...");
     await db.insert(locations).values([
       { userId: testUserId, country: "USA", city: "Los Angeles", latitude: 34.0522, longitude: -118.2437 },
       { userId: user1Id, country: "USA", city: "New York", latitude: 40.7128, longitude: -74.006 },
@@ -358,10 +425,10 @@ export async function seed() {
       { userId: user9Id, country: "France", city: "Paris", latitude: 48.8566, longitude: 2.3522 },
       { userId: user10Id, country: "USA", city: "Chicago", latitude: 41.8781, longitude: -87.6298 },
     ]);
-    logger.info("✅ Locations inserted! (11 locations)");
+    log("✅ Locations inserted! (11 locations)");
 
     // ========================== USER PREFERENCES ==========================
-    logger.info("⚙️ Inserting user preferences...");
+    log("⚙️ Inserting user preferences...");
     await db.insert(userPreferences).values([
       { userId: testUserId, type: "AGE", value: "25-35" },
       { userId: testUserId, type: "DISTANCE", value: "50" },
@@ -370,10 +437,10 @@ export async function seed() {
       { userId: user3Id, type: "AGE", value: "22-32" },
       { userId: user5Id, type: "GENDER", value: "FEMALE" },
     ]);
-    logger.info("✅ User preferences inserted! (6 preferences)");
+    log("✅ User preferences inserted! (6 preferences)");
 
     // ========================== MESSAGES ==========================
-    logger.info("💬 Inserting messages...");
+    log("💬 Inserting messages...");
     const now = new Date();
 
     // Conversation: testuser <-> user1 (sarah_smith)
@@ -421,10 +488,10 @@ export async function seed() {
       { senderId: user6Id, receiverId: user7Id, content: "Thanks for the recommendation", createdAt: new Date(now.getTime() - 3600000 * 20) },
     ]);
 
-    logger.info("✅ Messages inserted! (24 messages across 8 conversations)");
+    log("✅ Messages inserted! (24 messages across 8 conversations)");
 
     // ========================== POSTS ==========================
-    logger.info("📝 Inserting posts...");
+    log("📝 Inserting posts...");
 
     // Posts by testuser
     const testPost1Id = uuidv4();
@@ -575,10 +642,10 @@ export async function seed() {
         createdAt: new Date(now.getTime() - 3600000 * 24),
       },
     ]);
-    logger.info("✅ Posts inserted! (18 posts)");
+    log("✅ Posts inserted! (18 posts)");
 
     // ========================== MEDIA ==========================
-    logger.info("🖼️ Inserting media...");
+    log("🖼️ Inserting media...");
     await db.insert(media).values([
       // testuser posts media
       { postId: testPost1Id, url: "https://picsum.photos/800/600?random=100", type: "image" },
@@ -621,10 +688,10 @@ export async function seed() {
       // chris_taylor posts media
       { postId: post15Id, url: "https://picsum.photos/800/600?random=122", type: "image" },
     ]);
-    logger.info("✅ Media inserted! (25 media files)");
+    log("✅ Media inserted! (25 media files)");
 
     // ========================== LIKES ==========================
-    logger.info("❤️ Inserting likes...");
+    log("❤️ Inserting likes...");
     await db.insert(likes).values([
       // Likes on testuser posts
       { postId: testPost1Id, userId: user1Id },
@@ -660,10 +727,10 @@ export async function seed() {
       { postId: post13Id, userId: user5Id },
       { postId: post15Id, userId: user4Id },
     ]);
-    logger.info("✅ Likes inserted! (28 likes)");
+    log("✅ Likes inserted! (28 likes)");
 
     // ========================== COMMENTS ==========================
-    logger.info("💬 Inserting comments...");
+    log("💬 Inserting comments...");
     await db.insert(comments).values([
       // Comments on testuser posts
       { postId: testPost1Id, userId: user1Id, content: "Stunning shot! 😍" },
@@ -694,10 +761,10 @@ export async function seed() {
       { postId: post13Id, userId: user5Id, content: "So peaceful 🧘‍♀️" },
       { postId: post15Id, userId: user4Id, content: "Taking notes! 🍜" },
     ]);
-    logger.info("✅ Comments inserted! (23 comments)");
+    log("✅ Comments inserted! (23 comments)");
 
     // ========================== TAGS & POST TAGS ==========================
-    logger.info("🏷️ Inserting tags and post tags...");
+    log("🏷️ Inserting tags and post tags...");
     const photographyTag = uuidv4();
     const artTag = uuidv4();
     const fitnessTag = uuidv4();
@@ -744,10 +811,10 @@ export async function seed() {
       { postId: post14Id, tagId: yogaTag },
       { postId: post15Id, tagId: foodTag },
     ]);
-    logger.info("✅ Tags and post tags inserted! (10 tags)");
+    log("✅ Tags and post tags inserted! (10 tags)");
 
     // ========================== GROUP CHATS ==========================
-    logger.info("👥 Inserting group chats...");
+    log("👥 Inserting group chats...");
     const group1Id = uuidv4();
     const group2Id = uuidv4();
     const group3Id = uuidv4();
@@ -778,10 +845,10 @@ export async function seed() {
         avatarUrl: "https://picsum.photos/200/200?random=202",
       },
     ]);
-    logger.info("✅ Group chats inserted! (3 groups)");
+    log("✅ Group chats inserted! (3 groups)");
 
     // ========================== GROUP MEMBERS ==========================
-    logger.info("👤 Inserting group members...");
+    log("👤 Inserting group members...");
     await db.insert(groupMembers).values([
       // Photography Enthusiasts group
       { groupId: group1Id, userId: testUserId, role: "GROUP_ADMIN" },
@@ -800,10 +867,10 @@ export async function seed() {
       { groupId: group3Id, userId: testUserId, role: "GROUP_MEMBER" },
       { groupId: group3Id, userId: user6Id, role: "GROUP_MEMBER" },
     ]);
-    logger.info("✅ Group members inserted!");
+    log("✅ Group members inserted!");
 
     // ========================== GROUP MESSAGES ==========================
-    logger.info("💬 Inserting group messages...");
+    log("💬 Inserting group messages...");
     await db.insert(groupMessages).values([
       // Photography Enthusiasts messages
       { groupId: group1Id, senderId: testUserId, content: "Welcome to Photography Enthusiasts! Share your best work here 📸" },
@@ -823,19 +890,19 @@ export async function seed() {
       { groupId: group3Id, senderId: testUserId, content: "Yes! The server components are game changing" },
       { groupId: group3Id, senderId: user6Id, content: "Still learning the basics but excited to try!" },
     ]);
-    logger.info("✅ Group messages inserted! (12 messages)");
+    log("✅ Group messages inserted! (12 messages)");
 
     // ========================== GROUP TAGS ==========================
-    logger.info("🏷️ Inserting group tags...");
+    log("🏷️ Inserting group tags...");
     await db.insert(groupTags).values([
       { groupId: group1Id, tagId: photographyTag },
       { groupId: group2Id, tagId: fitnessTag },
       { groupId: group3Id, tagId: techTag },
     ]);
-    logger.info("✅ Group tags inserted!");
+    log("✅ Group tags inserted!");
 
     // ========================== REPORTS ==========================
-    logger.info("🚨 Inserting reports...");
+    log("🚨 Inserting reports...");
     await db.insert(reports).values([
       {
         reporterId: user6Id,
@@ -851,10 +918,10 @@ export async function seed() {
         status: "REVIEWED",
       },
     ]);
-    logger.info("✅ Reports inserted! (2 reports)");
+    log("✅ Reports inserted! (2 reports)");
 
     // ========================== POST METRICS ==========================
-    logger.info("📊 Inserting post metrics...");
+    log("📊 Inserting post metrics...");
     await db.insert(postMetrics).values([
       { postId: testPost1Id, likeCount: 4, commentCount: 3, shareCount: 0, viewCount: 45, score: 15 },
       { postId: testPost2Id, likeCount: 2, commentCount: 2, shareCount: 0, viewCount: 30, score: 10 },
@@ -875,10 +942,10 @@ export async function seed() {
       { postId: post14Id, likeCount: 0, commentCount: 0, shareCount: 0, viewCount: 28, score: 0 },
       { postId: post15Id, likeCount: 1, commentCount: 1, shareCount: 0, viewCount: 32, score: 6 },
     ]);
-    logger.info("✅ Post metrics inserted! (18 posts)");
+    log("✅ Post metrics inserted! (18 posts)");
 
     // ========================== USER METRICS ==========================
-    logger.info("📈 Inserting user metrics...");
+    log("📈 Inserting user metrics...");
     await db.insert(userMetrics).values([
       { userId: testUserId, followersCount: 3, followingCount: 5, postsCount: 3, likesReceived: 7, engagementScore: 30 },
       { userId: user1Id, followersCount: 3, followingCount: 2, postsCount: 3, likesReceived: 7, engagementScore: 33 },
@@ -892,10 +959,10 @@ export async function seed() {
       { userId: user9Id, followersCount: 1, followingCount: 1, postsCount: 0, likesReceived: 0, engagementScore: 0 },
       { userId: user10Id, followersCount: 1, followingCount: 2, postsCount: 0, likesReceived: 0, engagementScore: 0 },
     ]);
-    logger.info("✅ User metrics inserted! (11 users)");
+    log("✅ User metrics inserted! (11 users)");
 
     // ========================== INTERACTIONS ==========================
-    logger.info("🔄 Inserting interactions...");
+    log("🔄 Inserting interactions...");
     await db.insert(interactions).values([
       { userId: testUserId, targetUserId: user1Id, type: "VIEW" },
       { userId: testUserId, targetUserId: user2Id, type: "VIEW" },
@@ -908,42 +975,47 @@ export async function seed() {
       { userId: user5Id, targetUserId: testUserId, type: "VIEW" },
       { userId: user5Id, targetUserId: user6Id, type: "VIEW" },
     ]);
-    logger.info("✅ Interactions inserted! (10 interactions)");
+    log("✅ Interactions inserted! (10 interactions)");
 
-    logger.info("\n🎉 ================================");
-    logger.info("✅ SEED DATA COMPLETED SUCCESSFULLY!");
-    logger.info("================================");
-    logger.info("\n📊 Summary:");
-    logger.info("  - 11 users (with profiles, bios, avatars)");
-    logger.info("  - 10 interests");
-    logger.info("  - 23 follow relationships");
-    logger.info("  - 2 blocks");
-    logger.info("  - 11 locations");
-    logger.info("  - 6 user preferences");
-    logger.info("  - 24 direct messages across 8 conversations");
-    logger.info("  - 18 posts with rich content");
-    logger.info("  - 25 media files");
-    logger.info("  - 28 likes");
-    logger.info("  - 23 comments");
-    logger.info("  - 10 tags");
-    logger.info("  - 3 group chats");
-    logger.info("  - 11 group members");
-    logger.info("  - 12 group messages");
-    logger.info("  - 2 reports");
-    logger.info("  - 18 post metrics");
-    logger.info("  - 11 user metrics");
-    logger.info("  - 10 interactions");
-    logger.info("\n🔐 Test User Credentials:");
-    logger.info("  Email: test@perlme.com");
-    logger.info("  Password: Password123!");
-    logger.info("\n🚀 All screens should now have realistic data for testing!");
+    log("\n🎉 ================================");
+    log("✅ SEED DATA COMPLETED SUCCESSFULLY!");
+    log("================================");
+    log("\n📊 Summary:");
+    log("  - 20 languages");
+    log("  - 18 personality traits");
+    log("  - 11 users (with profiles, bios, avatars)");
+    log("  - 10 interests");
+    log("  - 23 follow relationships");
+    log("  - 2 blocks");
+    log("  - 11 locations");
+    log("  - 6 user preferences");
+    log("  - 24 direct messages across 8 conversations");
+    log("  - 18 posts with rich content");
+    log("  - 25 media files");
+    log("  - 28 likes");
+    log("  - 23 comments");
+    log("  - 10 tags");
+    log("  - 3 group chats");
+    log("  - 11 group members");
+    log("  - 12 group messages");
+    log("  - 2 reports");
+    log("  - 18 post metrics");
+    log("  - 11 user metrics");
+    log("  - 10 interactions");
+    log("\n🔐 Test User Credentials:");
+    log("  Email: test@perlme.com");
+    log("  Password: Password123!");
+    log("\n🚀 All screens should now have realistic data for testing!");
   } catch (err) {
-    logger.error("Seeding failed:", err);
+    logError("❌ Seeding failed:", err);
     process.exit(1);
   }
 }
 
 // Run the seed function
-void seed();
+seed().then(() => process.exit(0)).catch((err) => {
+  console.error("Seed failed:", err);
+  process.exit(1);
+});
 
 

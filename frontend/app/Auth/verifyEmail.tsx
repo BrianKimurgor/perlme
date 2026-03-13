@@ -1,4 +1,5 @@
 import { useResendVerificationMutation, useVerifyEmailMutation } from "@/src/store/Apis/AuthApi";
+import { expoLogger as logger } from "@/src/utils/logger";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -16,7 +17,6 @@ import {
   View,
 } from "react-native";
 import Toast from "react-native-toast-message";
-import { expoLogger as logger } from "@/src/utils/logger";
 
 export default function VerifyEmailScreen() {
   const router = useRouter();
@@ -29,7 +29,7 @@ export default function VerifyEmailScreen() {
   const [loadingEmail, setLoadingEmail] = useState(true);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  const inputsRef = useRef<TextInput[]>([]);
+  const inputsRef = useRef<(TextInput | null)[]>([]);
   const otpAnim = useRef(Array(8).fill(0).map(() => new Animated.Value(1))).current;
 
   // Load email from route params or AsyncStorage
@@ -167,7 +167,7 @@ export default function VerifyEmailScreen() {
               {otp.map((digit, i) => (
                 <Animated.View key={i} style={{ transform: [{ scale: otpAnim[i] }] }}>
                   <TextInput
-                    ref={(ref) => (inputsRef.current[i] = ref!)}
+                    ref={(ref) => { inputsRef.current[i] = ref; }}
                     value={digit}
                     onChangeText={(text) => handleChange(text, i)}
                     onKeyPress={(e) => handleKeyDown(e, i)}

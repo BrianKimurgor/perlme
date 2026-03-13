@@ -24,10 +24,8 @@ package-lock.json
 # ==============================
 # 🧰 DATABASE & MIGRATIONS
 # ==============================
-src/drizzle/migrations/
 *.sqlite
 *.db
-drizzle.config.ts
 
 # ==============================
 # 🧑‍💻 IDE & OS FILES

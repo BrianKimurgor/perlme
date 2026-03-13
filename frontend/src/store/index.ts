@@ -10,6 +10,7 @@ import { exploreApi } from "./Apis/ExploreApi";
 import { groupsApi } from "./Apis/GroupsApi";
 import { messagesApi } from "./Apis/MessagesApi";
 import { postsApi } from "./Apis/PostsApi";
+import { profileApi } from "./Apis/ProfileApi";
 import { usersApi } from "./Apis/UsersApi";
 import themeReducer from "./themeSlice";
 
@@ -23,6 +24,7 @@ const rootReducer = combineReducers({
   [exploreApi.reducerPath]: exploreApi.reducer,
   [blocksApi.reducerPath]: blocksApi.reducer,
   [groupsApi.reducerPath]: groupsApi.reducer,
+  [profileApi.reducerPath]: profileApi.reducer,
 });
 
 const persistConfig = {
@@ -45,7 +47,8 @@ export const store = configureStore({
       usersApi.middleware,
       exploreApi.middleware,
       blocksApi.middleware,
-      groupsApi.middleware
+      groupsApi.middleware,
+      profileApi.middleware
     ),
 });
 

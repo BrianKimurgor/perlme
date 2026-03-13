@@ -90,6 +90,35 @@ export const exploreAndRecommendValidator = z.object({
     .transform((val) =>
       val ? val.split(",").map((t) => t.trim()).filter(Boolean) : []
     ),
+
+  // ========== ADVANCED RECOMMENDATION FILTERS ==========
+  relationshipIntention: z
+    .enum(["MARRIAGE", "LONG_TERM", "LONG_TERM_OPEN_SHORT", "SHORT_TERM_OPEN_LONG", "CASUAL", "FRIENDSHIP", "FIGURING_OUT"])
+    .optional(),
+
+  smoking: z
+    .enum(["NON_SMOKER", "OCCASIONALLY", "SMOKER"])
+    .optional(),
+
+  drinking: z
+    .enum(["NEVER", "SOCIALLY", "REGULARLY"])
+    .optional(),
+
+  fitnessLevel: z
+    .enum(["VERY_ACTIVE", "MODERATELY_ACTIVE", "NOT_ACTIVE"])
+    .optional(),
+
+  educationLevel: z
+    .enum(["HIGH_SCHOOL", "COLLEGE", "BACHELORS", "MASTERS", "PHD"])
+    .optional(),
+
+  hasChildren: z
+    .enum(["YES", "NO"])
+    .optional(),
+
+  wantsChildren: z
+    .enum(["WANT", "DONT_WANT", "NOT_SURE"])
+    .optional(),
 });
 
 /**

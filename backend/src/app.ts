@@ -19,6 +19,7 @@ import exploreRouter from './Services/Explore and Recommendations/exploreAndReco
 import groupRouters from './Services/Groups/group.route';
 import messageRouter from './Services/Messages/message.route';
 import postRouter from './Services/posts/post.route';
+import profileRouter from './Services/Profile/profile.route';
 import reportRouters from './Services/Reports/report.route';
 import uploadRouter from './Services/upload/upload.route';
 import userRouters from './Services/Users/user.route';
@@ -124,6 +125,7 @@ app.use('/api', anyAuth, checkUserActive, groupRouters);
 app.use('/api', anyAuth, checkUserActive, blockRouters);
 app.use('/api', anyAuth, checkUserActive, reportRouters);
 app.use('/api', anyAuth, checkUserActive, uploadRouter);
+app.use('/api', anyAuth, checkUserActive, profileRouter);
 // ============================================================================
 // ❌ 404 HANDLER
 // ============================================================================

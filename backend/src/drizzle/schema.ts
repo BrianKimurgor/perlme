@@ -28,6 +28,33 @@ export const reportTypeEnum = pgEnum("report_type", ["USER", "POST", "COMMENT", 
 
 export const reportActionEnum = pgEnum("report_action", ["NONE", "REMOVE_CONTENT",]);
 
+// ========================== ENUMS (profile completion) ==========================
+export const pronounsEnum = pgEnum("pronouns", ["HE_HIM", "SHE_HER", "THEY_THEM", "OTHER"]);
+
+export const relationshipIntentionEnum = pgEnum("relationship_intention", [
+  "MARRIAGE",
+  "LONG_TERM",
+  "LONG_TERM_OPEN_SHORT",
+  "SHORT_TERM_OPEN_LONG",
+  "CASUAL",
+  "FRIENDSHIP",
+  "FIGURING_OUT",
+]);
+
+export const hasChildrenEnum = pgEnum("has_children", ["YES", "NO"]);
+
+export const wantsChildrenEnum = pgEnum("wants_children", ["WANT", "DONT_WANT", "NOT_SURE"]);
+
+export const smokingEnum = pgEnum("smoking_habit", ["NON_SMOKER", "OCCASIONALLY", "SMOKER"]);
+
+export const drinkingEnum = pgEnum("drinking_habit", ["NEVER", "SOCIALLY", "REGULARLY"]);
+
+export const fitnessLevelEnum = pgEnum("fitness_level", ["VERY_ACTIVE", "MODERATELY_ACTIVE", "NOT_ACTIVE"]);
+
+export const educationLevelEnum = pgEnum("education_level", ["HIGH_SCHOOL", "COLLEGE", "BACHELORS", "MASTERS", "PHD"]);
+
+export const distancePreferenceEnum = pgEnum("distance_preference", ["KM_10", "KM_50", "KM_100", "GLOBAL"]);
+
 // ========================== USERS ==========================
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -42,7 +69,24 @@ export const users = pgTable("users", {
   bio: text("bio"),
   avatarUrl: text("avatar_url"),
   coverPhotoUrl: text("cover_photo_url"),
+  pronouns: pronounsEnum("pronouns"),
+  relationshipIntention: relationshipIntentionEnum("relationship_intention"),
+  hasChildren: hasChildrenEnum("has_children"),
+  wantsChildren: wantsChildrenEnum("wants_children"),
+  smoking: smokingEnum("smoking_habit"),
+  drinking: drinkingEnum("drinking_habit"),
+  fitnessLevel: fitnessLevelEnum("fitness_level"),
+  educationLevel: educationLevelEnum("education_level"),
+  occupation: varchar("occupation", { length: 255 }),
+  industry: varchar("industry", { length: 255 }),
+  ethnicity: varchar("ethnicity", { length: 255 }),
+  phoneNumber: varchar("phone_number", { length: 20 }).unique(),
+  phoneConfirmationCode: varchar("phone_confirmation_code", { length: 10 }),
+  phoneConfirmationCodeExpiresAt: timestamp("phone_confirmation_code_expires_at"),
   isVerified: boolean("is_verified").default(false),
+  isPhoneVerified: boolean("is_phone_verified").default(false),
+  isPhotoVerified: boolean("is_photo_verified").default(false),
+  profileCompletedAt: timestamp("profile_completed_at"),
   confirmationCode: varchar("confirmation_code", { length: 255 }),
   confirmationCodeExpiresAt: timestamp("confirmation_code_expires_at"),
   failedLoginAttempts: integer("failed_login_attempts").default(0),
@@ -69,6 +113,68 @@ export const userInterests = pgTable("user_interests", {
   interestId: uuid("interest_id")
     .references(() => interests.id, { onDelete: "cascade" })
     .notNull(),
+  assignedAt: timestamp("assigned_at").defaultNow(),
+});
+
+// ========================== LANGUAGES ==========================
+export const languages = pgTable("languages", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: varchar("name", { length: 100 }).unique().notNull(),
+  code: varchar("code", { length: 10 }).unique().notNull(), // e.g. "en", "fr", "sw"
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Pivot: Users ↔ Languages
+export const userLanguages = pgTable("user_languages", {
+  userId: uuid("user_id")
+    .references(() => users.id, { onDelete: "cascade" })
+    .notNull(),
+  languageId: uuid("language_id")
+    .references(() => languages.id, { onDelete: "cascade" })
+    .notNull(),
+  assignedAt: timestamp("assigned_at").defaultNow(),
+});
+
+// ========================== PERSONALITY TRAITS ==========================
+export const personalityTraits = pgTable("personality_traits", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: varchar("name", { length: 100 }).unique().notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Pivot: Users ↔ Personality Traits
+export const userPersonalityTraits = pgTable("user_personality_traits", {
+  userId: uuid("user_id")
+    .references(() => users.id, { onDelete: "cascade" })
+    .notNull(),
+  traitId: uuid("trait_id")
+    .references(() => personalityTraits.id, { onDelete: "cascade" })
+    .notNull(),
+  assignedAt: timestamp("assigned_at").defaultNow(),
+});
+
+// ========================== DISCOVERY PREFERENCES ==========================
+// Structured replacement for the generic userPreferences for matching/discovery logic
+export const userDiscoveryPreferences = pgTable("user_discovery_preferences", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id")
+    .references(() => users.id, { onDelete: "cascade" })
+    .notNull()
+    .unique(), // one record per user
+  minAge: integer("min_age").default(18),
+  maxAge: integer("max_age").default(99),
+  distanceKm: integer("distance_km"),
+  distancePreference: distancePreferenceEnum("distance_preference").default("KM_50"),
+  showLocation: boolean("show_location").default(true),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// ========================== INTERESTED IN (who the user wants to see) ==========================
+export const userInterestedIn = pgTable("user_interested_in", {
+  userId: uuid("user_id")
+    .references(() => users.id, { onDelete: "cascade" })
+    .notNull(),
+  gender: genderEnum("gender").notNull(),
   assignedAt: timestamp("assigned_at").defaultNow(),
 });
 
@@ -340,9 +446,12 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   blockedBy: many(blocks, { relationName: "blocked" }),
   reportsMade: many(reports, { relationName: "reporter" }),
   reportsReceived: many(reports, { relationName: "reportedUser" }),
-  // ✅ FIXED: user has one location
   location: one(locations, { fields: [users.id], references: [locations.userId] }),
   preferences: many(userPreferences),
+  languages: many(userLanguages),
+  personalityTraits: many(userPersonalityTraits),
+  discoveryPreferences: one(userDiscoveryPreferences, { fields: [users.id], references: [userDiscoveryPreferences.userId] }),
+  interestedIn: many(userInterestedIn),
 }));
 
 export const interestsRelations = relations(interests, ({ many }) => ({
@@ -352,6 +461,32 @@ export const interestsRelations = relations(interests, ({ many }) => ({
 export const userInterestsRelations = relations(userInterests, ({ one }) => ({
   user: one(users, { fields: [userInterests.userId], references: [users.id] }),
   interest: one(interests, { fields: [userInterests.interestId], references: [interests.id] }),
+}));
+
+export const languagesRelations = relations(languages, ({ many }) => ({
+  users: many(userLanguages),
+}));
+
+export const userLanguagesRelations = relations(userLanguages, ({ one }) => ({
+  user: one(users, { fields: [userLanguages.userId], references: [users.id] }),
+  language: one(languages, { fields: [userLanguages.languageId], references: [languages.id] }),
+}));
+
+export const personalityTraitsRelations = relations(personalityTraits, ({ many }) => ({
+  users: many(userPersonalityTraits),
+}));
+
+export const userPersonalityTraitsRelations = relations(userPersonalityTraits, ({ one }) => ({
+  user: one(users, { fields: [userPersonalityTraits.userId], references: [users.id] }),
+  trait: one(personalityTraits, { fields: [userPersonalityTraits.traitId], references: [personalityTraits.id] }),
+}));
+
+export const userDiscoveryPreferencesRelations = relations(userDiscoveryPreferences, ({ one }) => ({
+  user: one(users, { fields: [userDiscoveryPreferences.userId], references: [users.id] }),
+}));
+
+export const userInterestedInRelations = relations(userInterestedIn, ({ one }) => ({
+  user: one(users, { fields: [userInterestedIn.userId], references: [users.id] }),
 }));
 
 export const userPreferencesRelations = relations(userPreferences, ({ one }) => ({
@@ -498,6 +633,24 @@ export type TInsertReport = typeof reports.$inferInsert;
 
 export type TSelectGroupChat = typeof groupChats.$inferSelect;
 export type TInsertGroupChat = typeof groupChats.$inferInsert;
+
+export type TSelectLanguage = typeof languages.$inferSelect;
+export type TInsertLanguage = typeof languages.$inferInsert;
+
+export type TSelectUserLanguage = typeof userLanguages.$inferSelect;
+export type TInsertUserLanguage = typeof userLanguages.$inferInsert;
+
+export type TSelectPersonalityTrait = typeof personalityTraits.$inferSelect;
+export type TInsertPersonalityTrait = typeof personalityTraits.$inferInsert;
+
+export type TSelectUserPersonalityTrait = typeof userPersonalityTraits.$inferSelect;
+export type TInsertUserPersonalityTrait = typeof userPersonalityTraits.$inferInsert;
+
+export type TSelectUserDiscoveryPreferences = typeof userDiscoveryPreferences.$inferSelect;
+export type TInsertUserDiscoveryPreferences = typeof userDiscoveryPreferences.$inferInsert;
+
+export type TSelectUserInterestedIn = typeof userInterestedIn.$inferSelect;
+export type TInsertUserInterestedIn = typeof userInterestedIn.$inferInsert;
 
 export type TSelectGroupMember = typeof groupMembers.$inferSelect;
 export type TInsertGroupMember = typeof groupMembers.$inferInsert;

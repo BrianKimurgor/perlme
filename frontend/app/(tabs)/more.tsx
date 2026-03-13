@@ -21,6 +21,7 @@ export default function MoreScreen() {
       title: "Account",
       items: [
         { title: "Manage Account", icon: "person-circle-outline", path: "/settings/manage" },
+        { title: "Verify Phone Number", icon: "phone-portrait-outline", path: "/settings/phone-verify" },
         { title: "Change Password", icon: "key-outline", path: "/settings/password" },
         { title: "Logout", icon: "log-out-outline", path: "/Auth/Logout" },
       ],

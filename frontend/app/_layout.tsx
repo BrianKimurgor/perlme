@@ -20,6 +20,7 @@ export default function RootLayout() {
           <Stack.Screen name="index" />
           <Stack.Screen name="splashScreen" />
           <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="Auth/complete-profile" options={{ gestureEnabled: false }} />
         </Stack>
       </PersistGate>
     </Provider>

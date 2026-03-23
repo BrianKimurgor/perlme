@@ -81,8 +81,9 @@ export default function LoginScreen() {
       logger.error("Login failed:", err);
       // err.status === 'FETCH_ERROR' = network/connection issue
       // err.data?.error = server returned an error response
+      const rawError = err?.data?.error;
       const errorMessage =
-        err?.data?.error ||
+        (Array.isArray(rawError) ? rawError.map((e: any) => e.message).join(", ") : typeof rawError === "string" ? rawError : null) ||
         err?.data?.message ||
         (err?.status === "FETCH_ERROR" ? `Network error: ${err?.error}` : null) ||
         (err?.status === "PARSING_ERROR" ? `Parse error: ${err?.error}` : null) ||

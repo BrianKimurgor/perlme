@@ -84,10 +84,16 @@ export default function RegisterScreen() {
     } catch (err: any) {
       logger.error("❌ [FRONTEND] Registration error:", err);
       logger.error("❌ [FRONTEND] Error data:", err?.data);
+      const rawError = err?.data?.error;
+      const errorText = Array.isArray(rawError)
+        ? rawError.map((e: any) => e.message).join(", ")
+        : typeof rawError === "string"
+        ? rawError
+        : err?.data?.message || err.message || "Unknown error";
       Toast.show({
         type: "error",
         text1: "Registration Failed",
-        text2: err?.data?.error || err.message || "Unknown error",
+        text2: errorText,
       });
     }
   };

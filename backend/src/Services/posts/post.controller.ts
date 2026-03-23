@@ -2,6 +2,7 @@ import { logger } from "../../utils/logger";
 import { Request, Response } from "express";
 import { PaginationHandler } from "../../utils/paginationHandler";
 import { ResponseHandler } from "../../utils/responseHandler";
+import { createNotification } from "../Notifications/notification.service";
 import {
     commentOnPostService,
     createPostService,
@@ -156,6 +157,14 @@ export const likePostController = async (req: Request, res: Response) => {
         if (!postId) return ResponseHandler.badRequest(res, "Post ID is required");
 
         await likePostService(userId, postId);
+
+        // Notify the post author (fire-and-forget)
+        getPostByIdService(postId, userId).then((post) => {
+            if (post?.authorId && post.authorId !== userId) {
+                createNotification(userId, post.authorId, "LIKE", "Someone liked your post", postId).catch(() => {});
+            }
+        }).catch(() => {});
+
         return ResponseHandler.ok(res, "Post liked successfully");
     } catch (error) {
         logger.error("Error liking post:", error);
@@ -190,6 +199,14 @@ export const commentOnPostController = async (req: Request, res: Response) => {
         if (!content?.trim()) return ResponseHandler.badRequest(res, "Comment content required");
 
         const comment = await commentOnPostService(userId, postId, content.trim());
+
+        // Notify the post author (fire-and-forget)
+        getPostByIdService(postId, userId).then((post) => {
+            if (post?.authorId && post.authorId !== userId) {
+                createNotification(userId, post.authorId, "COMMENT", "Someone commented on your post", postId).catch(() => {});
+            }
+        }).catch(() => {});
+
         return ResponseHandler.created(res, "Comment added successfully", comment);
     } catch (error) {
         logger.error("Error adding comment:", error);

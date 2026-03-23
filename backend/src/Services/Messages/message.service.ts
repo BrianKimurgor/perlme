@@ -3,6 +3,7 @@ import { and, desc, eq, inArray, or, sql } from "drizzle-orm";
 import db from "../../drizzle/db";
 import { blocks, messages, users } from "../../drizzle/schema";
 import { getSocketService } from "../../socket/socket";
+import { createNotification } from "../Notifications/notification.service";
 
 export interface SendMessageDTO {
     senderId: string;
@@ -115,6 +116,9 @@ export class MessageService {
             message: messageWithSender,
             tempId,
         });
+
+        // Notify receiver about new message (fire-and-forget, only if not online)
+        createNotification(senderId, receiverId, "MESSAGE", "You have a new message", newMessage.id).catch(() => {});
 
         return messageWithSender;
     }

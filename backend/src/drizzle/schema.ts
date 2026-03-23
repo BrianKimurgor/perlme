@@ -452,6 +452,8 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   personalityTraits: many(userPersonalityTraits),
   discoveryPreferences: one(userDiscoveryPreferences, { fields: [users.id], references: [userDiscoveryPreferences.userId] }),
   interestedIn: many(userInterestedIn),
+  notificationsReceived: many(notifications, { relationName: "notificationRecipient" }),
+  notificationsSent: many(notifications, { relationName: "notificationActor" }),
 }));
 
 export const interestsRelations = relations(interests, ({ many }) => ({
@@ -669,3 +671,33 @@ export type TInsertGroupTag = typeof groupTags.$inferInsert;
 
 export type TSelectInteraction = typeof interactions.$inferSelect;
 export type TInsertInteraction = typeof interactions.$inferInsert;
+
+// ========================== NOTIFICATIONS TABLE ==========================
+export const notifications = pgTable("notifications", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id")
+    .references(() => users.id, { onDelete: "cascade" })
+    .notNull(), // recipient
+  actorId: uuid("actor_id").references(() => users.id, { onDelete: "cascade" }), // who triggered
+  type: notificationTypeEnum("type").notNull(),
+  entityId: uuid("entity_id"), // postId, messageId, etc.
+  message: text("message").notNull(),
+  isRead: boolean("is_read").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const notificationsRelations = relations(notifications, ({ one }) => ({
+  user: one(users, {
+    fields: [notifications.userId],
+    references: [users.id],
+    relationName: "notificationRecipient",
+  }),
+  actor: one(users, {
+    fields: [notifications.actorId],
+    references: [users.id],
+    relationName: "notificationActor",
+  }),
+}));
+
+export type TSelectNotification = typeof notifications.$inferSelect;
+export type TInsertNotification = typeof notifications.$inferInsert;

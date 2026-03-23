@@ -13,6 +13,7 @@ import { corsOptions } from './Middlewares/securityHeader.middleware';
 import clientLogsRoute from "./routes/clientLogs.route";
 import healthRoute from "./routes/health.route";
 import metricsRoute from "./routes/metrics.route";
+import notificationRouter from './Services/Notifications/notification.route';
 import blockRouters from './Services/Block/block.routes';
 import { EmailProviderType, EmailServiceFactory } from './Services/email/EmailServiceFactory';
 import exploreRouter from './Services/Explore and Recommendations/exploreAndRecommend.routes';
@@ -50,7 +51,11 @@ try {
     logger.info({ emailProvider }, "Email service initialized");
 } catch (error) {
     logger.error({ error }, "Failed to initialize email service");
-    process.exit(1);
+    if (process.env.NODE_ENV === 'production') {
+        process.exit(1);
+    } else {
+        logger.warn("Email service unavailable — running without email in development mode");
+    }
 }
 
 // ============================================================================
@@ -126,6 +131,7 @@ app.use('/api', anyAuth, checkUserActive, blockRouters);
 app.use('/api', anyAuth, checkUserActive, reportRouters);
 app.use('/api', anyAuth, checkUserActive, uploadRouter);
 app.use('/api', anyAuth, checkUserActive, profileRouter);
+app.use('/api', anyAuth, checkUserActive, notificationRouter);
 // ============================================================================
 // ❌ 404 HANDLER
 // ============================================================================

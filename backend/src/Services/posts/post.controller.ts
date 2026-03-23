@@ -1,5 +1,5 @@
-import { logger } from "../../utils/logger";
 import { Request, Response } from "express";
+import { logger } from "../../utils/logger";
 import { PaginationHandler } from "../../utils/paginationHandler";
 import { ResponseHandler } from "../../utils/responseHandler";
 import { createNotification } from "../Notifications/notification.service";
@@ -161,9 +161,9 @@ export const likePostController = async (req: Request, res: Response) => {
         // Notify the post author (fire-and-forget)
         getPostByIdService(postId, userId).then((post) => {
             if (post?.authorId && post.authorId !== userId) {
-                createNotification(userId, post.authorId, "LIKE", "Someone liked your post", postId).catch(() => {});
+                createNotification(userId, post.authorId, "LIKE", "Someone liked your post", postId).catch(() => { });
             }
-        }).catch(() => {});
+        }).catch(() => { });
 
         return ResponseHandler.ok(res, "Post liked successfully");
     } catch (error) {
@@ -203,9 +203,9 @@ export const commentOnPostController = async (req: Request, res: Response) => {
         // Notify the post author (fire-and-forget)
         getPostByIdService(postId, userId).then((post) => {
             if (post?.authorId && post.authorId !== userId) {
-                createNotification(userId, post.authorId, "COMMENT", "Someone commented on your post", postId).catch(() => {});
+                createNotification(userId, post.authorId, "COMMENT", "Someone commented on your post", postId).catch(() => { });
             }
-        }).catch(() => {});
+        }).catch(() => { });
 
         return ResponseHandler.created(res, "Comment added successfully", comment);
     } catch (error) {

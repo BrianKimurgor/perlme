@@ -1,3 +1,4 @@
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
@@ -12,7 +13,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 
 const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get("window");
 const CARD_HEIGHT = SCREEN_H * 0.60;
@@ -68,8 +68,8 @@ export const ProfileSwipeCard: React.FC<ProfileSwipeCardProps> = ({
   const photos = user.photos?.length
     ? user.photos
     : user.avatarUrl
-    ? [user.avatarUrl]
-    : [];
+      ? [user.avatarUrl]
+      : [];
 
   const [photoIndex, setPhotoIndex] = useState(0);
 
@@ -275,8 +275,8 @@ export const ProfileSwipeCard: React.FC<ProfileSwipeCardProps> = ({
                     {user.location
                       ? user.location
                       : user.distance != null
-                      ? `${user.distance} km away`
-                      : ""}
+                        ? `${user.distance} km away`
+                        : ""}
                   </Text>
                 </View>
               )}

@@ -6,7 +6,6 @@ import { AntDesign, Feather, Ionicons, MaterialCommunityIcons } from "@expo/vect
 import { useRouter } from "expo-router";
 import Tabs from "expo-router/tabs";
 import { useEffect } from "react";
-import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
 

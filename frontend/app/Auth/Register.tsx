@@ -1,5 +1,6 @@
 // app/auth/register.tsx
 import { RegisterRequest, useRegisterMutation } from "@/src/store/Apis/AuthApi";
+import { expoLogger as logger } from "@/src/utils/logger";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -19,7 +20,6 @@ import {
 } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
 import Toast from "react-native-toast-message";
-import { expoLogger as logger } from "@/src/utils/logger";
 
 export const orientationEnum = [
   "STRAIGHT",
@@ -88,8 +88,8 @@ export default function RegisterScreen() {
       const errorText = Array.isArray(rawError)
         ? rawError.map((e: any) => e.message).join(", ")
         : typeof rawError === "string"
-        ? rawError
-        : err?.data?.message || err.message || "Unknown error";
+          ? rawError
+          : err?.data?.message || err.message || "Unknown error";
       Toast.show({
         type: "error",
         text1: "Registration Failed",

@@ -210,7 +210,7 @@ export default function NotificationsScreen() {
                 colors={colors}
                 isDark={isDark}
                 isUnread={false}
-                onPress={() => {}}
+                onPress={() => { }}
               />
             ))}
           </>

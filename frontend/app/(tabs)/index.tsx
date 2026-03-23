@@ -16,11 +16,10 @@ import {
   Animated,
   Dimensions,
   RefreshControl,
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
@@ -166,7 +165,7 @@ export default function HomeScreen() {
     if (currentProfile) {
       try {
         await followUser(currentProfile.id).unwrap();
-      } catch (_) {}
+      } catch (_) { }
     }
     advance();
     Toast.show({ type: "success", text1: "⭐ Superlike sent!", position: "top" });

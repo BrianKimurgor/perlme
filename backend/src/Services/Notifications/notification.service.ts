@@ -1,7 +1,7 @@
 import { and, desc, eq } from "drizzle-orm";
 import db from "../../drizzle/db";
-import { notifications } from "../../drizzle/schema";
 import type { TInsertNotification, TSelectNotification } from "../../drizzle/schema";
+import { notifications } from "../../drizzle/schema";
 
 export type NotificationType =
     | "MESSAGE"

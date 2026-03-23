@@ -1,8 +1,8 @@
-import { logger } from "../../utils/logger";
 import { and, desc, eq, inArray, or, sql } from "drizzle-orm";
 import db from "../../drizzle/db";
 import { blocks, messages, users } from "../../drizzle/schema";
 import { getSocketService } from "../../socket/socket";
+import { logger } from "../../utils/logger";
 import { createNotification } from "../Notifications/notification.service";
 
 export interface SendMessageDTO {
@@ -118,7 +118,7 @@ export class MessageService {
         });
 
         // Notify receiver about new message (fire-and-forget, only if not online)
-        createNotification(senderId, receiverId, "MESSAGE", "You have a new message", newMessage.id).catch(() => {});
+        createNotification(senderId, receiverId, "MESSAGE", "You have a new message", newMessage.id).catch(() => { });
 
         return messageWithSender;
     }

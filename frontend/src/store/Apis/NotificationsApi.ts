@@ -13,15 +13,15 @@ export interface Notification {
     userId: string;
     actorId: string | null;
     type:
-        | "MESSAGE"
-        | "LIKE"
-        | "COMMENT"
-        | "REPOST"
-        | "FOLLOW"
-        | "TIP"
-        | "SUBSCRIPTION"
-        | "ADMIN_MESSAGE"
-        | "MATCH";
+    | "MESSAGE"
+    | "LIKE"
+    | "COMMENT"
+    | "REPOST"
+    | "FOLLOW"
+    | "TIP"
+    | "SUBSCRIPTION"
+    | "ADMIN_MESSAGE"
+    | "MATCH";
     entityId: string | null;
     message: string;
     isRead: boolean;

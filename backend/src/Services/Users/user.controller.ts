@@ -15,6 +15,7 @@ import {
 
 import { sendNotificationEmail } from "../../Middlewares/GoogleMailer";
 import { userValidator } from "../../Validators/users.vslidator";
+import { createNotification } from "../Notifications/notification.service";
 
 // ========================== GET ALL USERS ==========================
 export const getAllUsersController = async (req: Request, res: Response) => {
@@ -258,6 +259,15 @@ export const followUserController = async (req: Request, res: Response) => {
     }
 
     const follow = await followUser(followerId, userId);
+
+    // Notify the followed user (fire-and-forget)
+    createNotification(
+      followerId,
+      userId,
+      "FOLLOW",
+      "Someone started following you"
+    ).catch(() => { });
+
     res.status(200).json({
       success: true,
       message: "User followed successfully",

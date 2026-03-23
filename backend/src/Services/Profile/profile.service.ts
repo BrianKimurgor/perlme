@@ -13,6 +13,7 @@ import {
     userPersonalityTraits,
     users,
 } from "../../drizzle/schema";
+import { smsProvider } from "../../utils/sms";
 import {
     TDiscoveryPreferencesValidator,
     TUserValidator,
@@ -232,8 +233,14 @@ export const requestPhoneOtp = async (userId: string, phoneNumber: string) => {
         })
         .where(eq(users.id, userId));
 
-    // TODO: Send `code` to `phoneNumber` via your SMS provider (Twilio / Africa's Talking)
-    return { code }; // dev only — remove from production logs
+    await smsProvider.sendOtp(phoneNumber, code);
+
+    // In dev/console mode the code is returned so the frontend can display it.
+    // In production (Twilio/Africa's Talking) this field will be undefined.
+    const devCode = process.env.SMS_PROVIDER === undefined || process.env.SMS_PROVIDER === "console"
+        ? code
+        : undefined;
+    return { devCode };
 };
 
 // ========================== VERIFY PHONE OTP ==========================

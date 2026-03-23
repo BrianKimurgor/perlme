@@ -70,10 +70,10 @@ export default function VerifyEmailScreen() {
   }, [resendCooldown]);
 
   const handleChange = (text: string, index: number) => {
-    if (!/^[0-9a-zA-Z]?$/.test(text)) return;
+    if (!/^[0-9]?$/.test(text)) return;
 
     const newOtp = [...otp];
-    newOtp[index] = text.toUpperCase();
+    newOtp[index] = text;
     setOtp(newOtp);
 
     Animated.sequence([

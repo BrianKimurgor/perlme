@@ -1,5 +1,6 @@
-import ThemedWrapper from "@/src/components/ThemedWrapper";
+﻿import ThemedWrapper from "@/src/components/ThemedWrapper";
 import { RootState } from "@/src/store";
+import { useGetUnreadCountQuery } from "@/src/store/Apis/MessagesApi";
 import { useGetMyProfileQuery } from "@/src/store/Apis/ProfileApi";
 import { AntDesign, Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -24,6 +25,13 @@ export default function TabsLayout() {
     skip: !token,
   });
 
+  // Unread messages count for chat badge
+  const { data: unreadData } = useGetUnreadCountQuery(undefined, {
+    skip: !token,
+    pollingInterval: 30_000,
+  });
+  const unreadCount = unreadData?.count ?? 0;
+
   // Redirect to profile completion if not yet completed
   useEffect(() => {
     if (isSuccess && profile && !profile.profileCompletedAt) {
@@ -31,7 +39,7 @@ export default function TabsLayout() {
     }
   }, [isSuccess, profile]);
 
-  const inactiveColor = theme === "dark" ? "#aaa" : "#444";
+  const inactiveColor = theme === "dark" ? "#aaa" : "#666";
   const backgroundColor = theme === "dark" ? "#000" : "#fff";
 
   return (
@@ -48,13 +56,17 @@ export default function TabsLayout() {
             height: 60 + insets.bottom,
             paddingBottom: insets.bottom,
           },
+          tabBarLabelStyle: {
+            fontSize: 11,
+            fontWeight: "600",
+          },
         }}
       >
-        {/* Home */}
+        {/* Home â€” Discovery */}
         <Tabs.Screen
           name="index"
           options={{
-            title: "Home",
+            title: "Discover",
             tabBarIcon: ({ color }: TabBarIconProps) => (
               <AntDesign name="home" size={24} color={color} />
             ),
@@ -72,13 +84,26 @@ export default function TabsLayout() {
           }}
         />
 
-        {/* Chats */}
+        {/* Chats â€” with unread badge */}
         <Tabs.Screen
           name="chats"
           options={{
-            title: "Chats",
+            title: "Messages",
+            tabBarBadge: unreadCount > 0 ? (unreadCount > 99 ? "99+" : unreadCount) : undefined,
+            tabBarBadgeStyle: { backgroundColor: accent, fontSize: 10 },
             tabBarIcon: ({ color }: TabBarIconProps) => (
               <Ionicons name="chatbubbles" size={24} color={color} />
+            ),
+          }}
+        />
+
+        {/* Notifications */}
+        <Tabs.Screen
+          name="notifications"
+          options={{
+            title: "Alerts",
+            tabBarIcon: ({ color }: TabBarIconProps) => (
+              <Ionicons name="notifications" size={24} color={color} />
             ),
           }}
         />
@@ -87,20 +112,9 @@ export default function TabsLayout() {
         <Tabs.Screen
           name="profile"
           options={{
-            title: "Profile",
+            title: "Me",
             tabBarIcon: ({ color }: TabBarIconProps) => (
               <Feather name="user" size={24} color={color} />
-            ),
-          }}
-        />
-
-        {/* More */}
-        <Tabs.Screen
-          name="more"
-          options={{
-            title: "More",
-            tabBarIcon: ({ color }: TabBarIconProps) => (
-              <Ionicons name="ellipsis-horizontal" size={24} color={color} />
             ),
           }}
         />

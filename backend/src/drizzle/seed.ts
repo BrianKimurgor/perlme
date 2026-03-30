@@ -13,6 +13,7 @@ import {
   locations,
   media,
   messages,
+  notifications,
   personalityTraits,
   postMetrics,
   posts,
@@ -26,6 +27,8 @@ import {
   userPersonalityTraits,
   userPreferences,
   users,
+  userVibeCounts,
+  vibeVotes,
 } from "./schema";
 
 // Use console for seed output since logger writes to file only
@@ -55,6 +58,9 @@ export async function seed() {
     await db.delete(userMetrics);
     await db.delete(interactions);
     await db.delete(reports);
+    await db.delete(notifications);
+    await db.delete(userVibeCounts);
+    await db.delete(vibeVotes);
     await db.delete(comments);
     await db.delete(likes);
     await db.delete(media);
@@ -79,53 +85,95 @@ export async function seed() {
 
     // ========================== LANGUAGES ==========================
     log("🌐 Seeding languages...");
+    const englishId = uuidv4();
+    const frenchId = uuidv4();
+    const spanishId = uuidv4();
+    const portugueseId = uuidv4();
+    const swahiliId = uuidv4();
+    const arabicId = uuidv4();
+    const hindiId = uuidv4();
+    const mandarinId = uuidv4();
+    const germanId = uuidv4();
+    const italianId = uuidv4();
+    const japaneseId = uuidv4();
+    const koreanId = uuidv4();
+    const russianId = uuidv4();
+    const turkishId = uuidv4();
+    const amharicId = uuidv4();
+    const yorubaId = uuidv4();
+    const igboId = uuidv4();
+    const hausaId = uuidv4();
+    const zuluId = uuidv4();
+    const afrikaansId = uuidv4();
+
     await db.insert(languages).values([
-      { name: "English", code: "en" },
-      { name: "French", code: "fr" },
-      { name: "Spanish", code: "es" },
-      { name: "Portuguese", code: "pt" },
-      { name: "Swahili", code: "sw" },
-      { name: "Arabic", code: "ar" },
-      { name: "Hindi", code: "hi" },
-      { name: "Mandarin", code: "zh" },
-      { name: "German", code: "de" },
-      { name: "Italian", code: "it" },
-      { name: "Japanese", code: "ja" },
-      { name: "Korean", code: "ko" },
-      { name: "Russian", code: "ru" },
-      { name: "Turkish", code: "tr" },
-      { name: "Amharic", code: "am" },
-      { name: "Yoruba", code: "yo" },
-      { name: "Igbo", code: "ig" },
-      { name: "Hausa", code: "ha" },
-      { name: "Zulu", code: "zu" },
-      { name: "Afrikaans", code: "af" },
+      { id: englishId, name: "English", code: "en" },
+      { id: frenchId, name: "French", code: "fr" },
+      { id: spanishId, name: "Spanish", code: "es" },
+      { id: portugueseId, name: "Portuguese", code: "pt" },
+      { id: swahiliId, name: "Swahili", code: "sw" },
+      { id: arabicId, name: "Arabic", code: "ar" },
+      { id: hindiId, name: "Hindi", code: "hi" },
+      { id: mandarinId, name: "Mandarin", code: "zh" },
+      { id: germanId, name: "German", code: "de" },
+      { id: italianId, name: "Italian", code: "it" },
+      { id: japaneseId, name: "Japanese", code: "ja" },
+      { id: koreanId, name: "Korean", code: "ko" },
+      { id: russianId, name: "Russian", code: "ru" },
+      { id: turkishId, name: "Turkish", code: "tr" },
+      { id: amharicId, name: "Amharic", code: "am" },
+      { id: yorubaId, name: "Yoruba", code: "yo" },
+      { id: igboId, name: "Igbo", code: "ig" },
+      { id: hausaId, name: "Hausa", code: "ha" },
+      { id: zuluId, name: "Zulu", code: "zu" },
+      { id: afrikaansId, name: "Afrikaans", code: "af" },
     ]);
     log("✅ Languages seeded!\n");
 
     // ========================== PERSONALITY TRAITS ==========================
     log("🧠 Seeding personality traits...");
+    const adventurousTraitId = uuidv4();
+    const ambitiousTraitId = uuidv4();
+    const artisticTraitId = uuidv4();
+    const calmTraitId = uuidv4();
+    const caringTraitId = uuidv4();
+    const confidentTraitId = uuidv4();
+    const creativeTraitId = uuidv4();
+    const empatheticTraitId = uuidv4();
+    const extrovertTraitId = uuidv4();
+    const foodieTraitId = uuidv4();
+    const funnyTraitId = uuidv4();
+    const gentleTraitId = uuidv4();
+    const intellectualTraitId = uuidv4();
+    const introvertTraitId = uuidv4();
+    const kindTraitId = uuidv4();
+    const loyalTraitId = uuidv4();
+    const optimisticTraitId = uuidv4();
+    const passionateTraitId = uuidv4();
+    const romanticTraitId = uuidv4();
+    const spiritualTraitId = uuidv4();
+
     await db.insert(personalityTraits).values([
-      { name: "Adventurous" },
-      { name: "Ambitious" },
-      { name: "Artistic" },
-      { name: "Calm" },
-      { name: "Caring" },
-      { name: "Confident" },
-      { name: "Creative" },
-      { name: "Empathetic" },
-      { name: "Extrovert" },
-      { name: "Foodie" },
-      { name: "Funny" },
-      { name: "Gentle" },
-      { name: "Intellectual" },
-      { name: "Introvert" },
-      { name: "Kind" },
-      { name: "Loyal" },
-      { name: "Optimistic" },
-      { name: "Passionate" },
-      { name: "Romantic" },
-      { name: "Spiritual" },
+      { id: adventurousTraitId, name: "Adventurous" },
+      { id: ambitiousTraitId, name: "Ambitious" },
+      { id: artisticTraitId, name: "Artistic" },
+      { id: calmTraitId, name: "Calm" },
+      { id: caringTraitId, name: "Caring" },
+      { id: confidentTraitId, name: "Confident" },
+      { id: creativeTraitId, name: "Creative" },
+      { id: empatheticTraitId, name: "Empathetic" },
+      { id: extrovertTraitId, name: "Extrovert" },
+      { id: foodieTraitId, name: "Foodie" },
+      { id: funnyTraitId, name: "Funny" },
+      { id: gentleTraitId, name: "Gentle" },
+      { id: intellectualTraitId, name: "Intellectual" },
+      { id: introvertTraitId, name: "Introvert" },
+      { id: kindTraitId, name: "Kind" },
+      { id: loyalTraitId, name: "Loyal" },
+      { id: optimisticTraitId, name: "Optimistic" },
+      { id: passionateTraitId, name: "Passionate" },
+      { id: romanticTraitId, name: "Romantic" },
+      { id: spiritualTraitId, name: "Spiritual" },
     ]);
     log("✅ Personality traits seeded!\n");
 
@@ -155,12 +203,23 @@ export async function seed() {
         dateOfBirth: new Date("1995-06-15"),
         gender: "MALE",
         orientation: "STRAIGHT",
+        pronouns: "HE_HIM",
+        relationshipIntention: "LONG_TERM",
+        hasChildren: "NO",
+        wantsChildren: "WANT",
+        smoking: "NON_SMOKER",
+        drinking: "SOCIALLY",
+        fitnessLevel: "MODERATELY_ACTIVE",
+        educationLevel: "BACHELORS",
+        occupation: "Software Developer",
+        industry: "Technology",
         bio: "Test user account for app development. Love hiking, photography, and good coffee ☕",
         avatarUrl: "https://i.pravatar.cc/150?img=12",
         coverPhotoUrl: "https://picsum.photos/800/400?random=1",
         isVerified: true,
         visibility: "PUBLIC",
         role: "REGULAR",
+        profileCompletedAt: new Date(),
       },
       {
         id: user1Id,
@@ -170,12 +229,23 @@ export async function seed() {
         dateOfBirth: new Date("1992-03-20"),
         gender: "FEMALE",
         orientation: "STRAIGHT",
+        pronouns: "SHE_HER",
+        relationshipIntention: "LONG_TERM",
+        hasChildren: "NO",
+        wantsChildren: "WANT",
+        smoking: "NON_SMOKER",
+        drinking: "SOCIALLY",
+        fitnessLevel: "MODERATELY_ACTIVE",
+        educationLevel: "BACHELORS",
+        occupation: "Visual Artist",
+        industry: "Arts & Entertainment",
         bio: "Artist 🎨 | Dog lover 🐕 | Coffee enthusiast ☕ | NYC",
         avatarUrl: "https://i.pravatar.cc/150?img=5",
         coverPhotoUrl: "https://picsum.photos/800/400?random=2",
         isVerified: true,
         visibility: "PUBLIC",
         role: "CREATOR",
+        profileCompletedAt: new Date(),
       },
       {
         id: user2Id,
@@ -185,12 +255,23 @@ export async function seed() {
         dateOfBirth: new Date("1988-11-10"),
         gender: "MALE",
         orientation: "GAY",
+        pronouns: "HE_HIM",
+        relationshipIntention: "CASUAL",
+        hasChildren: "NO",
+        wantsChildren: "DONT_WANT",
+        smoking: "OCCASIONALLY",
+        drinking: "SOCIALLY",
+        fitnessLevel: "VERY_ACTIVE",
+        educationLevel: "COLLEGE",
+        occupation: "Personal Trainer",
+        industry: "Health & Fitness",
         bio: "Fitness coach 💪 | Travel addict ✈️ | Plant dad 🌱",
         avatarUrl: "https://i.pravatar.cc/150?img=8",
         coverPhotoUrl: "https://picsum.photos/800/400?random=3",
         isVerified: true,
         visibility: "PUBLIC",
         role: "REGULAR",
+        profileCompletedAt: new Date(),
       },
       {
         id: user3Id,
@@ -200,12 +281,23 @@ export async function seed() {
         dateOfBirth: new Date("1996-07-25"),
         gender: "FEMALE",
         orientation: "BISEXUAL",
+        pronouns: "SHE_HER",
+        relationshipIntention: "LONG_TERM_OPEN_SHORT",
+        hasChildren: "NO",
+        wantsChildren: "NOT_SURE",
+        smoking: "NON_SMOKER",
+        drinking: "SOCIALLY",
+        fitnessLevel: "MODERATELY_ACTIVE",
+        educationLevel: "MASTERS",
+        occupation: "Software Engineer",
+        industry: "Technology",
         bio: "Tech enthusiast 💻 | Bookworm 📚 | Amateur chef 👩‍🍳",
         avatarUrl: "https://i.pravatar.cc/150?img=9",
         coverPhotoUrl: "https://picsum.photos/800/400?random=4",
         isVerified: false,
         visibility: "PUBLIC",
         role: "REGULAR",
+        profileCompletedAt: new Date(),
       },
       {
         id: user4Id,
@@ -215,12 +307,23 @@ export async function seed() {
         dateOfBirth: new Date("1994-01-30"),
         gender: "NON_BINARY",
         orientation: "PANSEXUAL",
+        pronouns: "THEY_THEM",
+        relationshipIntention: "FRIENDSHIP",
+        hasChildren: "NO",
+        wantsChildren: "NOT_SURE",
+        smoking: "NON_SMOKER",
+        drinking: "NEVER",
+        fitnessLevel: "MODERATELY_ACTIVE",
+        educationLevel: "COLLEGE",
+        occupation: "Musician",
+        industry: "Arts & Entertainment",
         bio: "Musician 🎸 | Vegan 🌱 | Mental health advocate",
         avatarUrl: "https://i.pravatar.cc/150?img=15",
         coverPhotoUrl: "https://picsum.photos/800/400?random=5",
         isVerified: true,
         visibility: "PUBLIC",
         role: "CREATOR",
+        profileCompletedAt: new Date(),
       },
       {
         id: user5Id,
@@ -230,12 +333,23 @@ export async function seed() {
         dateOfBirth: new Date("1993-09-12"),
         gender: "FEMALE",
         orientation: "LESBIAN",
+        pronouns: "SHE_HER",
+        relationshipIntention: "LONG_TERM",
+        hasChildren: "NO",
+        wantsChildren: "WANT",
+        smoking: "NON_SMOKER",
+        drinking: "SOCIALLY",
+        fitnessLevel: "MODERATELY_ACTIVE",
+        educationLevel: "BACHELORS",
+        occupation: "Photographer",
+        industry: "Arts & Entertainment",
         bio: "Photographer 📸 | Nature lover 🌲 | Coffee snob",
         avatarUrl: "https://i.pravatar.cc/150?img=20",
         coverPhotoUrl: "https://picsum.photos/800/400?random=6",
         isVerified: true,
         visibility: "PUBLIC",
         role: "REGULAR",
+        profileCompletedAt: new Date(),
       },
       {
         id: user6Id,
@@ -245,12 +359,23 @@ export async function seed() {
         dateOfBirth: new Date("1990-05-18"),
         gender: "MALE",
         orientation: "STRAIGHT",
+        pronouns: "HE_HIM",
+        relationshipIntention: "CASUAL",
+        hasChildren: "NO",
+        wantsChildren: "DONT_WANT",
+        smoking: "NON_SMOKER",
+        drinking: "SOCIALLY",
+        fitnessLevel: "NOT_ACTIVE",
+        educationLevel: "BACHELORS",
+        occupation: "Software Engineer",
+        industry: "Technology",
         bio: "Software engineer 👨‍💻 | Gamer 🎮 | Pizza lover 🍕",
         avatarUrl: "https://i.pravatar.cc/150?img=13",
         coverPhotoUrl: "https://picsum.photos/800/400?random=7",
         isVerified: false,
         visibility: "PUBLIC",
         role: "REGULAR",
+        profileCompletedAt: new Date(),
       },
       {
         id: user7Id,
@@ -260,12 +385,23 @@ export async function seed() {
         dateOfBirth: new Date("1997-04-08"),
         gender: "FEMALE",
         orientation: "STRAIGHT",
+        pronouns: "SHE_HER",
+        relationshipIntention: "LONG_TERM",
+        hasChildren: "NO",
+        wantsChildren: "WANT",
+        smoking: "NON_SMOKER",
+        drinking: "NEVER",
+        fitnessLevel: "VERY_ACTIVE",
+        educationLevel: "COLLEGE",
+        occupation: "Yoga Instructor",
+        industry: "Health & Wellness",
         bio: "Yoga instructor 🧘‍♀️ | Wellness coach | Beach bum 🏖️",
         avatarUrl: "https://i.pravatar.cc/150?img=25",
         coverPhotoUrl: "https://picsum.photos/800/400?random=8",
         isVerified: true,
         visibility: "PUBLIC",
         role: "CREATOR",
+        profileCompletedAt: new Date(),
       },
       {
         id: user8Id,
@@ -275,12 +411,23 @@ export async function seed() {
         dateOfBirth: new Date("1991-12-22"),
         gender: "MALE",
         orientation: "BISEXUAL",
+        pronouns: "HE_HIM",
+        relationshipIntention: "SHORT_TERM_OPEN_LONG",
+        hasChildren: "NO",
+        wantsChildren: "NOT_SURE",
+        smoking: "OCCASIONALLY",
+        drinking: "SOCIALLY",
+        fitnessLevel: "MODERATELY_ACTIVE",
+        educationLevel: "BACHELORS",
+        occupation: "Food Blogger",
+        industry: "Media & Content",
         bio: "Food blogger 🍜 | Adventure seeker 🏔️ | Cat dad 🐱",
         avatarUrl: "https://i.pravatar.cc/150?img=33",
         coverPhotoUrl: "https://picsum.photos/800/400?random=9",
         isVerified: false,
         visibility: "PUBLIC",
         role: "REGULAR",
+        profileCompletedAt: new Date(),
       },
       {
         id: user9Id,
@@ -290,12 +437,23 @@ export async function seed() {
         dateOfBirth: new Date("1989-08-16"),
         gender: "FEMALE",
         orientation: "STRAIGHT",
+        pronouns: "SHE_HER",
+        relationshipIntention: "LONG_TERM",
+        hasChildren: "NO",
+        wantsChildren: "WANT",
+        smoking: "NON_SMOKER",
+        drinking: "SOCIALLY",
+        fitnessLevel: "MODERATELY_ACTIVE",
+        educationLevel: "BACHELORS",
+        occupation: "Fashion Designer",
+        industry: "Fashion & Retail",
         bio: "Fashion designer 👗 | Vintage lover | Tea enthusiast 🍵",
         avatarUrl: "https://i.pravatar.cc/150?img=28",
         coverPhotoUrl: "https://picsum.photos/800/400?random=10",
         isVerified: true,
         visibility: "PUBLIC",
         role: "CREATOR",
+        profileCompletedAt: new Date(),
       },
       {
         id: user10Id,
@@ -305,12 +463,23 @@ export async function seed() {
         dateOfBirth: new Date("1994-02-28"),
         gender: "MALE",
         orientation: "GAY",
+        pronouns: "HE_HIM",
+        relationshipIntention: "LONG_TERM",
+        hasChildren: "NO",
+        wantsChildren: "DONT_WANT",
+        smoking: "NON_SMOKER",
+        drinking: "SOCIALLY",
+        fitnessLevel: "MODERATELY_ACTIVE",
+        educationLevel: "COLLEGE",
+        occupation: "Actor",
+        industry: "Arts & Entertainment",
         bio: "Actor 🎭 | Drama queen 👑 | Brunch lover 🥞",
         avatarUrl: "https://i.pravatar.cc/150?img=52",
         coverPhotoUrl: "https://picsum.photos/800/400?random=11",
         isVerified: true,
         visibility: "PUBLIC",
         role: "REGULAR",
+        profileCompletedAt: new Date(),
       },
     ]);
     log("✅ Users inserted! (11 users)");
@@ -365,6 +534,121 @@ export async function seed() {
       { userId: user10Id, interestId: musicId },
     ]);
     log("✅ Interests inserted! (10 interests)");
+
+    // ========================== USER LANGUAGES ==========================
+    log("🌐 Inserting user languages...");
+    await db.insert(userLanguages).values([
+      { userId: testUserId, languageId: englishId },
+      { userId: testUserId, languageId: frenchId },
+      { userId: user1Id, languageId: englishId },
+      { userId: user1Id, languageId: spanishId },
+      { userId: user2Id, languageId: englishId },
+      { userId: user2Id, languageId: portugueseId },
+      { userId: user3Id, languageId: englishId },
+      { userId: user3Id, languageId: frenchId },
+      { userId: user3Id, languageId: germanId },
+      { userId: user4Id, languageId: englishId },
+      { userId: user4Id, languageId: spanishId },
+      { userId: user5Id, languageId: englishId },
+      { userId: user5Id, languageId: mandarinId },
+      { userId: user6Id, languageId: englishId },
+      { userId: user6Id, languageId: koreanId },
+      { userId: user7Id, languageId: englishId },
+      { userId: user8Id, languageId: englishId },
+      { userId: user8Id, languageId: italianId },
+      { userId: user9Id, languageId: englishId },
+      { userId: user9Id, languageId: frenchId },
+      { userId: user10Id, languageId: englishId },
+      { userId: user10Id, languageId: spanishId },
+    ]);
+    log("✅ User languages inserted! (22 assignments)");
+
+    // ========================== USER PERSONALITY TRAITS ==========================
+    log("🧠 Inserting user personality traits...");
+    await db.insert(userPersonalityTraits).values([
+      { userId: testUserId, traitId: creativeTraitId },
+      { userId: testUserId, traitId: adventurousTraitId },
+      { userId: testUserId, traitId: optimisticTraitId },
+      { userId: user1Id, traitId: artisticTraitId },
+      { userId: user1Id, traitId: creativeTraitId },
+      { userId: user1Id, traitId: empatheticTraitId },
+      { userId: user2Id, traitId: ambitiousTraitId },
+      { userId: user2Id, traitId: confidentTraitId },
+      { userId: user2Id, traitId: adventurousTraitId },
+      { userId: user3Id, traitId: intellectualTraitId },
+      { userId: user3Id, traitId: creativeTraitId },
+      { userId: user3Id, traitId: calmTraitId },
+      { userId: user4Id, traitId: passionateTraitId },
+      { userId: user4Id, traitId: creativeTraitId },
+      { userId: user4Id, traitId: kindTraitId },
+      { userId: user5Id, traitId: adventurousTraitId },
+      { userId: user5Id, traitId: artisticTraitId },
+      { userId: user5Id, traitId: introvertTraitId },
+      { userId: user6Id, traitId: funnyTraitId },
+      { userId: user6Id, traitId: loyalTraitId },
+      { userId: user7Id, traitId: calmTraitId },
+      { userId: user7Id, traitId: caringTraitId },
+      { userId: user7Id, traitId: spiritualTraitId },
+      { userId: user8Id, traitId: foodieTraitId },
+      { userId: user8Id, traitId: extrovertTraitId },
+      { userId: user8Id, traitId: adventurousTraitId },
+      { userId: user9Id, traitId: romanticTraitId },
+      { userId: user9Id, traitId: artisticTraitId },
+      { userId: user9Id, traitId: gentleTraitId },
+      { userId: user10Id, traitId: extrovertTraitId },
+      { userId: user10Id, traitId: funnyTraitId },
+      { userId: user10Id, traitId: passionateTraitId },
+    ]);
+    log("✅ User personality traits inserted! (32 assignments)");
+
+    // ========================== USER DISCOVERY PREFERENCES ==========================
+    log("🔍 Inserting user discovery preferences...");
+    await db.insert(userDiscoveryPreferences).values([
+      { userId: testUserId, minAge: 22, maxAge: 38, distanceKm: 50, distancePreference: "KM_50", showLocation: true },
+      { userId: user1Id, minAge: 25, maxAge: 40, distanceKm: 50, distancePreference: "KM_50", showLocation: true },
+      { userId: user2Id, minAge: 24, maxAge: 42, distanceKm: 100, distancePreference: "KM_100", showLocation: true },
+      { userId: user3Id, minAge: 21, maxAge: 35, distanceKm: 50, distancePreference: "KM_50", showLocation: true },
+      { userId: user4Id, minAge: 20, maxAge: 40, distanceKm: null, distancePreference: "GLOBAL", showLocation: false },
+      { userId: user5Id, minAge: 22, maxAge: 38, distanceKm: 50, distancePreference: "KM_50", showLocation: true },
+      { userId: user6Id, minAge: 23, maxAge: 37, distanceKm: 50, distancePreference: "KM_50", showLocation: true },
+      { userId: user7Id, minAge: 25, maxAge: 40, distanceKm: 50, distancePreference: "KM_50", showLocation: true },
+      { userId: user8Id, minAge: 23, maxAge: 40, distanceKm: 100, distancePreference: "KM_100", showLocation: true },
+      { userId: user9Id, minAge: 27, maxAge: 45, distanceKm: 50, distancePreference: "KM_50", showLocation: true },
+      { userId: user10Id, minAge: 22, maxAge: 38, distanceKm: 50, distancePreference: "KM_50", showLocation: true },
+    ]);
+    log("✅ User discovery preferences inserted! (11 preferences)");
+
+    // ========================== USER INTERESTED IN ==========================
+    log("💘 Inserting user interested-in genders...");
+    await db.insert(userInterestedIn).values([
+      // testuser (MALE, STRAIGHT) → interested in FEMALE
+      { userId: testUserId, gender: "FEMALE" },
+      // sarah_smith (FEMALE, STRAIGHT) → interested in MALE
+      { userId: user1Id, gender: "MALE" },
+      // mike_jones (MALE, GAY) → interested in MALE
+      { userId: user2Id, gender: "MALE" },
+      // emma_davis (FEMALE, BISEXUAL) → interested in MALE + FEMALE
+      { userId: user3Id, gender: "MALE" },
+      { userId: user3Id, gender: "FEMALE" },
+      // alex_rivera (NON_BINARY, PANSEXUAL) → all genders
+      { userId: user4Id, gender: "MALE" },
+      { userId: user4Id, gender: "FEMALE" },
+      { userId: user4Id, gender: "NON_BINARY" },
+      // jessica_lee (FEMALE, LESBIAN) → interested in FEMALE
+      { userId: user5Id, gender: "FEMALE" },
+      // david_kim (MALE, STRAIGHT) → interested in FEMALE
+      { userId: user6Id, gender: "FEMALE" },
+      // lisa_brown (FEMALE, STRAIGHT) → interested in MALE
+      { userId: user7Id, gender: "MALE" },
+      // chris_taylor (MALE, BISEXUAL) → interested in MALE + FEMALE
+      { userId: user8Id, gender: "MALE" },
+      { userId: user8Id, gender: "FEMALE" },
+      // amanda_wilson (FEMALE, STRAIGHT) → interested in MALE
+      { userId: user9Id, gender: "MALE" },
+      // ryan_martinez (MALE, GAY) → interested in MALE
+      { userId: user10Id, gender: "MALE" },
+    ]);
+    log("✅ User interested-in inserted! (15 entries)");
 
     // ========================== FOLLOWS ==========================
     log("🤝 Inserting follows...");
@@ -977,14 +1261,225 @@ export async function seed() {
     ]);
     log("✅ Interactions inserted! (10 interactions)");
 
+    // ========================== NOTIFICATIONS ==========================
+    log("🔔 Inserting notifications...");
+    await db.insert(notifications).values([
+      // testuser receives: new followers
+      {
+        userId: testUserId,
+        actorId: user1Id,
+        type: "FOLLOW",
+        message: "sarah_smith started following you",
+        isRead: true,
+        createdAt: new Date(now.getTime() - 3600000 * 25),
+      },
+      {
+        userId: testUserId,
+        actorId: user2Id,
+        type: "FOLLOW",
+        message: "mike_jones started following you",
+        isRead: true,
+        createdAt: new Date(now.getTime() - 3600000 * 24),
+      },
+      {
+        userId: testUserId,
+        actorId: user5Id,
+        type: "FOLLOW",
+        message: "jessica_lee started following you",
+        isRead: false,
+        createdAt: new Date(now.getTime() - 3600000 * 5),
+      },
+      // testuser receives: likes on posts
+      {
+        userId: testUserId,
+        actorId: user1Id,
+        type: "LIKE",
+        entityId: testPost1Id,
+        message: "sarah_smith liked your post",
+        isRead: true,
+        createdAt: new Date(now.getTime() - 3600000 * 10),
+      },
+      {
+        userId: testUserId,
+        actorId: user2Id,
+        type: "LIKE",
+        entityId: testPost1Id,
+        message: "mike_jones liked your post",
+        isRead: false,
+        createdAt: new Date(now.getTime() - 3600000 * 9),
+      },
+      {
+        userId: testUserId,
+        actorId: user5Id,
+        type: "LIKE",
+        entityId: testPost1Id,
+        message: "jessica_lee liked your post",
+        isRead: false,
+        createdAt: new Date(now.getTime() - 3600000 * 8),
+      },
+      {
+        userId: testUserId,
+        actorId: user7Id,
+        type: "LIKE",
+        entityId: testPost1Id,
+        message: "lisa_brown liked your post",
+        isRead: false,
+        createdAt: new Date(now.getTime() - 3600000 * 7),
+      },
+      // testuser receives: comments on posts
+      {
+        userId: testUserId,
+        actorId: user1Id,
+        type: "COMMENT",
+        entityId: testPost1Id,
+        message: "sarah_smith commented: \"Stunning shot! 😍\"",
+        isRead: true,
+        createdAt: new Date(now.getTime() - 3600000 * 10),
+      },
+      {
+        userId: testUserId,
+        actorId: user2Id,
+        type: "COMMENT",
+        entityId: testPost1Id,
+        message: "mike_jones commented: \"Wow, where is this?\"",
+        isRead: false,
+        createdAt: new Date(now.getTime() - 3600000 * 9),
+      },
+      {
+        userId: testUserId,
+        actorId: user5Id,
+        type: "COMMENT",
+        entityId: testPost1Id,
+        message: "jessica_lee commented: \"The colors are amazing!\"",
+        isRead: false,
+        createdAt: new Date(now.getTime() - 3600000 * 3),
+      },
+      // testuser receives: messages
+      {
+        userId: testUserId,
+        actorId: user1Id,
+        type: "MESSAGE",
+        message: "New message from sarah_smith",
+        isRead: true,
+        createdAt: new Date(now.getTime() - 3600000 * 2),
+      },
+      {
+        userId: testUserId,
+        actorId: user7Id,
+        type: "MESSAGE",
+        message: "New message from lisa_brown",
+        isRead: false,
+        createdAt: new Date(now.getTime() - 3600000 * 5),
+      },
+      // user1 (sarah_smith) receives notifications
+      {
+        userId: user1Id,
+        actorId: testUserId,
+        type: "FOLLOW",
+        message: "testuser started following you",
+        isRead: true,
+        createdAt: new Date(now.getTime() - 3600000 * 48),
+      },
+      {
+        userId: user1Id,
+        actorId: testUserId,
+        type: "LIKE",
+        entityId: post1Id,
+        message: "testuser liked your post",
+        isRead: true,
+        createdAt: new Date(now.getTime() - 3600000 * 5),
+      },
+      {
+        userId: user1Id,
+        actorId: testUserId,
+        type: "COMMENT",
+        entityId: post1Id,
+        message: "testuser commented: \"This is incredible! 🎨\"",
+        isRead: false,
+        createdAt: new Date(now.getTime() - 3600000 * 5),
+      },
+      // user2 (mike_jones) receives notifications
+      {
+        userId: user2Id,
+        actorId: testUserId,
+        type: "FOLLOW",
+        message: "testuser started following you",
+        isRead: true,
+        createdAt: new Date(now.getTime() - 3600000 * 48),
+      },
+      {
+        userId: user2Id,
+        actorId: testUserId,
+        type: "LIKE",
+        entityId: post4Id,
+        message: "testuser liked your post",
+        isRead: false,
+        createdAt: new Date(now.getTime() - 3600000 * 8),
+      },
+      // user7 (lisa_brown) receives a follow
+      {
+        userId: user7Id,
+        actorId: testUserId,
+        type: "FOLLOW",
+        message: "testuser started following you",
+        isRead: false,
+        createdAt: new Date(now.getTime() - 3600000 * 48),
+      },
+    ]);
+    log("✅ Notifications inserted! (18 notifications)");
+
+    // ========================== VIBE VOTES ==========================
+    log("✨ Inserting vibe votes...");
+    await db.insert(vibeVotes).values([
+      { voterId: testUserId, targetUserId: user1Id, vibeType: "SOCIAL_BUTTERFLY" },
+      { voterId: testUserId, targetUserId: user7Id, vibeType: "WHOLESOME" },
+      { voterId: testUserId, targetUserId: user2Id, vibeType: "ACTIVITY_JUNKIE" },
+      { voterId: user1Id, targetUserId: testUserId, vibeType: "DEEP_DIVER" },
+      { voterId: user2Id, targetUserId: testUserId, vibeType: "SOCIAL_BUTTERFLY" },
+      { voterId: user3Id, targetUserId: testUserId, vibeType: "WITTY_ONE" },
+      { voterId: user5Id, targetUserId: testUserId, vibeType: "INSTANT_MATCH" },
+      { voterId: user7Id, targetUserId: user2Id, vibeType: "ACTIVITY_JUNKIE" },
+      { voterId: user4Id, targetUserId: user3Id, vibeType: "DEEP_DIVER" },
+      { voterId: user6Id, targetUserId: user5Id, vibeType: "SOLO_ADVENTURER" },
+      { voterId: user8Id, targetUserId: user1Id, vibeType: "CAFFEINE_CRITIC" },
+      { voterId: user9Id, targetUserId: user7Id, vibeType: "WHOLESOME" },
+    ]);
+    log("✅ Vibe votes inserted! (12 votes)");
+
+    // ========================== USER VIBE COUNTS (denormalized) ==========================
+    log("📊 Inserting user vibe counts...");
+    await db.insert(userVibeCounts).values([
+      // testuser received: DEEP_DIVER(1), SOCIAL_BUTTERFLY(1), WITTY_ONE(1), INSTANT_MATCH(1)
+      { targetUserId: testUserId, vibeType: "DEEP_DIVER", count: 1 },
+      { targetUserId: testUserId, vibeType: "SOCIAL_BUTTERFLY", count: 1 },
+      { targetUserId: testUserId, vibeType: "WITTY_ONE", count: 1 },
+      { targetUserId: testUserId, vibeType: "INSTANT_MATCH", count: 1 },
+      // user1 received: SOCIAL_BUTTERFLY(1), CAFFEINE_CRITIC(1)
+      { targetUserId: user1Id, vibeType: "SOCIAL_BUTTERFLY", count: 1 },
+      { targetUserId: user1Id, vibeType: "CAFFEINE_CRITIC", count: 1 },
+      // user2 received: ACTIVITY_JUNKIE(2)
+      { targetUserId: user2Id, vibeType: "ACTIVITY_JUNKIE", count: 2 },
+      // user3 received: DEEP_DIVER(1)
+      { targetUserId: user3Id, vibeType: "DEEP_DIVER", count: 1 },
+      // user5 received: SOLO_ADVENTURER(1)
+      { targetUserId: user5Id, vibeType: "SOLO_ADVENTURER", count: 1 },
+      // user7 received: WHOLESOME(2)
+      { targetUserId: user7Id, vibeType: "WHOLESOME", count: 2 },
+    ]);
+    log("✅ User vibe counts inserted! (10 entries)");
+
     log("\n🎉 ================================");
     log("✅ SEED DATA COMPLETED SUCCESSFULLY!");
     log("================================");
     log("\n📊 Summary:");
-    log("  - 20 languages");
-    log("  - 18 personality traits");
-    log("  - 11 users (with profiles, bios, avatars)");
+    log("  - 20 languages (with IDs)");
+    log("  - 20 personality traits (with IDs)");
+    log("  - 11 users (full profiles, all fields, profileCompletedAt set)");
     log("  - 10 interests");
+    log("  - 22 user language assignments");
+    log("  - 32 user personality trait assignments");
+    log("  - 11 user discovery preferences");
+    log("  - 15 user interested-in entries");
     log("  - 23 follow relationships");
     log("  - 2 blocks");
     log("  - 11 locations");
@@ -1002,9 +1497,13 @@ export async function seed() {
     log("  - 18 post metrics");
     log("  - 11 user metrics");
     log("  - 10 interactions");
+    log("  - 18 notifications");
+    log("  - 12 vibe votes");
+    log("  - 10 user vibe counts");
     log("\n🔐 Test User Credentials:");
     log("  Email: test@perlme.com");
     log("  Password: Password123!");
+    log("  (All other users also use Password123!)");
     log("\n🚀 All screens should now have realistic data for testing!");
   } catch (err) {
     logError("❌ Seeding failed:", err);

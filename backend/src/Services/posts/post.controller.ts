@@ -42,6 +42,7 @@ export const createPostController = async (req: Request, res: Response) => {
 export const getAllPublicPostsController = async (req: Request, res: Response) => {
     try {
         const userId = req.user?.id;
+        logger.info("[Posts] getAllPublicPosts — userId:", userId ?? "(unauthenticated)", "query:", req.query);
 
         const { page, limit, sortBy, sortOrder } = PaginationHandler.parseParams(req.query);
 
@@ -53,6 +54,7 @@ export const getAllPublicPostsController = async (req: Request, res: Response) =
             sortOrder
         );
 
+        logger.info("[Posts] Returning", posts.length, "posts (total:", meta.totalItems, ")");
         return PaginationHandler.send(res, posts, meta.totalItems, page, limit);
     } catch (error) {
         logger.error("Error fetching posts:", error);

@@ -2,16 +2,17 @@ import { ProfileSwipeCard, SwipeCardUser } from "@/components/ProfileSwipeCard";
 import { StoryBar } from "@/components/StoryBar";
 import { Loading } from "@/components/ui";
 import { useAppTheme } from "@/src/hooks/useAppTheme";
+import { RootState } from "@/src/store";
 import { ExploreUser, useGetRecommendationsQuery } from "@/src/store/Apis/ExploreApi";
+import { Post, useGetAllPostsQuery, useLikePostMutation, useUnlikePostMutation } from "@/src/store/Apis/PostsApi";
 import {
   useFollowUserMutation,
 } from "@/src/store/Apis/UsersApi";
 import { expoLogger as logger } from "@/src/utils/logger";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Image } from "expo-image";
-import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Animated,
   Dimensions,
@@ -23,51 +24,152 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
+import { useSelector } from "react-redux";
 
 const { width: SCREEN_W } = Dimensions.get("window");
-const GRID_ITEM_W = (SCREEN_W - 48) / 2;
 
-// ─── Mini profile card for the Discovery Feed grid ─────────────────────────
-const DiscoveryGridItem: React.FC<{
-  user: ExploreUser;
-  onPress: () => void;
+// ─── Relative time helper ────────────────────────────────────────────────
+function timeAgo(dateStr: string): string {
+  const diff = (Date.now() - new Date(dateStr).getTime()) / 1000;
+  if (diff < 60) return `${Math.floor(diff)}s`;
+  if (diff < 3600) return `${Math.floor(diff / 60)}m`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
+  if (diff < 604800) return `${Math.floor(diff / 86400)}d`;
+  return `${Math.floor(diff / 604800)}w`;
+}
+
+// ─── Instagram-style Feed Post Card ──────────────────────────────────────
+const FeedPostCard: React.FC<{
+  post: Post;
+  currentUserId: string | undefined;
   isDark: boolean;
   accent: string;
-}> = ({ user, onPress, isDark, accent }) => (
-  <TouchableOpacity
-    style={[
-      styles.gridItem,
-      { backgroundColor: isDark ? "#1e1e1e" : "#fff" },
-    ]}
-    onPress={onPress}
-    activeOpacity={0.82}
-  >
-    {user.avatarUrl ? (
-      <Image
-        source={{ uri: user.avatarUrl }}
-        style={styles.gridPhoto}
-        contentFit="cover"
-      />
-    ) : (
-      <View style={[styles.gridPhoto, { backgroundColor: isDark ? "#2a2a2a" : "#e8e8e8", alignItems: "center", justifyContent: "center" }]}>
-        <Ionicons name="person" size={40} color={isDark ? "#555" : "#bbb"} />
+  onPressUser: (id: string) => void;
+  onPressPost: (id: string) => void;
+}> = ({ post, currentUserId, isDark, accent, onPressUser, onPressPost }) => {
+  const [likePost] = useLikePostMutation();
+  const [unlikePost] = useUnlikePostMutation();
+
+  // Prefer flat fields from backend formatPost(); fall back to array shape
+  const isLiked = post.isLikedByCurrentUser ?? post.likes?.some((l) => l.userId === currentUserId) ?? false;
+  const likeCount = post.likeCount ?? post._count?.likes ?? post.likes?.length ?? 0;
+  const commentCount = post.commentCount ?? post._count?.comments ?? post.comments?.length ?? 0;
+  const mediaUrl = post.media?.[0]?.url ?? null;
+
+  const handleLike = async () => {
+    try {
+      if (isLiked) {
+        await unlikePost(post.id).unwrap();
+      } else {
+        await likePost(post.id).unwrap();
+      }
+    } catch (_) { }
+  };
+
+  const cardBg = isDark ? "#111" : "#fff";
+  const textColor = isDark ? "#f0f0f0" : "#111";
+  const subColor = isDark ? "#888" : "#777";
+  const dividerColor = isDark ? "#222" : "#efefef";
+
+  return (
+    <View style={[feedStyles.card, { backgroundColor: cardBg, borderBottomColor: dividerColor }]}>
+      {/* Header */}
+      <TouchableOpacity
+        style={feedStyles.cardHeader}
+        onPress={() => post.author && onPressUser(post.author.id)}
+        activeOpacity={0.8}
+      >
+        <View style={feedStyles.headerLeft}>
+          {post.author?.avatarUrl ? (
+            <Image
+              source={{ uri: post.author.avatarUrl }}
+              style={feedStyles.avatar}
+              contentFit="cover"
+            />
+          ) : (
+            <View style={[feedStyles.avatar, { backgroundColor: isDark ? "#333" : "#e0e0e0", alignItems: "center", justifyContent: "center" }]}>
+              <Ionicons name="person" size={18} color={isDark ? "#888" : "#bbb"} />
+            </View>
+          )}
+          <Text style={[feedStyles.username, { color: textColor }]}>
+            {post.author?.username ?? "unknown"}
+          </Text>
+        </View>
+        <Ionicons name="ellipsis-horizontal" size={20} color={subColor} />
+      </TouchableOpacity>
+
+      {/* Media */}
+      <TouchableOpacity activeOpacity={0.95} onPress={() => onPressPost(post.id)}>
+        {mediaUrl ? (
+          <Image
+            source={{ uri: mediaUrl }}
+            style={feedStyles.postImage}
+            contentFit="cover"
+          />
+        ) : (
+          <View style={[feedStyles.postImagePlaceholder, { backgroundColor: isDark ? "#1c1c1e" : "#f0f0f0" }]}>
+            <MaterialCommunityIcons name="image-off-outline" size={40} color={isDark ? "#444" : "#ccc"} />
+          </View>
+        )}
+      </TouchableOpacity>
+
+      {/* Action Bar */}
+      <View style={feedStyles.actions}>
+        <View style={feedStyles.actionsLeft}>
+          <TouchableOpacity onPress={handleLike} style={feedStyles.actionBtn}>
+            <Ionicons
+              name={isLiked ? "heart" : "heart-outline"}
+              size={26}
+              color={isLiked ? "#e0245e" : (isDark ? "#f0f0f0" : "#111")}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => onPressPost(post.id)} style={feedStyles.actionBtn}>
+            <Ionicons name="chatbubble-outline" size={24} color={isDark ? "#f0f0f0" : "#111"} />
+          </TouchableOpacity>
+          <TouchableOpacity style={feedStyles.actionBtn}>
+            <Ionicons name="paper-plane-outline" size={24} color={isDark ? "#f0f0f0" : "#111"} />
+          </TouchableOpacity>
+        </View>
+        <TouchableOpacity>
+          <Ionicons name="bookmark-outline" size={24} color={isDark ? "#f0f0f0" : "#111"} />
+        </TouchableOpacity>
       </View>
-    )}
-    <LinearGradient
-      colors={["transparent", "rgba(0,0,0,0.75)"]}
-      style={styles.gridGradient}
-      pointerEvents="none"
-    >
-      <Text style={styles.gridName} numberOfLines={1}>
-        {user.username}
-        {user.age ? `, ${user.age}` : ""}
-      </Text>
-      {user.distance != null && (
-        <Text style={styles.gridDistance}>{user.distance} km</Text>
+
+      {/* Like count */}
+      {likeCount > 0 && (
+        <Text style={[feedStyles.likeCount, { color: textColor }]}>
+          {likeCount.toLocaleString()} {likeCount === 1 ? "like" : "likes"}
+        </Text>
       )}
-    </LinearGradient>
-  </TouchableOpacity>
-);
+
+      {/* Caption */}
+      {post.content ? (
+        <View style={feedStyles.captionRow}>
+          <Text style={[feedStyles.captionUsername, { color: textColor }]}>
+            {post.author?.username ?? ""}{" "}
+          </Text>
+          <Text style={[feedStyles.captionText, { color: textColor }]} numberOfLines={2}>
+            {post.content}
+          </Text>
+        </View>
+      ) : null}
+
+      {/* Comments preview */}
+      {commentCount > 0 && (
+        <TouchableOpacity onPress={() => onPressPost(post.id)}>
+          <Text style={[feedStyles.viewComments, { color: subColor }]}>
+            View all {commentCount} comment{commentCount !== 1 ? "s" : ""}
+          </Text>
+        </TouchableOpacity>
+      )}
+
+      {/* Timestamp */}
+      <Text style={[feedStyles.timestamp, { color: subColor }]}>
+        {timeAgo(post.createdAt)}
+      </Text>
+    </View>
+  );
+};
 
 // ─── Empty state card ──────────────────────────────────────────────────────
 const AllSeenCard: React.FC<{ isDark: boolean; accent: string; onRefresh: () => void }> = ({
@@ -97,20 +199,55 @@ export default function HomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { colors, accent, isDark } = useAppTheme();
+  const currentUserId = useSelector((state: RootState) => state.auth.user?.id);
 
-  const { data, isLoading, refetch } = useGetRecommendationsQuery();
+  const { data, isLoading, isError: recError, error: recErrorDetail, refetch } = useGetRecommendationsQuery();
+  const { data: posts = [], isLoading: postsLoading, isError: postsError, error: postsErrorDetail, refetch: refetchPosts } = useGetAllPostsQuery();
   const [followUser] = useFollowUserMutation();
+
+  // ─── Debug logging ────────────────────────────────────────────────────────
+  useEffect(() => {
+    logger.info("[Feed] Recommendations state:", {
+      isLoading,
+      isError: recError,
+      error: recErrorDetail,
+      usersCount: data?.users?.length ?? 0,
+      rawData: data,
+    });
+  }, [isLoading, recError, recErrorDetail, data]);
+
+  useEffect(() => {
+    logger.info("[Feed] Posts state:", {
+      isLoading: postsLoading,
+      isError: postsError,
+      error: postsErrorDetail,
+      postsCount: posts.length,
+    });
+  }, [postsLoading, postsError, postsErrorDetail, posts]);
 
   const [refreshing, setRefreshing] = useState(false);
   const [profileIndex, setProfileIndex] = useState(0);
   const [swipeHistory, setSwipeHistory] = useState<number[]>([]);
+  const [loadTimedOut, setLoadTimedOut] = useState(false);
+
+  // If recommendations are still loading after 12s, force the error/retry screen
+  useEffect(() => {
+    if (!isLoading) {
+      setLoadTimedOut(false);
+      return;
+    }
+    const t = setTimeout(() => {
+      logger.warn("[Feed] Recommendations request timed out after 12s");
+      setLoadTimedOut(true);
+    }, 12_000);
+    return () => clearTimeout(t);
+  }, [isLoading]);
 
   const scrollY = useRef(new Animated.Value(0)).current;
 
   const profiles: ExploreUser[] = data?.users ?? [];
   const currentProfile = profiles[profileIndex];
   const storyUsers = profiles.slice(0, 14);
-  const feedProfiles = profiles.filter((_, i) => i !== profileIndex);
   const noMoreProfiles = profiles.length > 0 && profileIndex >= profiles.length;
 
   // ─── Scroll-based hero card shrink ────────────────────────────────────────
@@ -184,12 +321,36 @@ export default function HomeScreen() {
     setRefreshing(true);
     setProfileIndex(0);
     setSwipeHistory([]);
-    await refetch();
+    await Promise.all([refetch(), refetchPosts()]);
     setRefreshing(false);
   };
 
-  if (isLoading && profiles.length === 0) {
+  if (isLoading && !loadTimedOut && profiles.length === 0) {
     return <Loading fullScreen text="Finding people near you..." />;
+  }
+
+  if ((recError || loadTimedOut) && profiles.length === 0) {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.bg, alignItems: "center", justifyContent: "center" }]}>
+        <Ionicons name="cloud-offline-outline" size={56} color={isDark ? "#555" : "#ccc"} />
+        <Text style={{ color: colors.text, fontSize: 17, fontWeight: "700", marginTop: 16 }}>
+          Couldn&apos;t load feed
+        </Text>
+        <Text style={{ color: colors.subtext, fontSize: 14, marginTop: 8, textAlign: "center", paddingHorizontal: 32 }}>
+          {(recErrorDetail as any)?.status === 401
+            ? "Session expired — please log in again"
+            : loadTimedOut
+              ? "Server took too long to respond. Is the backend running?"
+              : "Check your connection and try again"}
+        </Text>
+        <TouchableOpacity
+          style={{ marginTop: 20, backgroundColor: accent, paddingHorizontal: 28, paddingVertical: 12, borderRadius: 24 }}
+          onPress={() => refetch()}
+        >
+          <Text style={{ color: "#fff", fontWeight: "700", fontSize: 15 }}>Retry</Text>
+        </TouchableOpacity>
+      </View>
+    );
   }
 
   const toSwipeUser = (u: ExploreUser): SwipeCardUser => ({
@@ -278,26 +439,25 @@ export default function HomeScreen() {
           )}
         </Animated.View>
 
-        {/* ─── Discovery Feed Section ───────────────────────────────── */}
-        {feedProfiles.length > 0 && (
+        {/* ─── Instagram-style Post Feed ───────────────────────────── */}
+        {posts.length > 0 && (
           <>
             <View style={styles.sectionHeader}>
               <Text style={[styles.sectionTitle, { color: colors.text }]}>
-                Daily Picks
-              </Text>
-              <Text style={[styles.sectionCount, { color: colors.subtext }]}>
-                {feedProfiles.length} people
+                Posts
               </Text>
             </View>
 
-            <View style={styles.grid}>
-              {feedProfiles.map((user) => (
-                <DiscoveryGridItem
-                  key={user.id}
-                  user={user}
-                  onPress={() => router.push(`/user/${user.id}` as any)}
+            <View>
+              {posts.map((post) => (
+                <FeedPostCard
+                  key={post.id}
+                  post={post}
+                  currentUserId={currentUserId}
                   isDark={isDark}
                   accent={accent}
+                  onPressUser={(id) => router.push(`/user/${id}` as any)}
+                  onPressPost={(id) => router.push(`/post/${id}` as any)}
                 />
               ))}
             </View>
@@ -307,6 +467,93 @@ export default function HomeScreen() {
     </View>
   );
 }
+
+// ─── Instagram Feed Styles ─────────────────────────────────────────────────
+const feedStyles = StyleSheet.create({
+  card: {
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    marginBottom: 2,
+  },
+  cardHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  headerLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  avatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+  },
+  username: {
+    fontWeight: "700",
+    fontSize: 14,
+  },
+  postImage: {
+    width: SCREEN_W,
+    height: SCREEN_W,
+  },
+  postImagePlaceholder: {
+    width: SCREEN_W,
+    height: SCREEN_W * 0.75,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  actions: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 12,
+    paddingTop: 10,
+    paddingBottom: 4,
+  },
+  actionsLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+  },
+  actionBtn: {
+    padding: 2,
+  },
+  likeCount: {
+    fontWeight: "700",
+    fontSize: 14,
+    paddingHorizontal: 12,
+    marginBottom: 4,
+  },
+  captionRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    paddingHorizontal: 12,
+    marginBottom: 4,
+  },
+  captionUsername: {
+    fontWeight: "700",
+    fontSize: 14,
+  },
+  captionText: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  viewComments: {
+    paddingHorizontal: 12,
+    fontSize: 14,
+    marginBottom: 4,
+  },
+  timestamp: {
+    paddingHorizontal: 12,
+    fontSize: 11,
+    marginBottom: 10,
+    textTransform: "uppercase",
+    letterSpacing: 0.3,
+  },
+});
 
 // ─── Styles ────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
@@ -344,45 +591,6 @@ const styles = StyleSheet.create({
   },
   sectionCount: {
     fontSize: 13,
-  },
-  grid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    paddingHorizontal: 12,
-    gap: 12,
-  },
-  gridItem: {
-    width: GRID_ITEM_W,
-    height: GRID_ITEM_W * 1.35,
-    borderRadius: 16,
-    overflow: "hidden",
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOpacity: 0.12,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-  },
-  gridPhoto: {
-    width: "100%",
-    height: "100%",
-  },
-  gridGradient: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    paddingHorizontal: 10,
-    paddingVertical: 10,
-  },
-  gridName: {
-    fontSize: 13,
-    fontWeight: "700",
-    color: "#fff",
-  },
-  gridDistance: {
-    fontSize: 11,
-    color: "rgba(255,255,255,0.75)",
-    marginTop: 2,
   },
   allSeenCard: {
     marginHorizontal: 16,

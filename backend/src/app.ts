@@ -24,6 +24,7 @@ import profileRouter from './Services/Profile/profile.route';
 import reportRouters from './Services/Reports/report.route';
 import uploadRouter from './Services/upload/upload.route';
 import userRouters from './Services/Users/user.route';
+import vibeRouter from './Services/Vibes/vibe.route';
 import swaggerSpec from "./swagger";
 import { logger } from "./utils/logger";
 
@@ -132,6 +133,7 @@ app.use('/api', anyAuth, checkUserActive, reportRouters);
 app.use('/api', anyAuth, checkUserActive, uploadRouter);
 app.use('/api', anyAuth, checkUserActive, profileRouter);
 app.use('/api', anyAuth, checkUserActive, notificationRouter);
+app.use('/api/vibes', anyAuth, checkUserActive, vibeRouter);
 // ============================================================================
 // ❌ 404 HANDLER
 // ============================================================================

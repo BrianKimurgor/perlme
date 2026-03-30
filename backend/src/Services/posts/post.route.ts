@@ -1,6 +1,5 @@
 import { Router } from "express";
 import { authMiddleware } from "../../Middlewares/BearAuth";
-import { rateLimiterMiddleware } from "../../Middlewares/rateLimiter";
 import {
     commentOnPostController,
     createPostController,
@@ -13,7 +12,7 @@ import {
 } from "./post.controller";
 
 const postRouter = Router();
-postRouter.use(rateLimiterMiddleware);
+// Note: rateLimiterMiddleware is already applied globally in app.ts
 
 /**
  * @swagger

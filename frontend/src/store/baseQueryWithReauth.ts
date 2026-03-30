@@ -1,15 +1,17 @@
 // src/store/baseQueryWithReauth.ts
+import { expoLogger as logger } from "@/src/utils/logger";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { API_BASE_URL } from "../../src/utils/config";
 import { logout, setCredentials } from "./AuthSlice";
 import type { RootState } from "./index";
-import { expoLogger as logger } from "@/src/utils/logger";
 
 // Simple flag to prevent multiple refresh attempts
 let isRefreshing = false;
 let refreshSubscribers: ((token: string) => void)[] = [];
+
+const REQUEST_TIMEOUT_MS = 15_000; // 15 seconds
 
 const baseQuery = fetchBaseQuery({
     baseUrl: API_BASE_URL,
@@ -19,6 +21,20 @@ const baseQuery = fetchBaseQuery({
             headers.set("Authorization", `Bearer ${token}`);
         }
         return headers;
+    },
+    fetchFn: async (input, init) => {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+        try {
+            return await fetch(input, { ...init, signal: controller.signal });
+        } catch (err: any) {
+            if (err?.name === "AbortError") {
+                throw new Error("Request timed out after 15 seconds");
+            }
+            throw err;
+        } finally {
+            clearTimeout(timeoutId);
+        }
     },
 });
 
@@ -37,6 +53,17 @@ export const baseQueryWithReauth: BaseQueryFn<
     FetchBaseQueryError
 > = async (args, api, extraOptions) => {
     let result = await baseQuery(args, api, extraOptions);
+
+    // Auto-logout if the server says the user no longer exists (e.g. after a DB wipe / account deletion)
+    if (result.error?.status === 404) {
+        const message = (result.error.data as any)?.message ?? "";
+        if (message === "User not found" || message === "Account not found") {
+            logger.warn("⚠️ User not found on server — clearing session and logging out");
+            api.dispatch(logout());
+            await AsyncStorage.clear();
+            return result;
+        }
+    }
 
     if (result.error && result.error.status === 401) {
         logger.info("🔄 Token expired, attempting refresh...");

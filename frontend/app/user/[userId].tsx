@@ -1,6 +1,4 @@
 import { Avatar, Button, Loading, PostCard } from "@/components/ui";
-import { API_BASE_URL } from "@/src/utils/config";
-import { expoLogger as logger } from "@/src/utils/logger";
 import { RootState } from "@/src/store";
 import { useBlockUserMutation } from "@/src/store/Apis/BlocksApi";
 import { useGetAllPostsQuery } from "@/src/store/Apis/PostsApi";
@@ -10,6 +8,9 @@ import {
     useGetUserByIdQuery,
     useUnfollowUserMutation
 } from "@/src/store/Apis/UsersApi";
+import { VIBE_META, useGetVibesQuery } from "@/src/store/Apis/VibesApi";
+import { API_BASE_URL } from "@/src/utils/config";
+import { expoLogger as logger } from "@/src/utils/logger";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
@@ -39,6 +40,7 @@ export default function UserProfileScreen() {
     });
 
     const { data: allPosts } = useGetAllPostsQuery();
+    const { data: vibeData } = useGetVibesQuery(userId || "", { skip: !userId });
     const [blockUser] = useBlockUserMutation();
     const [followUser] = useFollowUserMutation();
     const [unfollowUser] = useUnfollowUserMutation();
@@ -212,11 +214,24 @@ export default function UserProfileScreen() {
                         <Text style={styles.statLabel}>Followers</Text>
                     </View>
                     <View style={styles.statDivider} />
+                    {/* Vibe badge replaces the old "Following" count */}
                     <View style={styles.statItem}>
-                        <Text style={styles.statValue}>
-                            {userProfile._count?.following || 0}
-                        </Text>
-                        <Text style={styles.statLabel}>Following</Text>
+                        {vibeData?.topVibe ? (
+                            <>
+                                <Text style={styles.vibeBadgeIcon}>
+                                    {VIBE_META[vibeData.topVibe.vibeType].icon}
+                                </Text>
+                                <Text style={styles.vibeBadgeLabel} numberOfLines={1}>
+                                    {VIBE_META[vibeData.topVibe.vibeType].label}
+                                </Text>
+                                <Text style={styles.statLabel}>Vibe</Text>
+                            </>
+                        ) : (
+                            <>
+                                <Text style={styles.vibeBadgeIcon}>✨</Text>
+                                <Text style={styles.statLabel}>Vibe</Text>
+                            </>
+                        )}
                     </View>
                 </View>
 
@@ -351,6 +366,16 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: "#9ca3af",
         marginTop: 4,
+    },
+    vibeBadgeIcon: {
+        fontSize: 22,
+    },
+    vibeBadgeLabel: {
+        fontSize: 11,
+        fontWeight: "700",
+        color: "#111827",
+        marginTop: 2,
+        textAlign: "center",
     },
     statDivider: {
         width: 1,

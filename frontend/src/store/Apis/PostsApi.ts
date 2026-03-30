@@ -20,6 +20,10 @@ export interface Post {
         likes: number;
         comments: number;
     };
+    // Flat fields returned by the backend formatPost() helper
+    likeCount?: number;
+    commentCount?: number;
+    isLikedByCurrentUser?: boolean;
 }
 
 export interface Media {

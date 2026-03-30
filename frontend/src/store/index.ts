@@ -13,6 +13,7 @@ import { notificationsApi } from "./Apis/NotificationsApi";
 import { postsApi } from "./Apis/PostsApi";
 import { profileApi } from "./Apis/ProfileApi";
 import { usersApi } from "./Apis/UsersApi";
+import { vibesApi } from "./Apis/VibesApi";
 import themeReducer from "./themeSlice";
 
 const rootReducer = combineReducers({
@@ -27,6 +28,7 @@ const rootReducer = combineReducers({
   [groupsApi.reducerPath]: groupsApi.reducer,
   [profileApi.reducerPath]: profileApi.reducer,
   [notificationsApi.reducerPath]: notificationsApi.reducer,
+  [vibesApi.reducerPath]: vibesApi.reducer,
 });
 
 const persistConfig = {
@@ -51,7 +53,8 @@ export const store = configureStore({
       blocksApi.middleware,
       groupsApi.middleware,
       profileApi.middleware,
-      notificationsApi.middleware
+      notificationsApi.middleware,
+      vibesApi.middleware
     ),
 });
 

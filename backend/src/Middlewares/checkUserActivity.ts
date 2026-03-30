@@ -1,27 +1,36 @@
+import { eq } from "drizzle-orm";
+import { NextFunction, Request, Response } from "express";
+import db from "../drizzle/db";
+import { users } from "../drizzle/schema";
 import { logger } from "../utils/logger";
-import { Request, Response, NextFunction } from "express";
-import { getUserById, isUserActive } from '../Services/Users/users.service';
+import { ResponseHandler } from "../utils/responseHandler";
 
 // Middleware to block suspended users
 export const checkUserActive = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userId = req.user?.id; // assuming user is added to req by auth middleware
+    const userId = req.user?.id;
 
     if (!userId) {
-      return res.status(401).json({ error: "Unauthorized" });
+      return ResponseHandler.unauthorized(res, "Unauthorized");
     }
 
-    const user = await getUserById(String(userId));
-
+    // Only fetch the fields needed to check suspension — avoids 3 extra count queries
+    const [user] = await db
+      .select({ isSuspended: users.isSuspended, suspendedUntil: users.suspendedUntil })
+      .from(users)
+      .where(eq(users.id, userId));
 
     if (!user) {
-      return res.status(404).json({ error: "User not found" });
+      return ResponseHandler.notFound(res, "User not found");
     }
 
-    if (!isUserActive(user)) {
-      return res.status(403).json({
-        error: "Your account is suspended. Please contact support or wait until your suspension period ends.",
-      });
+    const now = new Date();
+    const isSuspended =
+      user.isSuspended &&
+      (user.suspendedUntil === null || user.suspendedUntil > now);
+
+    if (isSuspended) {
+      return ResponseHandler.forbidden(res, "Your account is suspended. Please contact support or wait until your suspension period ends.");
     }
 
     next();

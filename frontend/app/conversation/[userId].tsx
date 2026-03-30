@@ -12,19 +12,28 @@ import {
     useSendMessageMutation,
 } from "@/src/store/Apis/MessagesApi";
 import { useGetUserByIdQuery } from "@/src/store/Apis/UsersApi";
+import {
+    type VibeType,
+    VIBE_META,
+    useCastVibeMutation,
+    useGetVibePromptStatusQuery,
+} from "@/src/store/Apis/VibesApi";
 import { expoLogger as logger } from "@/src/utils/logger";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
     FlatList,
     KeyboardAvoidingView,
+    Modal,
     Platform,
+    ScrollView,
     StyleSheet,
     Text,
     TouchableOpacity,
     View,
 } from "react-native";
+import Toast from "react-native-toast-message";
 import { useSelector } from "react-redux";
 
 export default function ConversationScreen() {
@@ -35,6 +44,9 @@ export default function ConversationScreen() {
     const token = useSelector((state: RootState) => state.auth.token);
     const { colors, accent } = useAppTheme();
 
+    // Vibe prompt visibility — local toggle so user can dismiss without re-querying
+    const [vibePromptDismissed, setVibePromptDismissed] = useState(false);
+
     const { data: messages, isLoading, refetch } = useGetConversationQuery(userId || "", {
         skip: !userId,
     });
@@ -43,8 +55,32 @@ export default function ConversationScreen() {
         skip: !userId,
     });
 
+    const { data: promptStatus, refetch: refetchPromptStatus } = useGetVibePromptStatusQuery(userId || "", {
+        skip: !userId,
+        refetchOnMountOrArgChange: true,
+    });
+
+    const [castVibe] = useCastVibeMutation();
     const [sendMessage] = useSendMessageMutation();
     const [markAsRead] = useMarkConversationAsReadMutation();
+
+    const showVibePrompt = !!promptStatus?.show && !vibePromptDismissed;
+
+    const handleVibeSelect = async (vibeType: VibeType) => {
+        if (!userId) return;
+        try {
+            await castVibe({ targetUserId: userId, vibeType }).unwrap();
+            Toast.show({
+                type: "success",
+                text1: `Vibe saved! ${VIBE_META[vibeType].icon} ${VIBE_META[vibeType].label}`,
+            });
+        } catch (err) {
+            logger.error("Failed to cast vibe", err);
+            Toast.show({ type: "error", text1: "Failed to save vibe" });
+        } finally {
+            setVibePromptDismissed(true);
+        }
+    };
 
     useEffect(() => {
         if (userId) {
@@ -90,6 +126,11 @@ export default function ConversationScreen() {
             setTimeout(() => {
                 flatListRef.current?.scrollToEnd({ animated: true });
             }, 100);
+
+            // Re-check if vibe prompt should now appear (crosses 15-message threshold)
+            if (!vibePromptDismissed) {
+                refetchPromptStatus();
+            }
         } catch (error) {
             logger.error("Failed to send message:", error);
         }
@@ -155,6 +196,67 @@ export default function ConversationScreen() {
                 }
             />
 
+            {/* Vibe Prompt Modal — shown after 15 messages */}
+            <Modal
+                visible={showVibePrompt}
+                transparent
+                animationType="slide"
+                onRequestClose={() => setVibePromptDismissed(true)}
+            >
+                <View style={styles.vibeOverlay}>
+                    <View style={[styles.vibeCard, { backgroundColor: colors.surface }]}>
+                        <TouchableOpacity
+                            style={styles.vibeDismiss}
+                            onPress={() => setVibePromptDismissed(true)}
+                        >
+                            <Ionicons name="close" size={20} color={colors.text} />
+                        </TouchableOpacity>
+
+                        <Text style={[styles.vibeTitle, { color: colors.text }]}>
+                            How&apos;s the chat? 👀
+                        </Text>
+                        <Text style={[styles.vibeSubtitle, { color: colors.subtext }]}>
+                            Pick a Vibe for{" "}
+                            <Text style={{ fontWeight: "700" }}>{otherUser?.username}</Text>
+                        </Text>
+
+                        <ScrollView showsVerticalScrollIndicator={false}>
+                            {(
+                                [
+                                    { label: "Energy", vibes: ["SOCIAL_BUTTERFLY", "SOLO_ADVENTURER", "DEEP_DIVER"] },
+                                    { label: "Reliability", vibes: ["INSTANT_MATCH", "SLOW_BURNER", "EVENING_STAR"] },
+                                    { label: "Date Style", vibes: ["CAFFEINE_CRITIC", "NIGHT_OWL", "ACTIVITY_JUNKIE"] },
+                                    { label: "Humor", vibes: ["WITTY_ONE", "WHOLESOME", "MEME_DEALER"] },
+                                ] as { label: string; vibes: VibeType[] }[]
+                            ).map((cat) => (
+                                <View key={cat.label} style={styles.vibeCategory}>
+                                    <Text style={[styles.vibeCatLabel, { color: colors.subtext }]}>
+                                        {cat.label}
+                                    </Text>
+                                    <View style={styles.vibeRow}>
+                                        {cat.vibes.map((v) => {
+                                            const meta = VIBE_META[v];
+                                            return (
+                                                <TouchableOpacity
+                                                    key={v}
+                                                    style={[styles.vibeChip, { borderColor: accent }]}
+                                                    onPress={() => handleVibeSelect(v)}
+                                                >
+                                                    <Text style={styles.vibeChipIcon}>{meta.icon}</Text>
+                                                    <Text style={[styles.vibeChipLabel, { color: colors.text }]}>
+                                                        {meta.label}
+                                                    </Text>
+                                                </TouchableOpacity>
+                                            );
+                                        })}
+                                    </View>
+                                </View>
+                            ))}
+                        </ScrollView>
+                    </View>
+                </View>
+            </Modal>
+
             {/* Input */}
             <ChatInput
                 onSendMessage={handleSendMessage}
@@ -211,5 +313,64 @@ const styles = StyleSheet.create({
     },
     messagesList: {
         padding: 16,
+    },
+    // ---- Vibe Prompt ----
+    vibeOverlay: {
+        flex: 1,
+        justifyContent: "flex-end",
+        backgroundColor: "rgba(0,0,0,0.45)",
+    },
+    vibeCard: {
+        borderTopLeftRadius: 24,
+        borderTopRightRadius: 24,
+        padding: 24,
+        paddingBottom: 40,
+        maxHeight: "80%",
+    },
+    vibeDismiss: {
+        position: "absolute",
+        top: 16,
+        right: 16,
+        zIndex: 10,
+    },
+    vibeTitle: {
+        fontSize: 20,
+        fontWeight: "700",
+        marginBottom: 4,
+    },
+    vibeSubtitle: {
+        fontSize: 14,
+        marginBottom: 20,
+    },
+    vibeCategory: {
+        marginBottom: 16,
+    },
+    vibeCatLabel: {
+        fontSize: 11,
+        fontWeight: "600",
+        textTransform: "uppercase",
+        letterSpacing: 1,
+        marginBottom: 8,
+    },
+    vibeRow: {
+        flexDirection: "row",
+        flexWrap: "wrap",
+        gap: 8,
+    },
+    vibeChip: {
+        flexDirection: "row",
+        alignItems: "center",
+        borderWidth: 1.5,
+        borderRadius: 20,
+        paddingHorizontal: 14,
+        paddingVertical: 8,
+        gap: 6,
+    },
+    vibeChipIcon: {
+        fontSize: 18,
+    },
+    vibeChipLabel: {
+        fontSize: 13,
+        fontWeight: "600",
     },
 });

@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { boolean, doublePrecision, integer, pgEnum, pgTable, text, timestamp, uuid, varchar, } from "drizzle-orm/pg-core";
+import { boolean, doublePrecision, integer, pgEnum, pgTable, primaryKey, text, timestamp, unique, uuid, varchar, } from "drizzle-orm/pg-core";
 
 // ========================== ENUMS ==========================
 
@@ -54,6 +54,26 @@ export const fitnessLevelEnum = pgEnum("fitness_level", ["VERY_ACTIVE", "MODERAT
 export const educationLevelEnum = pgEnum("education_level", ["HIGH_SCHOOL", "COLLEGE", "BACHELORS", "MASTERS", "PHD"]);
 
 export const distancePreferenceEnum = pgEnum("distance_preference", ["KM_10", "KM_50", "KM_100", "GLOBAL"]);
+
+// ========================== ENUMS (vibe system) ==========================
+export const vibeTypeEnum = pgEnum("vibe_type", [
+  // Energy
+  "SOCIAL_BUTTERFLY",
+  "SOLO_ADVENTURER",
+  "DEEP_DIVER",
+  // Reliability
+  "INSTANT_MATCH",
+  "SLOW_BURNER",
+  "EVENING_STAR",
+  // Date Style
+  "CAFFEINE_CRITIC",
+  "NIGHT_OWL",
+  "ACTIVITY_JUNKIE",
+  // Humor
+  "WITTY_ONE",
+  "WHOLESOME",
+  "MEME_DEALER",
+]);
 
 // ========================== USERS ==========================
 export const users = pgTable("users", {
@@ -420,6 +440,36 @@ export const groupTags = pgTable("group_tags", {
   assignedAt: timestamp("assigned_at").defaultNow(),
 });
 
+// ========================== VIBE VOTES ==========================
+// One vote per (voter → target) pair; voter can change their pick.
+export const vibeVotes = pgTable("vibe_votes", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  voterId: uuid("voter_id")
+    .references(() => users.id, { onDelete: "cascade" })
+    .notNull(),
+  targetUserId: uuid("target_user_id")
+    .references(() => users.id, { onDelete: "cascade" })
+    .notNull(),
+  vibeType: vibeTypeEnum("vibe_type").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => [
+  unique().on(table.voterId, table.targetUserId),
+]);
+
+// ========================== USER VIBE COUNTS (denormalized) ==========================
+// Composite PK on (targetUserId, vibeType) — enables fast upsert.
+export const userVibeCounts = pgTable("user_vibe_counts", {
+  targetUserId: uuid("target_user_id")
+    .references(() => users.id, { onDelete: "cascade" })
+    .notNull(),
+  vibeType: vibeTypeEnum("vibe_type").notNull(),
+  count: integer("count").default(0).notNull(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => [
+  primaryKey({ columns: [table.targetUserId, table.vibeType] }),
+]);
+
 // ========================== INTERACTIONS ==========================
 export const interactions = pgTable("interactions", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -454,6 +504,9 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   interestedIn: many(userInterestedIn),
   notificationsReceived: many(notifications, { relationName: "notificationRecipient" }),
   notificationsSent: many(notifications, { relationName: "notificationActor" }),
+  vibeVotesGiven: many(vibeVotes, { relationName: "vibeVoter" }),
+  vibeVotesReceived: many(vibeVotes, { relationName: "vibeTarget" }),
+  vibeCounts: many(userVibeCounts),
 }));
 
 export const interestsRelations = relations(interests, ({ many }) => ({
@@ -578,6 +631,15 @@ export const groupTagsRelations = relations(groupTags, ({ one }) => ({
   }),
 }));
 
+export const vibeVotesRelations = relations(vibeVotes, ({ one }) => ({
+  voter: one(users, { fields: [vibeVotes.voterId], references: [users.id], relationName: "vibeVoter" }),
+  targetUser: one(users, { fields: [vibeVotes.targetUserId], references: [users.id], relationName: "vibeTarget" }),
+}));
+
+export const userVibeCountsRelations = relations(userVibeCounts, ({ one }) => ({
+  targetUser: one(users, { fields: [userVibeCounts.targetUserId], references: [users.id] }),
+}));
+
 export const interactionsRelations = relations(interactions, ({ one }) => ({
   user: one(users, {
     fields: [interactions.userId],
@@ -617,6 +679,11 @@ export type TInsertBlock = typeof blocks.$inferInsert;
 
 export type TSelectLocation = typeof locations.$inferSelect;
 export type TInsertLocation = typeof locations.$inferInsert;
+
+export type VibeType = typeof vibeTypeEnum.enumValues[number];
+export type TSelectVibeVote = typeof vibeVotes.$inferSelect;
+export type TInsertVibeVote = typeof vibeVotes.$inferInsert;
+export type TSelectUserVibeCount = typeof userVibeCounts.$inferSelect;
 
 export type TSelectUserPreference = typeof userPreferences.$inferSelect;
 export type TInsertUserPreference = typeof userPreferences.$inferInsert;

@@ -1,9 +1,11 @@
 import { logger } from "../utils/logger";
 // scheduler.ts
+import { and, eq, isNotNull, lte } from "drizzle-orm";
 import cron from "node-cron";
-import { getAllUsers, unsuspendUser } from "../Services/Users/users.service";
+import db from "../drizzle/db";
+import { TSelectUser, users } from "../drizzle/schema";
+import { unsuspendUser } from "../Services/Users/users.service";
 import { sendNotificationEmail } from "./GoogleMailer";
-import { TSelectUser } from "../drizzle/schema";
 
 // Load environment variables
 import dotenv from "dotenv";
@@ -15,23 +17,33 @@ cron.schedule("* * * * *", async () => {
   logger.info("⏱️ Cron job running: checking suspended users...");
 
   try {
-    // Fetch all users
-    const users: TSelectUser[] = await getAllUsers();
     const now = new Date();
 
-    for (const user of users) {
-      // Check if user is suspended and suspension has expired
-      if (user.isSuspended && user.suspendedUntil && new Date(user.suspendedUntil) <= now) {
-        logger.info(`🔓 Unsuspending user: ${user.username} (id: ${user.id})`);
+    // Targeted query — only fetch users that are suspended AND suspension has expired
+    const suspendedUsers: TSelectUser[] = await db
+      .select()
+      .from(users)
+      .where(
+        and(
+          eq(users.isSuspended, true),
+          isNotNull(users.suspendedUntil),
+          lte(users.suspendedUntil, now)
+        )
+      );
 
-        try {
-          // Unsuspend the user
-          const updatedUser: TSelectUser | null = await unsuspendUser(user.id);
+    logger.info(`⏱️ Cron: found ${suspendedUsers.length} user(s) to unsuspend.`);
 
-          if (updatedUser) {
-            // Prepare unsuspension email (same detailed template as controller)
-            const subject = "🎉 Welcome Back! Your PerlMe Account Is Active Again";
-            const message = `
+    for (const user of suspendedUsers) {
+      // Query already filtered to suspended-and-expired users — unsuspend directly
+      logger.info(`🔓 Unsuspending user: ${user.username} (id: ${user.id})`);
+
+      try {
+        const updatedUser: TSelectUser | null = await unsuspendUser(user.id);
+
+        if (updatedUser) {
+          // Prepare unsuspension email (same detailed template as controller)
+          const subject = "🎉 Welcome Back! Your PerlMe Account Is Active Again";
+          const message = `
               <html>
                 <body style="font-family:'Poppins',Arial,sans-serif;background-color:#E8EAF6;padding:40px;">
                   <div style="max-width:600px;margin:auto;background:#fff;padding:30px;border-radius:18px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,0.08);">
@@ -59,23 +71,22 @@ cron.schedule("* * * * *", async () => {
               </html>
             `;
 
-            try {
-              await sendNotificationEmail(
-                updatedUser.email,
-                subject,
-                updatedUser.username,
-                message,
-                message,
-                "unsuspension"
-              );
-              logger.info(`✅ Unsuspension email sent to ${updatedUser.email}`);
-            } catch (emailError) {
-              logger.error(`❌ Failed to send unsuspension email to ${updatedUser.email}`, emailError);
-            }
+          try {
+            await sendNotificationEmail(
+              updatedUser.email,
+              subject,
+              updatedUser.username,
+              message,
+              message,
+              "unsuspension"
+            );
+            logger.info(`✅ Unsuspension email sent to ${updatedUser.email}`);
+          } catch (emailError) {
+            logger.error(`❌ Failed to send unsuspension email to ${updatedUser.email}`, emailError);
           }
-        } catch (unsuspendError) {
-          logger.error(`❌ Failed to unsuspend user ${user.username} (id: ${user.id})`, unsuspendError);
         }
+      } catch (unsuspendError) {
+        logger.error(`❌ Failed to unsuspend user ${user.username} (id: ${user.id})`, unsuspendError);
       }
     }
   } catch (error) {

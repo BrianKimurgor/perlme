@@ -102,6 +102,12 @@ export const ProfileSwipeCard: React.FC<ProfileSwipeCardProps> = ({
     extrapolate: "clamp",
   });
 
+  const superOpacity = pan.y.interpolate({
+    inputRange: [-SWIPE_THRESHOLD, 0],
+    outputRange: [1, 0],
+    extrapolate: "clamp",
+  });
+
   const animateSwipe = useCallback(
     (direction: "left" | "right") => {
       if (isSwiping.current) return;
@@ -187,8 +193,16 @@ export const ProfileSwipeCard: React.FC<ProfileSwipeCardProps> = ({
 
   const handleSuper = () => {
     if (isSwiping.current) return;
-    onSuperlike();
-    animateSwipe("right");
+    isSwiping.current = true;
+    Animated.timing(pan, {
+      toValue: { x: 0, y: -SCREEN_H * 1.3 },
+      duration: 300,
+      useNativeDriver: false,
+    }).start(() => {
+      pan.setValue({ x: 0, y: 0 });
+      isSwiping.current = false;
+      onSuperlike();
+    });
   };
 
   // ─── Render ──────────────────────────────────────────────────────────────
@@ -200,6 +214,7 @@ export const ProfileSwipeCard: React.FC<ProfileSwipeCardProps> = ({
           {
             transform: [
               { translateX: pan.x },
+              { translateY: pan.y },
               { rotate: cardRotation },
             ],
           },
@@ -250,12 +265,20 @@ export const ProfileSwipeCard: React.FC<ProfileSwipeCardProps> = ({
           <Text style={styles.stampNopeText}>NOPE</Text>
         </Animated.View>
 
-        {/* Bottom gradient overlay */}
+        {/* SUPER stamp */}
+        <Animated.View style={[styles.stamp, styles.superStamp, { opacity: superOpacity }]}>
+          <Text style={styles.stampSuperText}>SUPER</Text>
+        </Animated.View>
+
+        {/* Bottom gradient overlay - visual only, touch events pass through */}
         <LinearGradient
           colors={["transparent", "rgba(0,0,0,0.22)", "rgba(0,0,0,0.82)"]}
           style={styles.gradient}
           pointerEvents="none"
-        >
+        />
+
+        {/* Interactive bottom content */}
+        <View style={styles.bottomOverlay}>
           {/* User info */}
           <View style={styles.infoRow}>
             <View style={{ flex: 1 }}>
@@ -342,7 +365,7 @@ export const ProfileSwipeCard: React.FC<ProfileSwipeCardProps> = ({
               <MaterialCommunityIcons name="lightning-bolt" size={22} color="#a855f7" />
             </TouchableOpacity>
           </BlurView>
-        </LinearGradient>
+        </View>
       </Animated.View>
     </View>
   );
@@ -408,6 +431,18 @@ const styles = StyleSheet.create({
     borderColor: "#f44336",
     transform: [{ rotate: "20deg" }],
   },
+  superStamp: {
+    left: 0,
+    right: 0,
+    alignItems: "center",
+    borderColor: "#4fc3f7",
+  },
+  stampSuperText: {
+    fontSize: 26,
+    fontWeight: "900",
+    color: "#4fc3f7",
+    letterSpacing: 2,
+  },
   stampLikeText: {
     fontSize: 26,
     fontWeight: "900",
@@ -425,8 +460,13 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    paddingTop: 70,
-    paddingBottom: 0,
+    height: 280,
+  },
+  bottomOverlay: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
   infoRow: {
     paddingHorizontal: 18,

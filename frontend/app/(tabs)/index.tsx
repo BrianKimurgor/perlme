@@ -376,8 +376,8 @@ export default function HomeScreen() {
         ]}
       >
         <Text style={[styles.brandText, { color: accent }]}>perlme</Text>
-        <TouchableOpacity onPress={() => router.push("/settings/manage" as any)}>
-          <Ionicons name="options-outline" size={24} color={accent} />
+        <TouchableOpacity onPress={() => router.push("/create-post" as any)}>
+          <Ionicons name="create-outline" size={26} color={accent} />
         </TouchableOpacity>
       </View>
 

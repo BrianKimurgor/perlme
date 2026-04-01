@@ -265,7 +265,7 @@ export const followUserController = async (req: Request, res: Response) => {
       followerId,
       userId,
       "FOLLOW",
-      "Someone started following you"
+      "started following you"
     ).catch(() => { });
 
     res.status(200).json({

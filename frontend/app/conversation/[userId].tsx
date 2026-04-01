@@ -34,12 +34,14 @@ import {
     View,
 } from "react-native";
 import Toast from "react-native-toast-message";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
 
 export default function ConversationScreen() {
     const { userId } = useLocalSearchParams<{ userId: string }>();
     const router = useRouter();
     const flatListRef = useRef<FlatList>(null);
+    const insets = useSafeAreaInsets();
     const currentUserId = useSelector((state: RootState) => state.auth.user?.id);
     const token = useSelector((state: RootState) => state.auth.token);
     const { colors, accent } = useAppTheme();
@@ -157,10 +159,10 @@ export default function ConversationScreen() {
         <KeyboardAvoidingView
             style={[styles.container, { backgroundColor: colors.bg }]}
             behavior={Platform.OS === "ios" ? "padding" : undefined}
-            keyboardVerticalOffset={100}
+            keyboardVerticalOffset={Platform.OS === "ios" ? insets.top + 60 : 0}
         >
             {/* Header */}
-            <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+            <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border, paddingTop: insets.top + 14 }]}>
                 <TouchableOpacity onPress={() => router.back()}>
                     <Ionicons name="arrow-back" size={24} color={accent} />
                 </TouchableOpacity>

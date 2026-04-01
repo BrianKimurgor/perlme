@@ -118,7 +118,7 @@ export class MessageService {
         });
 
         // Notify receiver about new message (fire-and-forget, only if not online)
-        createNotification(senderId, receiverId, "MESSAGE", "You have a new message", newMessage.id).catch(() => { });
+        createNotification(senderId, receiverId, "MESSAGE", "sent you a message", newMessage.id).catch(() => { });
 
         return messageWithSender;
     }

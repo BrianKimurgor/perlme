@@ -18,6 +18,7 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import { expoLogger as logger } from "@/src/utils/logger";
 
@@ -30,6 +31,7 @@ type LocalMedia = {
 
 export default function CreatePostScreen() {
     const router = useRouter();
+    const insets = useSafeAreaInsets();
     const [content, setContent] = useState("");
     const [localMedia, setLocalMedia] = useState<LocalMedia[]>([]);
     const [createPost, { isLoading: isCreating }] = useCreatePostMutation();
@@ -160,7 +162,7 @@ export default function CreatePostScreen() {
     };
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { paddingTop: insets.top }]}>
             {/* Header */}
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => router.back()}>
@@ -225,7 +227,7 @@ export default function CreatePostScreen() {
             </ScrollView>
 
             {/* Bottom Actions */}
-            <View style={styles.actions}>
+            <View style={[styles.actions, { paddingBottom: insets.bottom + 16 }]}>
                 <TouchableOpacity
                     style={[styles.actionButton, localMedia.length >= 5 && styles.actionDisabled]}
                     onPress={pickImages}

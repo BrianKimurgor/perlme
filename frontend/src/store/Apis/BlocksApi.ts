@@ -19,9 +19,7 @@ export interface BlockRequest {
 }
 
 export interface BlockStatus {
-    isBlocked: boolean;
-    blockedByMe: boolean;
-    blockedMe: boolean;
+    blocked: boolean;
 }
 
 // -------------------- API --------------------
@@ -57,18 +55,21 @@ export const blocksApi = createApi({
             providesTags: (_result, _error, targetUserId) => [
                 { type: "BlockStatus", id: targetUserId },
             ],
+            transformResponse: (response: any) => response.data ?? response,
         }),
 
         // Get list of users I blocked
         getBlockedUsers: builder.query<BlockedUser[], void>({
             query: () => "blocks/me/blocked",
             providesTags: ["Blocks"],
+            transformResponse: (response: any) => response.data || [],
         }),
 
         // Get list of users who blocked me
         getBlockedBy: builder.query<BlockedUser[], void>({
             query: () => "blocks/me/blocked-by",
             providesTags: ["Blocks"],
+            transformResponse: (response: any) => response.data || [],
         }),
     }),
 });

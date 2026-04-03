@@ -1,6 +1,7 @@
 ﻿import ThemedWrapper from "@/src/components/ThemedWrapper";
 import { RootState } from "@/src/store";
 import { useGetUnreadCountQuery } from "@/src/store/Apis/MessagesApi";
+import { useGetUnreadNotifCountQuery } from "@/src/store/Apis/NotificationsApi";
 import { useGetMyProfileQuery } from "@/src/store/Apis/ProfileApi";
 import { AntDesign, Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -31,6 +32,13 @@ export default function TabsLayout() {
     pollingInterval: 30_000,
   });
   const unreadCount = unreadData?.count ?? 0;
+
+  // Unread notifications count for notifications badge
+  const { data: unreadNotifData } = useGetUnreadNotifCountQuery(undefined, {
+    skip: !token,
+    pollingInterval: 30_000,
+  });
+  const unreadNotifCount = unreadNotifData?.count ?? 0;
 
   // Redirect to profile completion if not yet completed
   useEffect(() => {
@@ -97,11 +105,13 @@ export default function TabsLayout() {
           }}
         />
 
-        {/* Notifications */}
+        {/* Notifications — with unread badge */}
         <Tabs.Screen
           name="notifications"
           options={{
             title: "Alerts",
+            tabBarBadge: unreadNotifCount > 0 ? (unreadNotifCount > 99 ? "99+" : unreadNotifCount) : undefined,
+            tabBarBadgeStyle: { backgroundColor: accent, fontSize: 10 },
             tabBarIcon: ({ color }: TabBarIconProps) => (
               <Ionicons name="notifications" size={24} color={color} />
             ),
@@ -115,6 +125,17 @@ export default function TabsLayout() {
             title: "Me",
             tabBarIcon: ({ color }: TabBarIconProps) => (
               <Feather name="user" size={24} color={color} />
+            ),
+          }}
+        />
+
+        {/* More */}
+        <Tabs.Screen
+          name="more"
+          options={{
+            title: "More",
+            tabBarIcon: ({ color }: TabBarIconProps) => (
+              <Ionicons name="grid-outline" size={24} color={color} />
             ),
           }}
         />

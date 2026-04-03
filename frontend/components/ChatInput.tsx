@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
@@ -8,6 +9,7 @@ interface ChatInputProps {
 }
 
 const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, onTyping }) => {
+  const insets = useSafeAreaInsets();
   const [text, setText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
 
@@ -46,7 +48,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, onTyping }) => {
   const canSend = text.trim().length > 0;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingBottom: insets.bottom + 10 }]}>
       <View style={styles.inputRow}>
         <TextInput
           style={styles.input}

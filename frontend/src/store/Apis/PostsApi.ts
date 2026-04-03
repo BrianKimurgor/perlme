@@ -84,6 +84,13 @@ export const postsApi = createApi({
             transformResponse: (response: any) => response.data || [],
         }),
 
+        // Get posts by a specific user
+        getPostsByUser: builder.query<Post[], string>({
+            query: (userId) => `posts/user/${userId}`,
+            providesTags: (_result, _error, userId) => [{ type: "Posts", id: userId }],
+            transformResponse: (response: any) => response.data || [],
+        }),
+
         // Get post by ID
         getPostById: builder.query<Post, string>({
             query: (postId) => `posts/${postId}`,
@@ -180,6 +187,7 @@ export const postsApi = createApi({
 // -------------------- HOOKS --------------------
 export const {
     useGetAllPostsQuery,
+    useGetPostsByUserQuery,
     useGetPostByIdQuery,
     useCreatePostMutation,
     useDeletePostMutation,

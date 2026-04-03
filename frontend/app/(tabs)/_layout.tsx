@@ -128,6 +128,17 @@ export default function TabsLayout() {
             ),
           }}
         />
+
+        {/* More */}
+        <Tabs.Screen
+          name="more"
+          options={{
+            title: "More",
+            tabBarIcon: ({ color }: TabBarIconProps) => (
+              <Ionicons name="grid-outline" size={24} color={color} />
+            ),
+          }}
+        />
       </Tabs>
     </ThemedWrapper>
   );

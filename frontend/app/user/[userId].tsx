@@ -13,7 +13,7 @@ import { API_BASE_URL } from "@/src/utils/config";
 import { expoLogger as logger } from "@/src/utils/logger";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React from "react";
+import React, { useEffect } from "react";
 import {
     Image,
     ScrollView,
@@ -27,6 +27,8 @@ import { useSelector } from "react-redux";
 
 export default function UserProfileScreen() {
     const { userId } = useLocalSearchParams<{ userId: string }>();
+    const { preview } = useLocalSearchParams<{ preview?: string }>();
+    const isPreview = preview === "true";
     const router = useRouter();
     const currentUserId = useSelector((state: RootState) => state.auth.user?.id);
     const token = useSelector((state: RootState) => state.auth.token);
@@ -139,6 +141,14 @@ export default function UserProfileScreen() {
         }
     };
 
+    // Don't show if this is the current user — redirect in effect to avoid setState-in-render
+    // MUST be before any early returns (Rules of Hooks)
+    useEffect(() => {
+        if (!isPreview && userId && currentUserId && userId === currentUserId) {
+            router.replace("/(tabs)/profile");
+        }
+    }, [userId, currentUserId, isPreview]);
+
     if (isLoading) {
         return <Loading fullScreen text="Loading profile..." />;
     }
@@ -151,9 +161,7 @@ export default function UserProfileScreen() {
         );
     }
 
-    // Don't show if this is the current user
-    if (userId === currentUserId) {
-        router.replace("/(tabs)/profile");
+    if (!isPreview && userId === currentUserId) {
         return null;
     }
 

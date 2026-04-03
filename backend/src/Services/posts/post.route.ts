@@ -6,6 +6,7 @@ import {
     deletePostController,
     getAllPublicPostsController,
     getPostByIdController,
+    getPostsByUserController,
     likePostController,
     repostController,
     unlikePostController,
@@ -47,6 +48,7 @@ const postRouter = Router();
  *                     type: string
  */
 postRouter.get("/posts", getAllPublicPostsController);
+postRouter.get("/posts/user/:userId", authMiddleware(), getPostsByUserController);
 
 /**
  * @swagger
